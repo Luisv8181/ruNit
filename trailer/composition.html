@@ -1,0 +1,356 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>ruNit trailer composition</title>
+<!--
+  Deterministic trailer compositor. window.render(t) draws the frame at time t (seconds).
+  ?f=16x9 (1920×1080) or ?f=9x16 (1080×1920). Rendered frame-by-frame by trailer/render.mjs.
+  App imagery comes from trailer/assets — real screens captured from the running prototype.
+-->
+<style>
+  @font-face { font-family: "Archivo"; src: url("../node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+  @font-face { font-family: "Instrument"; src: url("../node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2") format("woff2"); font-weight: 400 700; }
+  @font-face { font-family: "Mono"; src: url("../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2") format("woff2"); font-weight: 700; }
+  :root { --ball:#F47B35; --paper:#FFF9F0; --sun:#F4C65E; --emerald:#239B72; --sky:#56B8E8; --ink:#202B30; --violet:#8A6BE0; }
+  html, body { margin: 0; background: #000; }
+  #stage { position: relative; overflow: hidden; background: var(--paper); font-family: Instrument, sans-serif; color: var(--ink); }
+  .scene { position: absolute; inset: 0; overflow: hidden; display: none; }
+  .abs { position: absolute; }
+  .disp { font-family: Archivo; font-stretch: 70%; font-weight: 900; text-transform: uppercase; line-height: .86; letter-spacing: -.005em; }
+  .eyebrow { font-family: Archivo; font-stretch: 100%; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+  .word { display: inline-block; will-change: transform, opacity; }
+  .phone { position: absolute; border-radius: 9% / 4.2%; background: #0d1215; padding: 1.4%; box-shadow: 0 50px 90px -30px rgba(32,43,48,.55), 0 0 0 2px rgba(255,255,255,.06) inset; }
+  .phone .scr { position: relative; width: 100%; height: 100%; border-radius: 7.6% / 3.6%; overflow: hidden; background: var(--paper); }
+  .phone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .browser { position: absolute; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 60px 120px -40px rgba(32,43,48,.55); }
+  .browser .bar { height: 38px; background: #EFE6D8; display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+  .browser .bar i { width: 12px; height: 12px; border-radius: 50%; background: #d9cbb6; display: block; }
+  .browser .bar span { margin-left: 18px; font: 600 15px Instrument; color: #8b7d6a; background: #fbf5ec; padding: 4px 14px; border-radius: 999px; }
+  .browser img { display: block; width: 100%; }
+  .tag { position: absolute; font: 700 15px Archivo; font-stretch: 100%; letter-spacing: .18em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; }
+  .callout { position: absolute; background: var(--ink); color: var(--paper); border-radius: 18px; padding: 16px 22px; font: 600 26px Instrument; box-shadow: 0 24px 50px -20px rgba(0,0,0,.5); white-space: nowrap; }
+  .callout b { color: var(--sun); }
+  #flash { position: absolute; inset: 0; background: #FFF4E2; pointer-events: none; opacity: 0; }
+  #grain { position: absolute; inset: 0; pointer-events: none; opacity: .14; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .4  0 0 0 0 .3  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #legal { position: absolute; font: 600 15px Instrument; letter-spacing: .02em; color: rgba(32,43,48,.55); }
+  #legal.dark { color: rgba(255,249,240,.55); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const F = new URLSearchParams(location.search).get("f") || "16x9";
+const V = F === "9x16";
+const W = V ? 1080 : 1920, H = V ? 1920 : 1080;
+const DUR = 72;
+const stage = document.getElementById("stage");
+stage.style.width = W + "px"; stage.style.height = H + "px";
+
+// ---------- helpers ----------
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lin = (t, a, b) => clamp((t - a) / (b - a));
+const oc = (x) => 1 - Math.pow(1 - x, 3);
+const io = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const ob = (x) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const mix = (a, b, p) => a + (b - a) * p;
+const el = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; (parent || stage).appendChild(e); return e; };
+const css = (e, o) => Object.assign(e.style, o);
+const A = (n) => `assets/${n}.png`;
+
+function phone(parent, src, h) {
+  const p = el("div", "phone", parent); const w = h * 390 / 844 * 1.03;
+  css(p, { width: w + "px", height: h + "px" });
+  const s = el("div", "scr", p);
+  const imgs = (Array.isArray(src) ? src : [src]).map((n) => { const i = el("img", "", s); i.src = A(n); return i; });
+  return { p, w, h, imgs };
+}
+function browser(parent, src, w, url = "runit.app") {
+  const b = el("div", "browser", parent); css(b, { width: w + "px" });
+  el("div", "bar", b, "<i></i><i></i><i></i><span>" + url + "</span>");
+  const i = el("img", "", b); i.src = A(src);
+  return { b, h: w / 1.6 + 38 };
+}
+// kinetic title: words rise and unmask
+function title(parent, text, size, color = "var(--ink)", align = "left") {
+  const t = el("div", "abs disp", parent); css(t, { fontSize: size + "px", color, textAlign: align });
+  const words = text.split(" ").map((w) => { const s = el("span", "word", t, w); return s; });
+  const lines = []; // words separated by " " but allow | for line break
+  t.innerHTML = ""; const spans = [];
+  text.split("|").forEach((line, li) => {
+    const ln = el("div", "", t); css(ln, { overflow: "hidden", paddingBottom: ".06em" });
+    line.trim().split(" ").forEach((w, wi) => { const s = el("span", "word", ln, w + "&nbsp;"); spans.push(s); });
+  });
+  return { t, set(p) { spans.forEach((s, i) => { const q = oc(clamp(p * (1 + spans.length * .18) - i * .18)); css(s, { transform: `translateY(${(1 - q) * 105}%)`, opacity: q }); }); } };
+}
+function tag(parent, text, dark) {
+  const t = el("div", "tag", parent, text);
+  css(t, dark ? { background: "rgba(255,249,240,.12)", color: "rgba(255,249,240,.85)" } : { background: "rgba(32,43,48,.08)", color: "rgba(32,43,48,.7)" });
+  return t;
+}
+const courtSVG = (stroke, op, sw = 4) => `<svg viewBox="0 0 500 470" width="100%" height="100%" fill="none" stroke="${stroke}" stroke-opacity="${op}" stroke-width="${sw}" stroke-linecap="round">
+  <rect class="ln" x="2" y="2" width="496" height="466"/><rect class="ln" x="170" y="2" width="160" height="190"/>
+  <circle class="ln" cx="250" cy="192" r="60"/><path class="ln" d="M30 2v140a220 220 0 0 0 440 0V2"/>
+  <path class="ln" d="M220 40h60"/><circle class="ln" cx="250" cy="52" r="9"/><path class="ln" d="M190 468a60 60 0 0 1 120 0"/></svg>`;
+const ballSVG = `<svg viewBox="0 0 100 100" width="100%" height="100%"><defs><radialGradient id="bg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFB27C"/><stop offset=".55" stop-color="#F47B35"/><stop offset="1" stop-color="#B9531C"/></radialGradient></defs>
+  <circle cx="50" cy="50" r="48" fill="url(#bg)"/><g stroke="#2a1a10" stroke-width="2.6" fill="none" opacity=".75"><path d="M2 50h96M50 2v96"/><path d="M18 14c14 14 14 58 0 72M82 14c-14 14-14 58 0 72"/></g></svg>`;
+
+const scenes = [];
+function scene(start, end, build) { const root = el("div", "scene"); const update = build(root); scenes.push({ start, end, root, update }); }
+
+// ---------- S1 · 0–7 · IT STARTS WITH A COURT ----------
+const BOUNCES = [0.6, 1.45, 2.2, 2.85, 3.4, 3.9, 4.35];
+function courtOpen(root, opts) {
+  css(root, { background: "radial-gradient(120% 90% at 70% 0%, #FFE2B0 0%, #FBC27F 45%, #E98F4B 100%)" });
+  const rays = el("div", "abs", root); css(rays, { inset: "-20%", background: "repeating-conic-gradient(from 200deg at 85% -10%, rgba(255,255,255,.16) 0deg 4deg, transparent 4deg 13deg)", mixBlendMode: "screen" });
+  const floorWrap = el("div", "abs", root);
+  const fw = V ? 1500 : 2100;
+  css(floorWrap, { width: fw + "px", height: fw * 470 / 500 + "px", left: (W - fw) / 2 + "px", top: (V ? H * .44 : H * .36) + "px", transform: "perspective(900px) rotateX(62deg)", transformOrigin: "50% 0%" });
+  const floor = el("div", "abs", floorWrap, courtSVG("#FFF9F0", .9, 5)); css(floor, { inset: 0, background: "linear-gradient(180deg, rgba(255,255,255,.0), rgba(120,60,20,.18))" });
+  const lines = [...floor.querySelectorAll(".ln")]; lines.forEach((l) => { const L = l.getTotalLength ? l.getTotalLength() : 2000; l.style.strokeDasharray = L; l.dataset.L = L; });
+  const shadow = el("div", "abs", root); css(shadow, { borderRadius: "50%", background: "radial-gradient(closest-side, rgba(60,25,8,.45), transparent)" });
+  const ball = el("div", "abs", root, ballSVG);
+  const bs = V ? 170 : 150;
+  css(ball, { width: bs + "px", height: bs + "px" });
+  return { rays, lines, ball, shadow, bs, floorWrap };
+}
+function drawBall(o, t, groundY, cx) {
+  // bounce physics through the audio's contact times
+  let y = 0, k = BOUNCES.findIndex((b) => b > t);
+  if (k === -1) { y = 0; }
+  else { const a = k === 0 ? 0 : BOUNCES[k - 1], b = BOUNCES[k]; const p = (t - a) / (b - a); const hgt = k === 0 ? 520 : 420 * Math.pow(.78, k); y = k === 0 ? hgt * (1 - p * p) : 4 * hgt * p * (1 - p); }
+  const sq = y < 6 ? 1 - (6 - y) / 40 : 1;
+  css(o.ball, { left: cx - o.bs / 2 + "px", top: groundY - o.bs - y + "px", transform: `scale(${1 / sq}, ${sq}) rotate(${t * 140}deg)` });
+  const s = 1 - Math.min(.6, y / 900);
+  css(o.shadow, { width: o.bs * 1.6 * s + "px", height: o.bs * .35 * s + "px", left: cx - o.bs * .8 * s + "px", top: groundY - o.bs * .14 * s + "px", opacity: .35 + .5 * s });
+}
+scene(0, 7, (root) => {
+  const o = courtOpen(root);
+  const eb = el("div", "abs eyebrow", root, "Hazleton · Scranton · PA"); css(eb, { fontSize: (V ? 26 : 22) + "px", color: "rgba(32,43,48,.6)", left: (V ? 80 : 120) + "px", top: (V ? 250 : 150) + "px" });
+  const T = title(root, V ? "It starts|with a|court." : "It starts with|a court.", V ? 190 : 180);
+  css(T.t, { left: (V ? 74 : 112) + "px", top: (V ? 300 : 190) + "px" });
+  return (lt) => {
+    o.lines.forEach((l, i) => (l.style.strokeDashoffset = +l.dataset.L * (1 - io(lin(lt, .2 + i * .25, 2.6 + i * .25)))));
+    css(o.floorWrap, { transform: `perspective(900px) rotateX(${62 - lt * 1.2}deg) translateY(${-lt * 6}px)` });
+    css(o.rays, { transform: `rotate(${lt * 1.2}deg)` });
+    drawBall(o, lt, V ? H * .72 : H * .82, V ? W * .62 : W * .7);
+    T.set(lin(lt, 4.4, 5.6));
+    css(eb, { opacity: lin(lt, 4.2, 4.9) });
+  };
+});
+
+// ---------- S2 · 7–15 · FIND YOUR PEOPLE ----------
+scene(7, 15, (root) => {
+  css(root, { background: "linear-gradient(160deg,#FFF9F0 0%,#FCEBD2 100%)" });
+  const bw = V ? 1000 : 1240; const B = browser(root, "desk-courts", bw);
+  css(B.b, { left: (V ? (W - bw) / 2 : 760) + "px", top: (V ? 760 : 150) + "px" });
+  const P = phone(root, ["phone-court", "phone-community"], V ? 980 : 780);
+  css(P.p, { left: (V ? W - P.w - 40 : 1420) + "px", top: (V ? 860 : 210) + "px" });
+  const T = title(root, "Find your|people.", V ? 200 : 150);
+  css(T.t, { left: (V ? 80 : 110) + "px", top: (V ? 230 : 300) + "px" });
+  const sub = el("div", "abs", root, "Courts, runs and players near you — mapped by the people who play there."); css(sub, { font: `500 ${V ? 38 : 30}px Instrument`, color: "#46545A", left: (V ? 84 : 116) + "px", top: (V ? 600 : 650) + "px", width: (V ? 900 : 420) + "px", lineHeight: 1.35 });
+  const tg = tag(root, "Working prototype · demo data"); css(tg, { left: (V ? 84 : 116) + "px", top: (V ? 160 : 230) + "px" });
+  return (lt) => {
+    T.set(lin(lt, .15, 1.2)); css(sub, { opacity: lin(lt, .9, 1.6), transform: `translateY(${(1 - oc(lin(lt, .9, 1.6))) * 20}px)` });
+    css(tg, { opacity: lin(lt, .4, 1) });
+    const pb = oc(lin(lt, 0, 1.4));
+    css(B.b, { transform: `translateY(${(1 - pb) * 120}px) scale(${1 + lt * .012})`, opacity: pb });
+    const pp = ob(lin(lt, 2.4, 3.3));
+    css(P.p, { transform: `translateY(${(1 - pp) * 700}px) rotate(${(1 - pp) * 8 - 2}deg)` });
+    P.imgs[1].style.opacity = lin(lt, 5.4, 5.9);
+  };
+});
+
+// ---------- S3 · 15–24 · CALL YOUR RUN ----------
+scene(15, 24, (root) => {
+  css(root, { background: "radial-gradient(90% 80% at 30% 20%, #FFE6BE 0%, #FFF4E2 55%, #FFF9F0 100%)" });
+  const ph = V ? 1080 : 760;
+  const P1 = phone(root, "phone-create", ph), P2 = phone(root, "phone-checkin", ph), P3 = phone(root, "phone-teams", ph);
+  const xs = V ? [-170, 245, 660] : [880, 1240, 1600];
+  const ys = V ? [760, 800, 760] : [150, 200, 150];
+  [P1, P2, P3].forEach((P, i) => css(P.p, { left: xs[i] - P.w / 2 + (V ? P.w / 2 : 0) + "px", top: ys[i] + "px" }));
+  if (V) { css(P1.p, { left: "-120px" }); css(P2.p, { left: (W - P2.w) / 2 + "px" }); css(P3.p, { left: W - P3.w + 120 + "px" }); }
+  else { css(P1.p, { left: "900px", top: "190px" }); css(P2.p, { left: "1250px", top: "230px" }); css(P3.p, { left: "1600px", top: "190px" }); }
+  const T = title(root, V ? "Call|your run." : "Call your|run.", V ? 180 : 150); css(T.t, { left: (V ? 80 : 110) + "px", top: (V ? 230 : 300) + "px" });
+  const chips = ["3v3", "First to 21", "Ranked", "QR check-in"].map((c, i) => { const e = el("div", "abs", root, c); css(e, { font: `700 ${V ? 34 : 28}px Instrument`, background: i === 3 ? "var(--ink)" : "#fff", color: i === 3 ? "var(--paper)" : "var(--ink)", border: "2px solid rgba(32,43,48,.12)", borderRadius: "999px", padding: "10px 22px", left: (V ? 84 + [0, 140, 390, 600][i] : 116 + [0, 110, 300, 0][i]) + "px", top: (V ? 600 : (i === 3 ? 720 : 650)) + "px" }); return e; });
+  return (lt) => {
+    T.set(lin(lt, .1, 1.1));
+    chips.forEach((c, i) => { const p = ob(lin(lt, 1.2 + i * .35, 1.8 + i * .35)); css(c, { opacity: clamp(p), transform: `scale(${.6 + .4 * p})` }); });
+    [P1, P2, P3].forEach((P, i) => { const p = oc(lin(lt, .6 + i * 1.7, 1.6 + i * 1.7)); css(P.p, { opacity: p, transform: `translateY(${(1 - p) * 220 + Math.sin((lt + i) * .8) * 6}px) rotate(${(i - 1) * (V ? 6 : 4)}deg)` }); });
+  };
+});
+
+// ---------- S4 · 24–34 · PLAY YOUR GAME ----------
+scene(24, 34, (root) => {
+  css(root, { background: "radial-gradient(110% 80% at 50% 25%, #5A3418 0%, #2A2420 45%, #161C1F 100%)" });
+  const P = phone(root, "phone-live", V ? 1200 : 860); css(P.p, { left: (W - P.w) / 2 + "px", top: (H - P.h) / 2 + "px" });
+  const capLive = el("div", "abs eyebrow", root, "The app gets out of the way"); css(capLive, { color: "var(--sun)", fontSize: (V ? 30 : 24) + "px", width: W + "px", textAlign: "center", top: (V ? 220 : 40) + "px" });
+  // illustrated play diagram
+  const dw = V ? 1000 : 1200, dh = dw * 470 / 500;
+  const d = el("div", "abs", root); css(d, { width: dw + "px", height: dh + "px", left: (W - dw) / 2 + "px", top: (V ? 520 : (H - dh) / 2 + 40) + "px" });
+  d.innerHTML = `<svg viewBox="0 0 500 470" width="100%" height="100%">
+    <g fill="none" stroke="#F47B35" stroke-opacity=".28" stroke-width="2.5">${courtSVG("#F47B35", .3, 2.5).replace(/<\/?svg[^>]*>/g, "")}</g>
+    <ellipse id="dfield" cx="300" cy="250" rx="70" ry="44" fill="#239B72" fill-opacity=".14" stroke="#239B72" stroke-opacity=".6" stroke-width="2"/>
+    <path id="drive" d="M380 380 C 360 300, 300 230, 262 90" fill="none" stroke="#F47B35" stroke-width="8" stroke-linecap="round"/>
+    <path id="pass" d="M120 330 C 200 380, 300 400, 380 380" fill="none" stroke="#8A6BE0" stroke-width="4" stroke-dasharray="10 10" stroke-linecap="round"/>
+    <path id="cut" d="M110 170 C 160 160, 200 120, 236 80" fill="none" stroke="#56B8E8" stroke-width="4" stroke-linecap="round"/>
+    <circle id="burst" cx="250" cy="52" r="10" fill="none" stroke="#F4C65E" stroke-width="5"/>
+    <g id="dots"></g><circle id="pball" r="11" fill="#F47B35" stroke="#2a1a10" stroke-width="2"/></svg>`;
+  const svg = d.querySelector("svg"), drive = svg.querySelector("#drive"), pass = svg.querySelector("#pass"), cut = svg.querySelector("#cut"), burst = svg.querySelector("#burst"), dfield = svg.querySelector("#dfield"), pball = svg.querySelector("#pball"), dots = svg.querySelector("#dots");
+  [drive, pass, cut].forEach((p) => { const L = p.getTotalLength(); p.dataset.L = L; p.style.strokeDasharray = p.id === "pass" ? "10 10" : L; });
+  const team = [[120, 330, "#FFF9F0"], [380, 380, "#FFF9F0"], [110, 170, "#FFF9F0"], [300, 250, "#239B72"], [180, 280, "#239B72"], [330, 140, "#239B72"]];
+  const dotEls = team.map(([x, y, c]) => { const g = document.createElementNS("http://www.w3.org/2000/svg", "circle"); g.setAttribute("r", 13); g.setAttribute("fill", c); g.setAttribute("cx", x); g.setAttribute("cy", y); dots.appendChild(g); return g; });
+  const words = ["Kick.", "Drive.", "Cut.", "Finish."].map((w) => { const e = el("div", "abs disp", root, w); css(e, { fontSize: (V ? 300 : 260) + "px", color: "var(--paper)", width: W + "px", textAlign: "center", top: (V ? 180 : 60) + "px", opacity: 0 }); return e; });
+  const T = title(root, V ? "Play|your game." : "Play your game.", V ? 190 : 170, "var(--paper)", "center"); css(T.t, { width: W + "px", left: 0, top: (V ? 200 : 70) + "px" });
+  const lab = tag(root, "Illustrated play · not product footage", true); css(lab, { right: (V ? 40 : 60) + "px", bottom: (V ? 140 : 60) + "px" });
+  const at = (p, L) => p.getPointAtLength(L);
+  return (lt) => {
+    const live = 1 - lin(lt, 2.0, 2.5);
+    css(P.p, { opacity: live, transform: `scale(${1 + lt * .03})` }); css(capLive, { opacity: live * lin(lt, .2, .6) });
+    const dp = lin(lt, 2.3, 2.8); css(d, { opacity: dp, transform: `scale(${.92 + .08 * oc(dp)})` });
+    // 2.8–4.0 pass, 4.0–5.6 drive, cut overlay 3.3–4.6, finish 5.6
+    const pP = io(lin(lt, 2.8, 3.8)), pD = io(lin(lt, 4.0, 5.6)), pC = io(lin(lt, 3.3, 4.6));
+    pass.style.opacity = lin(lt, 2.7, 2.9) * (1 - lin(lt, 6.5, 7));
+    pass.style.strokeDashoffset = -lt * 40;
+    pass.setAttribute("stroke-dasharray", `${+pass.dataset.L * pP} 2000`);
+    drive.style.strokeDashoffset = +drive.dataset.L * (1 - pD); drive.style.opacity = 1 - lin(lt, 6.5, 7);
+    cut.style.strokeDashoffset = +cut.dataset.L * (1 - pC); cut.style.opacity = 1 - lin(lt, 6.5, 7);
+    let b; if (lt < 4.0) b = at(pass, +pass.dataset.L * pP); else b = at(drive, +drive.dataset.L * pD);
+    pball.setAttribute("cx", b.x); pball.setAttribute("cy", b.y);
+    dotEls[1].setAttribute("cx", lt > 4 ? b.x : 380); dotEls[1].setAttribute("cy", lt > 4 ? b.y + 18 : 380);
+    const cp = at(cut, +cut.dataset.L * pC); dotEls[2].setAttribute("cx", cp.x); dotEls[2].setAttribute("cy", cp.y);
+    dotEls[3].setAttribute("cx", 300 + Math.sin(lt * 3) * 18 - (lt > 4 ? 30 * pD : 0)); dfield.setAttribute("cx", +dotEls[3].getAttribute("cx"));
+    dfield.setAttribute("rx", 70 + Math.sin(lt * 4) * 6);
+    const bp = lin(lt, 5.6, 6.3); burst.setAttribute("r", 10 + 70 * oc(bp)); burst.style.opacity = bp > 0 && bp < 1 ? 1 - bp : 0;
+    const wt = [[2.8, 3.6], [4.0, 4.9], [3.6, 4.0], [5.4, 6.4]];
+    words.forEach((w, i) => { const [a, z] = wt[i]; const on = lt >= a && lt < z; const p = lin(lt, a, a + .12); css(w, { opacity: on ? 1 : 0, transform: `scale(${1.25 - .25 * oc(p)})` }); });
+    words[2].style.opacity = 0; // cut is shown via the path, words stay on the beat: Kick, Drive, Finish
+    T.set(lin(lt, 6.7, 7.6)); css(T.t, { opacity: lin(lt, 6.6, 6.8) });
+    css(d, { transform: `scale(${.92 + .08 * oc(dp)}) translateY(${lin(lt, 6.6, 7.6) * (V ? 120 : 60)}px)` });
+    css(lab, { opacity: dp });
+  };
+});
+
+// ---------- S5 · 34–44 · KNOW YOUR GAME ----------
+scene(34, 44, (root) => {
+  css(root, { background: "linear-gradient(180deg,#FFF9F0 0%,#FBEBD3 100%)" });
+  const ph = V ? 1180 : 860;
+  const shots = ["phone-stats", "phone-mismatch", "phone-confirmed", "phone-reflect", "phone-dna"];
+  const P = phone(root, shots, ph); css(P.p, { left: (V ? (W - P.w) / 2 : 1150) + "px", top: (V ? 700 : 110) + "px" });
+  const T = title(root, "Know your|game.", V ? 180 : 176); css(T.t, { left: (V ? 80 : 110) + "px", top: (V ? 200 : 210) + "px" });
+  const steps = [
+    ["Post-game", "Enter your own line in <b>20 seconds</b>"],
+    ["Evidence", "Totals don't match? <b>Players recheck</b> — no AI verdicts"],
+    ["Verified", "Teammates and opponents <b>confirm</b>"],
+    ["Reflection", "<b>How did you get your points today?</b>"],
+    ["Player DNA", "Patterns from <b>your games</b>, with the evidence shown"],
+  ];
+  const co = steps.map(([a, b]) => { const e = el("div", "callout", root, `<div style="font:700 15px Archivo;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,249,240,.55);margin-bottom:6px">${a}</div>${b}`); css(e, { left: (V ? 70 : 116) + "px", top: (V ? 540 : 640) + "px", fontSize: (V ? 30 : 28) + "px" }); return e; });
+  // live DNA bars drawn beside the phone (matches the app's colors)
+  const dna = el("div", "abs", root); css(dna, { left: (V ? 120 : 640) + "px", top: (V ? 1500 : 760) + "px", width: (V ? 840 : 440) + "px", opacity: 0 });
+  const vals = [["Slasher", 85, "#F47B35"], ["Shooter", 41, "#56B8E8"], ["Defender", 58, "#239B72"], ["Playmaker", 47, "#8A6BE0"], ["Post", 40, "#F4C65E"]];
+  const bars = vals.map(([n, v, c]) => { const r = el("div", "", dna); css(r, { display: "grid", gridTemplateColumns: "150px 1fr", alignItems: "center", gap: "16px", margin: "10px 0", font: `700 ${V ? 26 : 20}px Instrument` }); el("span", "", r, n); const tr = el("div", "", r); css(tr, { height: "14px", borderRadius: "99px", background: "rgba(32,43,48,.08)", overflow: "hidden" }); const f = el("div", "", tr); css(f, { height: "100%", background: c, borderRadius: "99px", boxShadow: `0 0 18px ${c}` }); return [f, v]; });
+  const tg = tag(root, "In the prototype"); css(tg, { left: (V ? 84 : 116) + "px", top: (V ? 140 : 140) + "px" });
+  return (lt) => {
+    T.set(lin(lt, .1, 1.1)); css(tg, { opacity: lin(lt, .3, .8) });
+    const p0 = oc(lin(lt, 0, 1)); css(P.p, { transform: `translateY(${(1 - p0) * 300}px) rotate(${-2 + (1 - p0) * 6}deg)`, opacity: p0 });
+    const cuts = [0, 2.2, 4.4, 6.4, 8.0];
+    P.imgs.forEach((im, i) => (im.style.opacity = i === 0 ? 1 : lin(lt, cuts[i] - .15, cuts[i] + .15)));
+    co.forEach((c, i) => { const a = cuts[i] + .4, z = (cuts[i + 1] ?? 10.2) - .1; const p = oc(lin(lt, a, a + .35)) * (1 - lin(lt, z - .25, z)); css(c, { opacity: p, transform: `translateX(${(1 - p) * -40}px)` }); });
+    const dp = V ? 0 : lin(lt, 8.1, 8.6); css(dna, { opacity: dp });
+    bars.forEach(([f, v], i) => (f.style.width = v * oc(lin(lt, 8.2 + i * .12, 9.2 + i * .12)) + "%"));
+  };
+});
+
+// ---------- S6 · 44–54 · BUILD YOUR IDENTITY ----------
+scene(44, 54, (root) => {
+  css(root, { background: "#1B2326" });
+  const glow = el("div", "abs", root); css(glow, { inset: 0, background: "radial-gradient(60% 60% at 70% 40%, rgba(244,123,53,.35), transparent 70%)" });
+  const bw = V ? 1000 : 1260;
+  const B1 = browser(root, "desk-mygame", bw), B2 = browser(root, "desk-customize", bw), B3 = browser(root, "desk-rankings", bw);
+  [B1, B2, B3].forEach((B) => css(B.b, { left: (V ? (W - bw) / 2 : 800) + "px", top: (V ? 760 : 170) + "px" }));
+  const T = title(root, "Build your|identity.", V ? 200 : 128, "var(--paper)"); css(T.t, { left: (V ? 80 : 100) + "px", top: (V ? 220 : 300) + "px" });
+  const caps = ["Three separate systems: <b>MMR</b> · <b>Player DNA</b> · <b>Trust</b>", "Skill effects you <b>unlock by how you play</b> — cosmetic only", "Local rankings · squads · rivalries"].map((c) => { const e = el("div", "callout", root, c); css(e, { left: (V ? 70 : 100) + "px", top: (V ? 620 : 660) + "px", fontSize: (V ? 32 : 26) + "px", whiteSpace: V ? "normal" : "nowrap", width: V ? "900px" : "auto", background: "rgba(255,249,240,.1)" }); return e; });
+  return (lt) => {
+    T.set(lin(lt, .1, 1.1));
+    const segs = [[0, 3.6], [3.4, 7.0], [6.8, 10.2]];
+    [B1, B2, B3].forEach((B, i) => { const [a, z] = segs[i]; const p = oc(lin(lt, a, a + .7)) * (1 - lin(lt, z - .3, z)); css(B.b, { opacity: p, transform: `translateX(${(1 - oc(lin(lt, a, a + .7))) * 160}px) scale(${1 + (lt - a) * .012})` }); });
+    caps.forEach((c, i) => { const [a, z] = segs[i]; const p = oc(lin(lt, a + .5, a + .9)) * (1 - lin(lt, z - .4, z - .1)); css(c, { opacity: p }); });
+  };
+});
+
+// ---------- S7 · 54–64 · OPEN THE NEXT DOOR ----------
+scene(54, 64, (root) => {
+  css(root, { background: "#239B72" });
+  const court = el("div", "abs", root, courtSVG("#fff", .14, 3)); css(court, { width: "900px", height: "846px", right: "-160px", top: "-120px", transform: "rotate(-8deg)" });
+  const bw = V ? 980 : 1120; const B = browser(root, "desk-opps", bw);
+  css(B.b, { left: (V ? (W - bw) / 2 : 820) + "px", top: (V ? 820 : 150) + "px" });
+  const P = phone(root, "phone-opp-detail", V ? 900 : 760); css(P.p, { left: (V ? W - P.w - 50 : 1460) + "px", top: (V ? 860 : 280) + "px" });
+  const T = title(root, "Open the|next door.", V ? 200 : 132, "var(--paper)"); css(T.t, { left: (V ? 80 : 100) + "px", top: (V ? 220 : 270) + "px" });
+  const types = ["Tournaments", "Coaching", "Reffing", "Jobs", "Showcases", "Community"];
+  const chips = types.map((c, i) => { const e = el("div", "abs", root, c); css(e, { font: `700 ${V ? 30 : 24}px Instrument`, color: "var(--paper)", border: "2px solid rgba(255,249,240,.35)", borderRadius: "999px", padding: "8px 18px", left: (V ? 84 + (i % 3) * 300 : 104 + (i % 3) * 190) + "px", top: (V ? 600 + Math.floor(i / 3) * 70 : 640 + Math.floor(i / 3) * 62) + "px" }); return e; });
+  const note = el("div", "abs", root, "Verified organizers. Consent before anyone sees your card.<br>ruNit never promises recruitment or scholarships."); css(note, { font: `500 ${V ? 28 : 21}px Instrument`, color: "rgba(255,249,240,.8)", left: (V ? 84 : 104) + "px", top: (V ? 1660 : 800) + "px", lineHeight: 1.45, width: (V ? 920 : 560) + "px" });
+  return (lt) => {
+    T.set(lin(lt, .1, 1.1));
+    chips.forEach((c, i) => { const p = ob(lin(lt, 1.0 + i * .18, 1.5 + i * .18)); css(c, { opacity: clamp(p), transform: `translateY(${(1 - p) * 20}px)` }); });
+    const pb = oc(lin(lt, .3, 1.3)); css(B.b, { opacity: pb, transform: `translateY(${(1 - pb) * 140}px) scale(${1 + lt * .01})` });
+    const pp = ob(lin(lt, 3.6, 4.5)); css(P.p, { transform: `translateY(${(1 - pp) * 900}px) rotate(${3 - pp * 5}deg)` });
+    css(note, { opacity: lin(lt, 2.4, 3.2) });
+    css(court, { transform: `rotate(${-8 + lt * .4}deg)` });
+  };
+});
+
+// ---------- S8 · 64–72 · FINALE ----------
+scene(64, 72, (root) => {
+  const o = courtOpen(root);
+  o.lines.forEach((l) => (l.style.strokeDashoffset = 0));
+  const glow = el("div", "abs", root); css(glow, { inset: 0, background: "radial-gradient(50% 40% at 50% 30%, rgba(255,255,255,.55), transparent 70%)", opacity: 0 });
+  const logo = el("div", "abs", root, `<div style="display:flex;align-items:center;gap:.18em;justify-content:center"><svg viewBox="0 0 32 32" style="width:.82em;height:.82em"><circle cx="16" cy="16" r="15" fill="#F47B35"/><path d="M10 23V9l12 14V9" stroke="#FFF9F0" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg><span style="font-family:Archivo;font-stretch:80%;font-weight:900">ru<span style="color:#F47B35">N</span>it</span></div>`);
+  css(logo, { width: W + "px", textAlign: "center", fontSize: (V ? 220 : 230) + "px", color: "var(--ink)", top: (V ? 640 : 250) + "px", left: 0 });
+  const line1 = el("div", "abs disp", root, V ? "Your city.<br>Your court.<br>Your run." : "Your city. Your court. Your run."); css(line1, { width: W + "px", textAlign: "center", fontSize: (V ? 110 : 88) + "px", top: (V ? 980 : 540) + "px", color: "var(--ink)" });
+  const line2 = el("div", "abs eyebrow", root, "Who's got next?"); css(line2, { width: W + "px", textAlign: "center", fontSize: (V ? 44 : 38) + "px", top: (V ? 1380 : 680) + "px", color: "#8a3f12" });
+  const foot = el("div", "abs", root, "Prototype · launching in Hazleton &amp; Scranton, PA"); css(foot, { width: W + "px", textAlign: "center", font: `600 ${V ? 26 : 22}px Instrument`, color: "rgba(32,43,48,.6)", top: (V ? 1500 : 780) + "px" });
+  return (lt) => {
+    css(o.floorWrap, { transform: `perspective(900px) rotateX(${54 + lt * .4}deg) translateY(${lt * 4}px)` });
+    css(o.rays, { transform: `rotate(${lt}deg)` });
+    // ball rises and leaves frame (the tip-off)
+    const up = io(lin(lt, .4, 3.4)); const gy = V ? H * .72 : H * .82;
+    const by = gy - o.bs - up * (H + 300) + (lt < .4 ? 0 : 0);
+    css(o.ball, { left: W / 2 - o.bs / 2 + "px", top: by + "px", transform: `rotate(${lt * 260}deg) scale(${1 - up * .25})` });
+    css(o.shadow, { opacity: .8 * (1 - up), width: o.bs * 1.6 * (1 - up * .7) + "px", height: o.bs * .35 + "px", left: W / 2 - o.bs * .8 * (1 - up * .7) + "px", top: gy - o.bs * .14 + "px" });
+    const lp = ob(lin(lt, 3.6, 4.5)); css(logo, { opacity: clamp(lp), transform: `scale(${.7 + .3 * lp})` });
+    css(glow, { opacity: lin(lt, 3.5, 4.2) });
+    css(line1, { opacity: lin(lt, 4.4, 5.0), transform: `translateY(${(1 - oc(lin(lt, 4.4, 5.0))) * 30}px)` });
+    css(line2, { opacity: lin(lt, 5.6, 6.2) }); css(foot, { opacity: lin(lt, 6.0, 6.6) });
+  };
+});
+
+// ---------- global overlays ----------
+const flash = el("div", ""); flash.id = "flash";
+const grain = el("div", ""); grain.id = "grain";
+const legal = el("div", ""); legal.id = "legal";
+legal.innerHTML = "ruNit demo trailer · app screens captured from the working prototype · all people, courts and listings are fictional";
+css(legal, V ? { left: "40px", right: "40px", bottom: "40px", textAlign: "center", fontSize: "19px" } : { left: "40px", bottom: "28px" });
+const HITS = [7, 15, 24, 34, 44, 54, 64];
+
+window.render = (t) => {
+  for (const s of scenes) {
+    const on = t >= s.start && t < s.end;
+    s.root.style.display = on ? "block" : "none";
+    if (on) s.update(t - s.start);
+  }
+  let f = 0; for (const h of HITS) if (t >= h) f = Math.max(f, Math.exp(-(t - h) * 9) * .85);
+  flash.style.opacity = f;
+  // global fade from black at start, to the end card
+  stage.style.filter = t < .5 ? `brightness(${t / .5})` : "";
+  const dark = (t >= 24 && t < 34) || (t >= 44 && t < 64);
+  legal.className = dark ? "dark" : "";
+  legal.style.opacity = t < 64 ? 1 : 0;
+  grain.style.transform = `translate(${(t * 97) % 40 - 20}px, ${(t * 61) % 40 - 20}px)`;
+};
+window.ready = document.fonts.ready.then(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+window.render(0);
+</script>
+</body>
+</html>

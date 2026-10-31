@@ -1,0 +1,7 @@
+node_modules
+.next
+.env*.local
+trailer/frames
+trailer/out/*.log
+tsconfig.tsbuildinfo
+trailer/out/*.mp4
