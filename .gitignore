@@ -5,3 +5,4 @@ trailer/frames
 trailer/out/*.log
 tsconfig.tsbuildinfo
 trailer/out/*.mp4
+trailer/out/*.wav
