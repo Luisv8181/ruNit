@@ -19,8 +19,13 @@ const Ctx = createContext<{ theme: Theme; setTheme: (t: Theme) => void }>({ them
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, set] = useState<Theme>(DEFAULT_THEME);
   useEffect(() => {
-    const t = document.documentElement.dataset.theme as Theme | undefined;
-    if (t && THEMES.some((x) => x.id === t)) set(t);
+    // Re-apply on mount: if React ever re-renders the document root, the attribute set before paint is lost.
+    let t: string | null | undefined = null;
+    try { t = localStorage.getItem(KEY); } catch { /* private mode */ }
+    if (!t || !THEMES.some((x) => x.id === t)) t = document.documentElement.dataset.theme;
+    const next = (THEMES.some((x) => x.id === t) ? t : DEFAULT_THEME) as Theme;
+    document.documentElement.dataset.theme = next;
+    set(next);
   }, []);
   const setTheme = useCallback((t: Theme) => {
     set(t);

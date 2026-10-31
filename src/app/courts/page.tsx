@@ -61,14 +61,14 @@ function Courts() {
         <div>
           <h1 className="display text-[3rem] sm:text-[4rem]">Find your court</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex rounded-full border border-ink/15 bg-surface/60 p-1" role="tablist">
             {(["Hazleton", "Scranton"] as Region[]).map((r) => (
               <button key={r} role="tab" aria-selected={region === r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => { setRegion(r); setSelected(undefined); }}>{r}</button>
             ))}
           </div>
           <Link href="/courts/globe" className="btn-line">Globe</Link>
-          <button className="btn-line" onClick={() => setAdding(true)}><I.Plus width={16} height={16} /> Add a court</button>
+          <button className="btn-line whitespace-nowrap" onClick={() => setAdding(true)}><I.Plus width={16} height={16} /> Add a court</button>
         </div>
       </div>
 

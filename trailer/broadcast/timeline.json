@@ -1,0 +1,313 @@
+{
+ "bpm": 100,
+ "beat": 0.6,
+ "bar": 2.4,
+ "duration": 76.8,
+ "scenes": [
+  {
+   "id": "cold",
+   "start": 0.0,
+   "bars": 2,
+   "end": 4.8
+  },
+  {
+   "id": "title",
+   "start": 4.8,
+   "bars": 2,
+   "end": 9.6
+  },
+  {
+   "id": "find",
+   "start": 9.6,
+   "bars": 2,
+   "end": 14.4
+  },
+  {
+   "id": "next",
+   "start": 14.4,
+   "bars": 2,
+   "end": 19.2
+  },
+  {
+   "id": "score",
+   "start": 19.2,
+   "bars": 2,
+   "end": 24.0
+  },
+  {
+   "id": "bump",
+   "start": 24.0,
+   "bars": 3,
+   "end": 31.2
+  },
+  {
+   "id": "box",
+   "start": 31.2,
+   "bars": 2,
+   "end": 36.0
+  },
+  {
+   "id": "records",
+   "start": 36.0,
+   "bars": 2,
+   "end": 40.8
+  },
+  {
+   "id": "passport",
+   "start": 40.8,
+   "bars": 2,
+   "end": 45.6
+  },
+  {
+   "id": "friends",
+   "start": 45.6,
+   "bars": 2,
+   "end": 50.4
+  },
+  {
+   "id": "looks",
+   "start": 50.4,
+   "bars": 2,
+   "end": 55.2
+  },
+  {
+   "id": "globe",
+   "start": 55.2,
+   "bars": 3,
+   "end": 62.4
+  },
+  {
+   "id": "montage",
+   "start": 62.4,
+   "bars": 2,
+   "end": 67.2
+  },
+  {
+   "id": "end",
+   "start": 67.2,
+   "bars": 3,
+   "end": 74.4
+  }
+ ],
+ "lines": [
+  {
+   "id": "title",
+   "scene": "title",
+   "start": 5.7,
+   "dur": 1.069,
+   "captions": [
+    {
+     "t0": 5.7,
+     "t1": 6.769,
+     "text": "This is ruNit."
+    }
+   ]
+  },
+  {
+   "id": "find",
+   "scene": "find",
+   "start": 9.9,
+   "dur": 3.277,
+   "captions": [
+    {
+     "t0": 9.9,
+     "t1": 11.325,
+     "text": "Find a run near you."
+    },
+    {
+     "t0": 11.325,
+     "t1": 13.177,
+     "text": "Tap a spot, and you're in."
+    }
+   ]
+  },
+  {
+   "id": "next",
+   "scene": "next",
+   "start": 14.7,
+   "dur": 2.476,
+   "captions": [
+    {
+     "t0": 14.7,
+     "t1": 15.496,
+     "text": "Got next?"
+    },
+    {
+     "t0": 15.496,
+     "t1": 17.176,
+     "text": "Put your name down."
+    }
+   ]
+  },
+  {
+   "id": "score",
+   "scene": "score",
+   "start": 19.5,
+   "dur": 1.662,
+   "captions": [
+    {
+     "t0": 19.5,
+     "t1": 21.162,
+     "text": "Keep score with one tap."
+    }
+   ]
+  },
+  {
+   "id": "bump1",
+   "scene": "bump",
+   "start": 24.15,
+   "dur": 2.545,
+   "captions": [
+    {
+     "t0": 24.15,
+     "t1": 24.838,
+     "text": "Game over?"
+    },
+    {
+     "t0": 24.838,
+     "t1": 26.695,
+     "text": "Bring your phones together."
+    }
+   ]
+  },
+  {
+   "id": "bump2",
+   "scene": "bump",
+   "start": 28.2,
+   "dur": 2.197,
+   "captions": [
+    {
+     "t0": 28.2,
+     "t1": 29.351,
+     "text": "Both lines."
+    },
+    {
+     "t0": 29.351,
+     "t1": 30.397,
+     "text": "Confirmed."
+    }
+   ]
+  },
+  {
+   "id": "box",
+   "scene": "box",
+   "start": 31.5,
+   "dur": 2.614,
+   "captions": [
+    {
+     "t0": 31.5,
+     "t1": 34.114,
+     "text": "Nothing counts until the other team signs off."
+    }
+   ]
+  },
+  {
+   "id": "records",
+   "scene": "records",
+   "start": 36.3,
+   "dur": 1.882,
+   "captions": [
+    {
+     "t0": 36.3,
+     "t1": 38.182,
+     "text": "Every court keeps a record book."
+    }
+   ]
+  },
+  {
+   "id": "passport",
+   "scene": "passport",
+   "start": 41.1,
+   "dur": 1.836,
+   "captions": [
+    {
+     "t0": 41.1,
+     "t1": 42.936,
+     "text": "Now win every court in your state."
+    }
+   ]
+  },
+  {
+   "id": "friends",
+   "scene": "friends",
+   "start": 45.9,
+   "dur": 3.172,
+   "captions": [
+    {
+     "t0": 45.9,
+     "t1": 47.75,
+     "text": "Settle it with your friends."
+    },
+    {
+     "t0": 47.75,
+     "t1": 49.072,
+     "text": "Then post the proof."
+    }
+   ]
+  },
+  {
+   "id": "looks",
+   "scene": "looks",
+   "start": 51.0,
+   "dur": 1.162,
+   "captions": [
+    {
+     "t0": 51.0,
+     "t1": 52.162,
+     "text": "Make it yours."
+    }
+   ]
+  },
+  {
+   "id": "globe",
+   "scene": "globe",
+   "start": 55.8,
+   "dur": 3.172,
+   "captions": [
+    {
+     "t0": 55.8,
+     "t1": 57.041,
+     "text": "The ball is round."
+    },
+    {
+     "t0": 57.041,
+     "t1": 58.972,
+     "text": "So we put every court on it."
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "scene": "end",
+   "start": 67.8,
+   "dur": 6.032,
+   "captions": [
+    {
+     "t0": 67.8,
+     "t1": 68.289,
+     "text": "ruNit."
+    },
+    {
+     "t0": 68.289,
+     "t1": 69.104,
+     "text": "Your city."
+    },
+    {
+     "t0": 69.104,
+     "t1": 70.001,
+     "text": "Your court."
+    },
+    {
+     "t0": 70.001,
+     "t1": 70.735,
+     "text": "Your run."
+    },
+    {
+     "t0": 70.735,
+     "t1": 73.832,
+     "text": "Coming first to Hazleton and Scranton."
+    }
+   ]
+  }
+ ]
+}

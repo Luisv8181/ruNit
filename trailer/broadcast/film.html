@@ -1,0 +1,368 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>ruNit broadcast trailer</title>
+<!-- Deterministic compositor: window.render(t) draws time t in seconds. window.TL (timeline.json) and window.META are injected by render.mjs. -->
+<style>
+  @font-face { font-family: "Archivo"; src: url("../../node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+  @font-face { font-family: "Doto"; src: url("../../node_modules/@fontsource-variable/doto/files/doto-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+  :root { --amber: #FFB238; --chalk: #EDEBE4; --ink2: #A9B3BC; --night: #090C10; }
+  html, body { margin: 0; background: #000; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--night); font-family: Archivo, sans-serif; color: var(--chalk); }
+  .abs { position: absolute; }
+  .layer { position: absolute; inset: 0; display: none; }
+  .h1 { font-weight: 800; font-stretch: 68%; font-size: 150px; line-height: .9; letter-spacing: -.012em; white-space: nowrap; }
+  .h2 { font-weight: 500; font-stretch: 85%; font-size: 52px; line-height: 1.1; color: var(--ink2); white-space: nowrap; }
+  .dot { font-family: Doto, monospace; font-weight: 900; }
+  .glow { text-shadow: 0 0 34px rgba(255,178,56,.55); }
+  .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-right: .22em; }
+  .w > span { display: inline-block; will-change: transform; }
+  .phone { position: absolute; width: 429px; height: 880px; border-radius: 66px; padding: 15px; box-sizing: border-box;
+    background: linear-gradient(145deg, #4a5059, #15181c 38%, #23272d 70%, #3b4048);
+    box-shadow: 0 60px 120px -40px rgba(0,0,0,.9), inset 0 0 0 1.5px rgba(255,255,255,.12);
+    -webkit-box-reflect: below 26px linear-gradient(transparent 72%, rgba(255,255,255,.16)); transform-style: preserve-3d; }
+  .phone .scr { position: relative; width: 100%; height: 100%; border-radius: 52px; overflow: hidden; background: #14181D; }
+  .phone .scr img { position: absolute; left: 0; top: 34px; width: 100%; display: block; }
+  .phone .island { position: absolute; left: 50%; top: 13px; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #000; z-index: 3; }
+  .phone .sheen { position: absolute; inset: 0; border-radius: 52px; z-index: 4; pointer-events: none;
+    background: linear-gradient(115deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 26%, rgba(255,255,255,0) 70%, rgba(255,255,255,.06) 100%); }
+  .persp { position: absolute; inset: 0; perspective: 2200px; perspective-origin: 50% 40%; }
+  .chip { position: absolute; padding: 10px 22px; border-radius: 16px; background: var(--amber); color: #14181D; font-weight: 800; font-stretch: 80%; font-size: 54px; }
+  .lt { position: absolute; display: flex; align-items: center; gap: 28px; padding: 26px 36px; border-radius: 24px; background: rgba(13,16,20,.92); border: 1px solid rgba(255,178,56,.35); box-shadow: 0 40px 80px -30px rgba(0,0,0,.8); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const TL = window.TL, META = window.META || { court: { gotNext: 1279, records: 1557 } };
+const stage = document.getElementById("stage");
+const S = Object.fromEntries(TL.scenes.map((s) => [s.id, s]));
+const BEAT = TL.beat, BAR = TL.bar;
+const LAMPS = [0.6, 1.2, 1.8], BOUNCES = [2.4, 3.0, 3.5, 3.9, 4.2];
+const CONTACT = S.bump.start + 6 * BEAT;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lin = (t, a, b) => clamp((t - a) / (b - a));
+const oc = (x) => 1 - Math.pow(1 - x, 3);
+const oe = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+const io = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const back = (x) => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const el = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; (parent || stage).appendChild(e); return e; };
+const css = (e, o) => Object.assign(e.style, o);
+const A = (n) => `assets/${n}.png`;
+const LOGO = (size) => `<svg width="${size}" height="${size}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#FFB238"/><path d="M10 23V9l12 14V9" stroke="#14181D" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+const BALL = `<svg viewBox="0 0 100 100" width="100%" height="100%"><defs><radialGradient id="bg" cx=".34" cy=".3" r=".85"><stop offset="0" stop-color="#FFB27C"/><stop offset=".5" stop-color="#E9692A"/><stop offset="1" stop-color="#7A3210"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#bg)"/><g stroke="#1b1208" stroke-width="2.6" fill="none" opacity=".85"><path d="M2 50h96M50 2v96"/><path d="M18 14c14 14 14 58 0 72M82 14c-14 14-14 58 0 72"/></g></svg>`;
+
+// ---------- world: lamps, floor, ball ----------
+const world = el("div", "abs"); css(world, { inset: 0 });
+const lampPools = [360, 960, 1560].map((x) => { const d = el("div", "abs", world); css(d, { left: x - 700 + "px", top: "-520px", width: "1400px", height: "1300px", borderRadius: "50%", background: "radial-gradient(closest-side, rgba(255,186,90,.30), rgba(255,178,56,.08) 55%, rgba(255,178,56,0))" }); return d; });
+const lampHeads = [360, 960, 1560].map((x) => { const d = el("div", "abs", world); css(d, { left: x - 70 + "px", top: "-14px", width: "140px", height: "26px", borderRadius: "0 0 20px 20px", background: "#FFE2A8", boxShadow: "0 0 60px 20px rgba(255,200,120,.6)" }); return d; });
+const floorWrap = el("div", "abs", world); css(floorWrap, { left: 0, right: 0, top: "640px", height: "440px", perspective: "900px", perspectiveOrigin: "50% -40%", overflow: "hidden" });
+const floor = el("div", "abs", floorWrap, `<svg viewBox="0 0 2800 1500" width="2800" height="1500" style="position:absolute;inset:0"><g fill="none" stroke="rgba(237,235,228,.55)" stroke-width="7"><rect x="200" y="60" width="2400" height="1380"/><path d="M1400 60v1380"/><circle cx="1400" cy="750" r="180"/><rect x="200" y="510" width="570" height="480" fill="rgba(200,100,31,.55)"/><rect x="2030" y="510" width="570" height="480" fill="rgba(200,100,31,.55)"/><path d="M200 150h420a600 600 0 0 1 0 1200H200M2600 150h-420a600 600 0 0 0 0 1200h420"/></g></svg>`);
+css(floor, { left: "-440px", top: "0", width: "2800px", height: "1500px", transformOrigin: "50% 0", transform: "rotateX(70deg)",
+  background: "radial-gradient(1200px 700px at 50% 30%, rgba(255,190,110,.32), rgba(0,0,0,0) 70%), repeating-linear-gradient(90deg, #3a2716 0 46px, #33220f 46px 92px, #3d2a18 92px 140px, #2f1f0e 140px 186px)" });
+const floorShade = el("div", "abs", floorWrap); css(floorShade, { inset: 0, background: "linear-gradient(180deg, rgba(9,12,16,.85), rgba(9,12,16,.15) 45%, rgba(9,12,16,.55))" });
+const ballShadow = el("div", "abs", world); css(ballShadow, { borderRadius: "50%", background: "radial-gradient(closest-side, rgba(0,0,0,.65), rgba(0,0,0,0))" });
+const ball = el("div", "abs", world, BALL);
+
+// ---------- phones ----------
+function phone(parent, src, h = 880) {
+  const p = el("div", "phone", parent); const scale = h / 880;
+  css(p, { width: 429 * scale + "px", height: h + "px", borderRadius: 66 * scale + "px", padding: 15 * scale + "px" });
+  const scr = el("div", "scr", p); css(scr, { borderRadius: 52 * scale + "px" });
+  const img = el("img", "", scr); img.src = A(src); css(img, { top: 34 * scale + "px" });
+  const isl = el("div", "island", scr); css(isl, { width: 118 * scale + "px", height: 34 * scale + "px", marginLeft: -59 * scale + "px", top: 13 * scale + "px" });
+  const sh = el("div", "sheen", p); css(sh, { borderRadius: 52 * scale + "px" });
+  const sw = (429 - 30) * scale; // screen width in px
+  return { p, img, sh, h, w: 429 * scale, sw, set(srcName) { const s = A(srcName); if (!img.src.endsWith(s)) img.src = s; },
+    scroll(pagePx) { css(img, { transform: `translateY(${-pagePx * sw / 390}px)` }); } };
+}
+function pose(P, { x, y, ry = 0, rx = 0, rz = 0, s = 1, o = 1 }) {
+  css(P.p, { left: x - P.w / 2 + "px", top: y - P.h / 2 + "px", transform: `rotateY(${ry}deg) rotateX(${rx}deg) rotateZ(${rz}deg) scale(${s})`, opacity: o });
+  css(P.sh, { backgroundPosition: `${ry * 4}px 0` });
+}
+
+// ---------- text helpers ----------
+function words(parent, text, cls) {
+  const box = el("div", "abs " + cls, parent);
+  box.innerHTML = text.split(" ").map((w) => `<span class="w"><span>${w}</span></span>`).join("");
+  return { box, spans: [...box.querySelectorAll(".w > span")] };
+}
+function reveal(W, lt, t0, stagger = 0.06, dur = 0.55, out = Infinity) {
+  W.spans.forEach((s, i) => {
+    const p = oe(lin(lt, t0 + i * stagger, t0 + i * stagger + dur));
+    const q = io(lin(lt, out, out + 0.3));
+    css(s, { transform: `translateY(${(1 - p) * 105 - q * 105}%)` });
+  });
+}
+
+const scenes = [];
+function scene(id, from, to, build) { const root = el("div", "layer"); const up = build(root, to - from); scenes.push({ id, from, to, root, up }); }
+const IN = 0.5; // seconds of slide-in at each scene start
+const enter = (lt, dir = 1) => ({ dx: (1 - oe(lin(lt, 0, IN))) * 260 * dir });
+
+// ---------- cold open ----------
+scene("cold", 0, S.cold.end, (root) => {
+  const when = el("div", "abs dot", root, "9:30 PM"); css(when, { left: "140px", top: "150px", fontSize: "64px", color: "#FFB238" });
+  const where = el("div", "abs", root, "Northside Commons, Hazleton"); css(where, { left: "142px", top: "232px", fontSize: "34px", fontWeight: 600, fontStretch: "85%", color: "#A9B3BC" });
+  return (lt) => { css(when, { opacity: lin(lt, 2.6, 3.0) }); css(where, { opacity: lin(lt, 2.9, 3.3) }); };
+});
+
+// ---------- title ----------
+scene("title", S.title.start, S.title.end, (root, D) => {
+  const mark = el("div", "abs", root); css(mark, { left: 0, right: 0, top: "290px", display: "flex", justifyContent: "center", alignItems: "center", gap: "40px" });
+  const logo = el("div", "", mark, LOGO(230));
+  const word = el("div", "h1", mark, "ruNit"); css(word, { fontSize: "300px" });
+  const sweep = el("div", "abs", root); css(sweep, { top: "250px", height: "360px", width: "260px", background: "linear-gradient(90deg, transparent, rgba(255,240,210,.45), transparent)", mixBlendMode: "screen", transform: "skewX(-18deg)" });
+  const q = el("div", "abs dot glow", root); css(q, { left: 0, right: 0, top: "640px", textAlign: "center", fontSize: "96px", color: "#FFB238" });
+  const Q = "Who's got next?";
+  return (lt) => {
+    const p = oe(lin(lt, 0, 0.5));
+    css(mark, { transform: `scale(${1.5 - 0.5 * p})`, opacity: p, filter: `blur(${(1 - p) * 14}px)` });
+    css(sweep, { left: -400 + lin(lt, 0.5, 1.4) * 2600 + "px" });
+    const n = Math.floor(clamp((lt - 1.2) / 0.11, 0, Q.length));
+    q.textContent = Q.slice(0, n) || " ";
+    const out = io(lin(lt, D - 0.4, D));
+    css(root, { transform: `scale(${1 + out * 0.15})`, opacity: 1 - out });
+  };
+});
+
+// ---------- one phone + a headline (most feature scenes) ----------
+function featureScene(id, opt) {
+  const s = S[id];
+  scene(id, s.start, s.end, (root, D) => {
+    const persp = el("div", "persp", root);
+    const P = phone(persp, opt.src);
+    const L = opt.side === "left";
+    const tx = L ? 1060 : 140;
+    const H1 = words(root, opt.h1, "h1"); css(H1.box, { left: tx + "px", top: opt.y1 ?? "330px" });
+    const H2 = words(root, opt.h2, "h2"); css(H2.box, { left: tx + 6 + "px", top: opt.y2 ?? "490px" });
+    const extra = opt.extra ? opt.extra(root, P) : null;
+    return (lt) => {
+      const { dx } = enter(lt, L ? -1 : 1);
+      const drift = lt / D;
+      const px = (L ? 520 : 1400) + dx * (L ? -1 : 1) * -1;
+      pose(P, { x: px + (L ? -1 : 1) * 30 * drift, y: 520, ry: (L ? 14 : -16) + drift * (L ? -6 : 6), rx: 4, rz: L ? 1.2 : -1.2, s: 1 + 0.03 * drift });
+      if (opt.scroll) P.scroll(opt.scroll(lt, D));
+      reveal(H1, lt, 0.25); reveal(H2, lt, 0.55, 0.04);
+      css(H1.box, { transform: `translateX(${-dx * 0.3}px)` }); css(H2.box, { transform: `translateX(${-dx * 0.3}px)` });
+      if (extra) extra(lt, D, P);
+    };
+  });
+}
+
+featureScene("find", { src: "home", side: "right", h1: "Find a run near you.", h2: "Tap a spot, and you're in.", scroll: (lt, D) => io(lin(lt, 1.2, D - 0.6)) * 330 });
+featureScene("next", { src: "court", side: "left", h1: "Got next?", h2: "Put your name down.", scroll: (lt) => (META.court.gotNext - 120) * (0.86 + 0.14 * io(lin(lt, 0.3, 2.5))) });
+
+// score: the phone cycles through real scoreboard states, one per beat, with a giant dot-matrix score
+scene("score", S.score.start, S.score.end, (root, D) => {
+  const persp = el("div", "persp", root); const P = phone(persp, "live-0");
+  const H1 = words(root, "Keep score", "h1"); css(H1.box, { left: "140px", top: "250px" });
+  const H2 = words(root, "with one tap.", "h2"); css(H2.box, { left: "146px", top: "400px" });
+  const big = el("div", "abs dot", root); css(big, { left: "140px", top: "540px", fontSize: "210px", lineHeight: ".9", color: "#EDEBE4", whiteSpace: "nowrap" });
+  const chip = el("div", "chip", root, "+2");
+  const STATES = [[13, 12], [15, 12], [15, 14], [17, 14], [17, 16], [19, 16], [19, 18], [21, 18]];
+  const WHO = [null, "a", "b", "a", "b", "a", "b", "a"];
+  return (lt) => {
+    const { dx } = enter(lt);
+    const k = clamp(Math.floor(lt / BEAT), 0, 7), into = lt - k * BEAT;
+    P.set(`live-${k}`);
+    const punch = k > 0 ? Math.exp(-into * 9) : 0;
+    pose(P, { x: 1400 + dx, y: 520, ry: -16 + lt * 1.2, rx: 4, rz: -1.2, s: 1 + punch * 0.025 });
+    reveal(H1, lt, 0.2); reveal(H2, lt, 0.45, 0.04);
+    const [a, b] = STATES[k];
+    big.innerHTML = `<span style="color:${a >= b ? "#FFB238" : "#EDEBE4"};${a >= b ? "text-shadow:0 0 40px rgba(255,178,56,.55)" : ""}">${a}</span><span style="color:#5d6873">-</span><span>${b}</span>`;
+    css(big, { opacity: lin(lt, 0.4, 0.8), transform: `scale(${1 + punch * 0.04})`, transformOrigin: "0 50%" });
+    const cp = k > 0 ? lin(into, 0, 0.5) : 0;
+    css(chip, { left: (WHO[k] === "b" ? 1520 : 1300) + "px", top: 360 - oe(cp) * 120 + "px", opacity: k > 0 ? (1 - lin(into, 0.3, 0.5)) : 0, transform: `scale(${0.6 + back(clamp(cp * 2)) * 0.4})` });
+    if (k === 7) { chip.textContent = "Final"; css(chip, { background: "#EDEBE4", left: "1260px", opacity: 1 - lin(into, 0.9, 1.2) }); } else chip.textContent = "+2";
+  };
+});
+
+// bump: two phones meet on the beat
+scene("bump", S.bump.start, S.bump.end, (root, D) => {
+  const persp = el("div", "persp", root);
+  const P1 = phone(persp, "bump"), P2 = phone(persp, "bump");
+  const H1 = words(root, "Game over?", "h1"); css(H1.box, { left: 0, right: 0, top: "90px", textAlign: "center", fontSize: "120px" });
+  const H2 = words(root, "Bring your phones together.", "h2"); css(H2.box, { left: 0, right: 0, top: "215px", textAlign: "center" });
+  const ring = el("div", "abs", root); css(ring, { left: "960px", top: "560px", width: "10px", height: "10px", borderRadius: "50%", border: "10px solid #3DD39B", boxSizing: "border-box" });
+  const ok = el("div", "abs", root); css(ok, { left: 0, right: 0, top: "380px", textAlign: "center" });
+  ok.innerHTML = `<div class="h1" style="font-size:230px;color:#3DD39B;text-shadow:0 0 60px rgba(61,211,155,.5)">Confirmed.</div><div class="h2" style="margin-top:18px;color:#EDEBE4">Both lines. Opponent-confirmed.</div>`;
+  const c = CONTACT - S.bump.start;
+  return (lt) => {
+    const appear = oe(lin(lt, 0, 0.6));
+    const meet = io(lin(lt, 0.8, c));
+    const after = lin(lt, c, c + 0.6);
+    const sep = oc(lin(lt, c + 0.15, c + 1.2));
+    const gap = 520 - meet * 300 + sep * 520;
+    const zoom = 1 - sep * 0.15;
+    pose(P1, { x: 960 - gap, y: 600 + (1 - appear) * 500, ry: 28 - meet * 18 + sep * 10, rz: -6 + meet * 6, s: 0.86 * zoom, o: 1 - lin(lt, c + 0.5, c + 1.4) * 0.7 });
+    pose(P2, { x: 960 + gap, y: 600 + (1 - appear) * 500, ry: -28 + meet * 18 - sep * 10, rz: 6 - meet * 6, s: 0.86 * zoom, o: 1 - lin(lt, c + 0.5, c + 1.4) * 0.7 });
+    reveal(H1, lt, 0.1, 0.06, 0.55, c - 0.4); reveal(H2, lt, 0.35, 0.04, 0.55, c - 0.4);
+    const rr = oe(after) * 1500;
+    css(ring, { width: rr + "px", height: rr + "px", marginLeft: -rr / 2 + "px", marginTop: -rr / 2 + "px", opacity: lt > c ? 1 - after : 0, borderWidth: 14 * (1 - after) + 2 + "px" });
+    const okp = oe(lin(lt, c + 0.1, c + 0.6));
+    css(ok, { opacity: lt > c ? okp * (1 - lin(lt, D - 0.35, D)) : 0, transform: `scale(${1.3 - 0.3 * okp})` });
+  };
+});
+
+featureScene("box", { src: "boxscore", side: "left", h1: "Nothing counts", h2: "until the other team signs off." });
+featureScene("records", { src: "records", side: "right", h1: "Every court keeps", h2: "a record book.", y1: "250px", y2: "405px",
+  extra: (root) => {
+    const lt3 = el("div", "lt", root);
+    lt3.innerHTML = `<div style="width:120px;height:120px;border-radius:22px;background:#1B1408;border:1px solid #4A3818;display:grid;place-items:center"><span class="dot glow" style="font-size:72px;color:#FFB238">44</span></div><div><div style="font-size:30px;color:#A9B3BC;font-weight:600;font-stretch:85%">Most wins at Northside Commons</div><div class="h1" style="font-size:96px">Big Bell</div></div><div class="dot glow" style="font-size:120px;color:#FFB238;margin-left:24px">8</div>`;
+    css(lt3, { left: "140px", top: "560px" });
+    return (lt) => { const p = oe(lin(lt, 1.0, 1.6)); css(lt3, { opacity: p, transform: `translateX(${(1 - p) * -80}px)` }); };
+  } });
+featureScene("passport", { src: "passport", side: "left", h1: "Win every court", h2: "in your state.", scroll: (lt, D) => io(lin(lt, 0.6, D - 0.4)) * 520 });
+
+// friends: phone + the shareable game card
+scene("friends", S.friends.start, S.friends.end, (root, D) => {
+  const persp = el("div", "persp", root); const P = phone(persp, "friends");
+  const card = el("img", "abs", persp); card.src = A("gamecard"); css(card, { width: "430px", borderRadius: "30px", boxShadow: "0 60px 120px -40px rgba(0,0,0,.9)" });
+  const H1 = words(root, "Settle it.", "h1"); css(H1.box, { left: "140px", top: "330px" });
+  const H2 = words(root, "Then post the proof.", "h2"); css(H2.box, { left: "146px", top: "490px" });
+  return (lt) => {
+    const { dx } = enter(lt);
+    pose(P, { x: 1240 + dx, y: 520, ry: -18 + lt, rx: 4, rz: -1.5 });
+    const cp = oe(lin(lt, D * 0.45, D * 0.45 + 0.6));
+    css(card, { left: 1440 + (1 - cp) * 500 + "px", top: 160 + "px", opacity: cp, transform: `rotateY(${-22 + lt * 1.5}deg) rotateZ(${4 - cp * 2}deg)` });
+    reveal(H1, lt, 0.25); reveal(H2, lt, D * 0.45, 0.05);
+  };
+});
+
+// looks: three phones fan out, one per look
+scene("looks", S.looks.start, S.looks.end, (root, D) => {
+  const persp = el("div", "persp", root);
+  const Ps = ["home-view-paint", "home-view", "home-view-card"].map((n) => phone(persp, n, 760));
+  const H1 = words(root, "Make it yours.", "h1"); css(H1.box, { left: 0, right: 0, top: "60px", textAlign: "center", fontSize: "120px" });
+  const labels = ["Paint", "Lights", "Card"].map((n) => { const d = el("div", "abs", root, n); css(d, { width: "300px", textAlign: "center", top: "990px", fontSize: "40px", fontWeight: 700, fontStretch: "85%" }); return d; });
+  return (lt) => {
+    reveal(H1, lt, 0.3);
+    const order = [1, 0, 2];
+    Ps.forEach((P, i) => {
+      const p = oe(lin(lt, 2 * BEAT + order[i] * BEAT, 2 * BEAT + order[i] * BEAT + 0.6));
+      const x = 960 + (i - 1) * 470 * p;
+      pose(P, { x, y: 600 + (1 - p) * 60, ry: (i - 1) * -14 * p, rz: (i - 1) * 3 * p, s: 0.92, o: i === 1 ? 1 : p });
+      css(labels[i], { left: x - 150 + "px", opacity: p });
+    });
+  };
+});
+
+// globe
+scene("globe", S.globe.start, S.globe.end, (root, D) => {
+  const g = el("img", "abs", root); css(g, { left: "930px", top: "70px", width: "940px", height: "942px", WebkitMaskImage: "radial-gradient(closest-side, #000 82%, transparent 100%)" });
+  const H1 = words(root, "The ball is round.", "h1"); css(H1.box, { left: "120px", top: "250px", fontSize: "120px" });
+  const H2 = words(root, "So we put every", "h1"); css(H2.box, { left: "120px", top: "520px", fontSize: "120px", color: "#FFB238" });
+  const H3 = words(root, "court on it.", "h1"); css(H3.box, { left: "120px", top: "640px", fontSize: "120px", color: "#FFB238" });
+  return (lt) => {
+    const idx = clamp(Math.floor(lt * 60), 0, (window.GLOBE_FRAMES || 432) - 1);
+    const src = `globe/${String(idx).padStart(4, "0")}.png`;
+    if (!g.src.endsWith(src)) g.src = src;
+    css(g, { opacity: oe(lin(lt, 0, 0.6)), transform: `scale(${1 + lin(lt, 3.5, D) * 0.25})` });
+    reveal(H1, lt, 0.5, 0.06, 0.55, D - 0.5); reveal(H2, lt, 2.2, 0.06, 0.55, D - 0.5); reveal(H3, lt, 2.45, 0.06, 0.55, D - 0.5);
+  };
+});
+
+// montage: a cut on every beat
+scene("montage", S.montage.start, S.montage.end, (root, D) => {
+  const persp = el("div", "persp", root);
+  const shots = ["home-view", "live-7", "bump", "boxscore", "records", "friends", "home-view-card", "mygame"];
+  const P = phone(persp, shots[0]);
+  const card = el("div", "abs dot glow", root); css(card, { left: "140px", top: "420px", fontSize: "190px", color: "#FFB238" });
+  const words8 = ["Find.", "Score.", "Tap.", "Confirm.", "Own.", "Settle.", "Collect.", "Run it."];
+  return (lt) => {
+    const k = clamp(Math.floor(lt / BEAT), 0, 7), into = lt - k * BEAT;
+    P.set(shots[k]);
+    const side = k % 2 ? -1 : 1;
+    pose(P, { x: 1300 + side * 80, y: 520, ry: -18 * side + into * 6 * side, rz: -2 * side, s: 1.02 - into * 0.03 });
+    card.textContent = words8[k];
+    css(card, { opacity: 1 - lin(into, 0.45, 0.6), transform: `translateX(${(1 - oe(lin(into, 0, 0.18))) * -60}px)` });
+  };
+});
+
+// end card
+scene("end", S.end.start, TL.duration + 1, (root) => {
+  const mark = el("div", "abs", root); css(mark, { left: 0, right: 0, top: "230px", display: "flex", justifyContent: "center", alignItems: "center", gap: "34px" });
+  el("div", "", mark, LOGO(180)); const w = el("div", "h1", mark, "ruNit"); css(w, { fontSize: "240px" });
+  const endLine = TL.lines.find((l) => l.id === "end");
+  const cap = (i) => endLine.captions[i]?.t0 - S.end.start;
+  const tag = el("div", "abs", root); css(tag, { left: 0, right: 0, top: "540px", display: "flex", justifyContent: "center", gap: "34px" });
+  const parts = ["Your city.", "Your court.", "Your run."].map((t) => el("div", "h1", tag, t));
+  parts.forEach((p) => css(p, { fontSize: "96px" }));
+  const when = el("div", "abs", root, "Coming first to Hazleton and Scranton, Pennsylvania"); css(when, { left: 0, right: 0, top: "690px", textAlign: "center", fontSize: "44px", fontWeight: 600, fontStretch: "85%", color: "#FFB238" });
+  const foot = el("div", "abs", root, "Prototype. Every player, court, game and score shown is made up.<br>Narration: Piper TTS, LibriTTS voice (CC BY 4.0). Music and sound design: original."); css(foot, { left: 0, right: 0, top: "930px", textAlign: "center", fontSize: "24px", lineHeight: 1.6, color: "#8C99A6" });
+  return (lt) => {
+    const a = oe(lin(lt, 0, 0.6)); css(mark, { opacity: a, transform: `scale(${1.25 - 0.25 * a})`, filter: `blur(${(1 - a) * 10}px)` });
+    parts.forEach((p, i) => { const q = oe(lin(lt, cap(i + 1) - 0.05, cap(i + 1) + 0.35)); css(p, { opacity: q, transform: `translateY(${(1 - q) * 30}px)` }); });
+    css(when, { opacity: lin(lt, cap(4) - 0.1, cap(4) + 0.4) }); css(foot, { opacity: lin(lt, 3.6, 4.2) });
+  };
+});
+
+// ---------- overlays ----------
+const bug = el("div", "abs"); css(bug, { right: "56px", bottom: "44px", display: "flex", alignItems: "center", gap: "12px", fontWeight: 800, fontStretch: "70%", fontSize: "34px", opacity: 0 });
+bug.innerHTML = `${LOGO(36)}<span>ruNit</span>`;
+const demo = el("div", "abs", stage, "Demo data"); css(demo, { left: "56px", bottom: "48px", fontSize: "22px", fontWeight: 600, color: "#8C99A6", border: "1px dashed #3A434D", borderRadius: "8px", padding: "3px 10px" });
+const streak = el("div", "abs"); css(streak, { top: "-200px", height: "1480px", width: "220px", background: "linear-gradient(90deg, transparent, rgba(255,190,100,.55), transparent)", transform: "rotate(18deg)", mixBlendMode: "screen" });
+const flash = el("div", "abs"); css(flash, { inset: 0, background: "#FFF3DE", pointerEvents: "none" });
+const vignette = el("div", "abs"); css(vignette, { inset: 0, background: "radial-gradient(130% 100% at 50% 45%, transparent 55%, rgba(0,0,0,.6))", pointerEvents: "none" });
+const grain = el("canvas", "abs"); grain.width = 480; grain.height = 270; css(grain, { inset: 0, width: "1920px", height: "1080px", opacity: .06, mixBlendMode: "overlay", imageRendering: "pixelated" });
+const gctx = grain.getContext("2d"); const gimg = gctx.createImageData(480, 270);
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const fade = el("div", "abs"); css(fade, { inset: 0, background: "#000", pointerEvents: "none" });
+
+const CUTS = TL.scenes.slice(1).map((s) => s.start);
+
+window.render = async (t) => {
+  // world lighting
+  const lampOn = (i) => { const t0 = LAMPS[i]; if (t < t0) return 0; const f = t - t0; return f < 0.12 ? (Math.floor(f * 50) % 2 ? 0.3 : 1) : 1; };
+  const inCold = t < S.cold.end;
+  const globeDim = t >= S.globe.start && t < S.globe.end ? 0.25 : t >= S.end.start ? 0.55 : 1;
+  lampPools.forEach((d, i) => css(d, { opacity: (inCold ? lampOn(i) : 1) * globeDim }));
+  lampHeads.forEach((d, i) => css(d, { opacity: (inCold ? lampOn(i) : 1) * globeDim }));
+  css(floorWrap, { opacity: (inCold ? Math.max(lampOn(0), lampOn(1), lampOn(2)) * 0.9 + 0.1 * lampOn(1) : 1) * (t >= S.globe.start && t < S.globe.end ? 0.15 : 1) });
+  css(floor, { backgroundPosition: `${-t * 6}px 0, ${-t * 6}px 0` });
+  // ball (cold open only)
+  if (t < S.title.start) {
+    const ground = 830; let y; const size = 130;
+    if (t < 1.9) y = -400;
+    else if (t < BOUNCES[0]) { const p = (t - 1.9) / (BOUNCES[0] - 1.9); y = ground - 1100 * (1 - p * p); }
+    else {
+      let k = BOUNCES.findIndex((b) => b > t);
+      if (k === -1) { const p = (t - BOUNCES[4]) / 0.6; y = ground - 1600 * p * p * 0.9 + 0; }
+      else { const a = BOUNCES[k - 1], b = BOUNCES[k], p = (t - a) / (b - a); y = ground - 4 * 700 * Math.pow(b - a, 2) * p * (1 - p); }
+    }
+    const h = Math.max(0, ground - y);
+    css(ball, { display: "block", left: 960 - size / 2 + "px", top: y - size + "px", width: size + "px", height: size + "px", transform: `rotate(${t * 220}deg)` });
+    css(ballShadow, { display: "block", left: 960 - 110 + "px", top: ground - 22 + "px", width: "220px", height: "44px", opacity: t < 1.9 ? 0 : clamp(1 - h / 700) * 0.9 });
+  } else { css(ball, { display: "none" }); css(ballShadow, { display: "none" }); }
+
+  for (const s of scenes) {
+    const on = t >= s.from && t < s.to;
+    s.root.style.display = on ? "block" : "none";
+    if (on) s.up(t - s.from);
+  }
+  // cut accents: a light streak + a short flash on every scene change
+  const cut = CUTS.filter((c) => t >= c - 0.2).pop();
+  const since = cut !== undefined ? t - cut : 9;
+  css(streak, { left: -400 + clamp((since + 0.2) / 0.5) * 2800 + "px", opacity: since < 0.4 ? 1 : 0 });
+  let fl = since >= 0 && since < 0.25 ? (1 - since / 0.25) * 0.22 : 0;
+  if (Math.abs(t - S.title.start) < 0.3 && t >= S.title.start) fl = (1 - (t - S.title.start) / 0.3) * 0.85;
+  if (t >= CONTACT && t < CONTACT + 0.3) fl = Math.max(fl, (1 - (t - CONTACT) / 0.3) * 0.6);
+  if (t >= S.end.start && t < S.end.start + 0.35) fl = Math.max(fl, (1 - (t - S.end.start) / 0.35) * 0.7);
+  if (t >= S.montage.start && t < S.montage.end) { const into = (t - S.montage.start) % BEAT; fl = Math.max(fl, into < 0.12 ? (1 - into / 0.12) * 0.28 : 0); }
+  css(flash, { opacity: fl });
+  css(bug, { opacity: t > S.find.start && t < S.end.start ? 0.8 : 0 });
+  css(demo, { opacity: t > S.find.start && t < S.end.start ? 1 : 0 });
+  // film grain
+  seed = Math.floor(t * 60) * 7919 + 13;
+  for (let i = 0; i < gimg.data.length; i += 4) { const v = rnd() * 255; gimg.data[i] = gimg.data[i + 1] = gimg.data[i + 2] = v; gimg.data[i + 3] = 255; }
+  gctx.putImageData(gimg, 0, 0);
+  css(fade, { opacity: t < 0.25 ? 1 - t / 0.25 : t > TL.duration - 0.9 ? lin(t, TL.duration - 0.9, TL.duration) : 0 });
+  await Promise.all([...document.images].filter((i) => i.src && !i.complete).map((i) => new Promise((r) => { i.onload = r; i.onerror = r; })));
+  return true;
+};
+window.ready = document.fonts.ready.then(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+</script>
+</body>
+</html>

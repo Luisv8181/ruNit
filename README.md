@@ -73,6 +73,16 @@ Every color is a CSS variable (`src/app/globals.css`, `[data-theme=...]`); Tailw
 
 Rendered files: `trailer/out/ruNit-demo-trailer-16x9.mp4` and `trailer/out/ruNit-demo-trailer-9x16.mp4` (72 s). To re-render, see [docs/TRAILER_PRODUCTION.md](docs/TRAILER_PRODUCTION.md).
 
+**Broadcast trailer** (`trailer/broadcast/`, 77 s, 1920x1080 at 60 fps): a night-run arena look cut to a 100 BPM beat grid, with original synthesized score and foley and Piper narration. Pipeline, with the app running:
+
+```bash
+node trailer/broadcast/capture.mjs        # app screens in the Lights look (+ Paint and Card for the looks beat)
+node trailer/broadcast/globe.mjs          # 60 fps globe fly-in frames
+PIPER=… MODEL=…/en-us-libritts-high.onnx python3 trailer/broadcast/plan.py   # narration + beat-grid timeline
+python3 trailer/broadcast/mix.py          # score, sound design, narration mix
+node trailer/broadcast/render.mjs         # frames + H.264/AAC, loudness -14 LUFS
+```
+
 ## Status at a glance
 
 | Works now (demo mode) | Simulated in the demo | Needs credentials / not built |
