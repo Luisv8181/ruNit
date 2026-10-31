@@ -1,0 +1,7 @@
+{"version":0.6,"generator":"TEST FIXTURE — synthetic, shaped like an Overpass response","elements":[
+{"type":"way","id":1001,"center":{"lat":40.9601,"lon":-75.9822},"tags":{"leisure":"pitch","sport":"basketball","surface":"asphalt","hoops":"2","lit":"yes"}},
+{"type":"way","id":1002,"center":{"lat":40.9510,"lon":-75.9705},"tags":{"leisure":"pitch","sport":"basketball","surface":"concrete","name":"Test Park Court"}},
+{"type":"node","id":1003,"lat":40.9655,"lon":-75.9650,"tags":{"leisure":"pitch","sport":"basketball;tennis"}},
+{"type":"way","id":1004,"center":{"lat":40.9480,"lon":-75.9890},"tags":{"leisure":"sports_hall","sport":"basketball","name":"Test Gym"}},
+{"type":"way","id":1005,"center":{"lat":40.9700,"lon":-75.9760},"tags":{"leisure":"pitch","sport":"soccer"}}
+]}

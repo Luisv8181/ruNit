@@ -38,6 +38,7 @@ Requires Node 20+ (tested on Node 22). TypeScript is pinned to 5.x (Next 15 does
 | 14 | Find an opportunity | `/opportunities` |
 | 15 | Check court records | `/courts` → any court → Court records |
 | 16 | Open your court passport | `/my-game/passport` |
+| 17 | Spin the basketball globe | `/courts/globe` (or *Globe* on Courts) |
 
 The fastest path through the signature Game Loop: Home → the dark **“You're up”** card → Scan QR → Simulate arrivals → Tip off → Game over → 21–18 → enter your stats → *Ask Big Bell to recheck* → *Request confirmations* → *Save to My Game* → reflect.
 
@@ -70,3 +71,17 @@ Rendered files: `trailer/out/ruNit-demo-trailer-16x9.mp4` and `trailer/out/ruNit
 | Court submissions & corrections (pending state) | | Moderation tools, youth safeguarding (adults-only at launch) |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for what to build next.
+
+## Real courts from OpenStreetMap
+
+The globe (`/courts/globe`) loads real basketball courts (`sport=basketball`) live from OpenStreetMap's Overpass API for whatever area you zoom into. This runs in the viewer's browser, so it needs normal internet access; it was not reachable from the sandbox this prototype was built in, so it is tested against a recorded-format fixture (`node scripts/test-globe.mjs`).
+
+To light up the whole planet when zoomed out, download a snapshot once on your own machine:
+
+```bash
+node scripts/fetch-osm-courts.mjs pa      # Pennsylvania
+node scripts/fetch-osm-courts.mjs us      # contiguous US
+node scripts/fetch-osm-courts.mjs world   # everything (slow; be kind to the public servers)
+```
+
+This writes `public/data/osm-courts.json`, which the globe picks up automatically. Court data © OpenStreetMap contributors, ODbL.

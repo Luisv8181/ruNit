@@ -2,7 +2,7 @@
 
 ## Next (to go from demo to pilot in Hazleton)
 1. **Supabase adapter** implementing `RunitBackend`; auth (email/phone OTP), age gate at sign-up; Realtime on `game_participants` and `stat_confirmations`.
-2. **Real court import**: OSM `leisure=pitch` + `sport=basketball` for Luzerne & Lackawanna counties into `courts` (`source='osm'`), then community confirmation drives.
+2. **Real court import** (the globe already loads OpenStreetMap courts live and has a snapshot script): OSM `leisure=pitch` + `sport=basketball` for Luzerne & Lackawanna counties into `courts` (`source='osm'`), then community confirmation drives.
 3. **MapLibre live map** with a hosted style (Protomaps self-host recommended for cost) and clustering.
 4. **Server functions** for MMR, Trust and DNA updates (service role), plus rate limiting on create-run, check-in and stat submission.
 5. **Camera QR scanning** and rotating check-in codes tied to game start time + coarse court proximity.

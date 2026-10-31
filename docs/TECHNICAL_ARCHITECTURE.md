@@ -36,3 +36,9 @@ Domain logic (types, archetypes, insights, MMR) is plain TypeScript with no DOM 
 - `npm run build` (type-checks).
 - `node scripts/screenshots.mjs [baseUrl] [outDir]` — Playwright walk-through of all 14 demo steps on desktop (1440×900) and mobile (390×844), saving screenshots and failing loudly on runtime errors. Last run: **0 runtime errors**.
 - `bash supabase/tests/run_local.sh` — migration + RLS smoke test on local Postgres.
+
+## Basketball globe and OpenStreetMap
+- `src/components/BallGlobe.tsx`: canvas orthographic globe (d3-geo). Leather gradient, Fibonacci-lattice pebbles, land from `world-atlas` (110m, then 50m when zoomed), US state lines from `us-atlas`, seams as geographic lines, lighting overlays. Drag, wheel, pinch and keyboard control; city clustering; fly-to animation; idle spin off under reduced motion.
+- `src/lib/osm.ts`: Overpass loader. Splits the view into 0.5° tiles, caches tiles for 24 hours in memory and localStorage, refuses views over 12 tiles ("zoom in a little more"), falls back to a second Overpass server, and dedupes. Parsing keeps only `sport=basketball` (including shared values like `basketball;tennis`).
+- `scripts/fetch-osm-courts.mjs`: one-off snapshot downloader with adaptive tile splitting and polite pacing. Output: `public/data/osm-courts.json` (coordinates only; details load live on zoom).
+- Production: point `NEXT_PUBLIC_OVERPASS_URL` at your own Overpass instance, or replace snapshots with vector tiles (PMTiles) for the full worldwide set.

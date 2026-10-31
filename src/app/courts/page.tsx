@@ -66,6 +66,7 @@ function Courts() {
               <button key={r} role="tab" aria-selected={region === r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => { setRegion(r); setSelected(undefined); }}>{r}</button>
             ))}
           </div>
+          <Link href="/courts/globe" className="btn-line">Globe</Link>
           <button className="btn-line" onClick={() => setAdding(true)}><I.Plus width={16} height={16} /> Add a court</button>
         </div>
       </div>
