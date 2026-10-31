@@ -15,7 +15,8 @@ async function run(name, viewport, scale = 1) {
   const ctx = await browser.newContext({ viewport, deviceScaleFactor: scale, reducedMotion: "reduce" });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => errors.push(`[${name}] ${e.message}`));
-  page.on("console", (m) => m.type() === "error" && errors.push(`[${name}] console: ${m.text()}`));
+  page.on("console", (m) => m.type() === "error" && !m.text().startsWith("Failed to load resource") && errors.push(`[${name}] console: ${m.text()}`));
+  page.on("response", (r) => r.status() >= 400 && errors.push(`[${name}] ${r.status()} ${r.url()}`));
   const shot = async (id, full = true) => {
     await page.waitForTimeout(350);
     await page.screenshot({ path: `${OUT}/${name}-${id}.png`, fullPage: full });
@@ -33,16 +34,20 @@ async function run(name, viewport, scale = 1) {
   await go("/runs/r-northside-now"); await shot("06-checkin");
   await page.getByRole("button", { name: "Scan QR" }).click(); await page.waitForTimeout(1300);
   await page.getByRole("button", { name: /Simulate arrivals/ }).click(); await page.waitForTimeout(1800); await shot("07-teams");
-  await page.getByRole("button", { name: "Tip off" }).click(); await shot("08-live", false);
-  await page.getByRole("button", { name: /Game over/ }).click();
-  await page.getByLabel("Shirts").fill("21"); await page.getByLabel("Skins").fill("18");
+  await page.getByRole("button", { name: "Tip off" }).click();
+  for (const [lbl, n] of [["Add 2 to my points", 3], ["Add 1 to my points", 1], ["Add 2 for Shirts", 6], ["Add 2 for Skins", 9]]) for (let i = 0; i < n; i++) await page.getByRole("button", { name: lbl }).click();
+  await shot("08-live", false);
+  await page.getByRole("button", { name: /Game over|Save it/ }).click();
+  await page.getByLabel("Shirts", { exact: true }).fill("21"); await page.getByLabel("Skins", { exact: true }).fill("18");
   await page.getByRole("button", { name: "Save final score" }).click(); await shot("09-stats");
-  for (let i = 0; i < 9; i++) await page.getByRole("button", { name: "Increase Points" }).click();
+  for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Increase Points" }).click(); // 7 from the scoreboard + 2
   for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Increase Assists" }).click();
   for (let i = 0; i < 5; i++) await page.getByRole("button", { name: "Increase Rebounds" }).click();
   await page.getByRole("button", { name: "Submit my stats" }).click(); await page.waitForTimeout(1000); await shot("10-mismatch");
   await page.getByRole("button", { name: /to recheck/ }).click(); await page.waitForTimeout(1800);
-  await page.getByRole("button", { name: /Request confirmations/ }).click(); await page.waitForTimeout(3800);
+  await page.getByRole("button", { name: "Yari", exact: false }).first().click(); await page.waitForTimeout(400); await shot("10b-bump", false);
+  await page.getByRole("button", { name: /Their phone/ }).click(); await page.waitForTimeout(1300);
+  await page.getByRole("button", { name: /Ask everyone to confirm/ }).click(); await page.waitForTimeout(3800);
   const confirms = page.getByRole("button", { name: "Confirm", exact: true });
   const n = await confirms.count(); for (let i = 0; i < Math.min(n, 3); i++) await confirms.first().click();
   await shot("11-confirmed");
@@ -55,6 +60,11 @@ async function run(name, viewport, scale = 1) {
   await page.getByRole("button", { name: "Weak-hand finishing" }).click();
   await page.getByRole("button", { name: "Save reflection" }).click(); await page.waitForTimeout(600); await shot("13-reflect-done");
 
+  await go("/runs/r-northside-now"); await shot("13b-game-card");
+  await go("/courts?c=c-northside"); await page.getByRole("button", { name: "Put my name down" }).click(); await shot("24-got-next");
+  await go("/community"); await page.getByRole("button", { name: "Add a friend" }).click(); await page.getByLabel("Their code").fill((await page.locator("text=/Lock [A-Z2-9]{3}-[A-Z2-9]{3}/").first().innerText()).match(/Lock ([A-Z2-9-]{7})/)?.[1] ?? "");
+  await page.getByRole("button", { name: "Add", exact: true }).click(); await shot("25-friends-add", false);
+  await page.getByRole("button", { name: "Done" }).click(); await shot("26-friends");
   await go("/my-game"); await shot("14-my-game");
   await go("/my-game/passport"); await shot("22-passport");
   await go("/courts?c=c-northside"); await shot("23-court-records");

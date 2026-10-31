@@ -11,6 +11,10 @@ import { Avatar } from "@/components/PlayerFigure";
 import { BackLink, CourtArt, DemoTag, StatBadge } from "@/components/ui";
 import { Qr } from "@/components/Qr";
 import { CourtRun } from "@/components/CourtRun";
+import { LiveScoreboard } from "@/components/LiveScoreboard";
+import { BumpConfirm } from "@/components/BumpConfirm";
+import { GameCard } from "@/components/GameCard";
+import { swish } from "@/lib/feel";
 import { I } from "@/components/icons";
 
 const STEPS = ["Join", "Check in", "Teams", "Play", "Score", "Stats", "Confirm", "Reflect"];
@@ -239,53 +243,7 @@ function TeamsPanel({ run, isHost }: { run: Run; isHost: boolean }) {
 }
 
 function LivePanel({ run }: { run: Run }) {
-  const { dispatch } = useStore();
-  const [a, setA] = useState("");
-  const [b, setB] = useState("");
-  const [entering, setEntering] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [t0] = useState(() => Date.now());
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
-  const mins = Math.floor((now - t0) / 60000), secs = Math.floor(((now - t0) / 1000) % 60);
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const x = parseInt(a, 10), y = parseInt(b, 10);
-    if (isNaN(x) || isNaN(y) || x < 0 || y < 0) return setErr("Enter both scores.");
-    const hi = Math.max(x, y), lo = Math.min(x, y);
-    if (hi === lo) return setErr("Pickup games don't end in a tie.");
-    if (hi < run.target) return setErr(`The winner needs at least ${run.target}.`);
-    if (hi > run.target && hi - lo !== 2) return setErr(`Past ${run.target}, a win-by-2 game ends exactly 2 apart.`);
-    if (hi > run.target + 20) return setErr("That score looks off — check it again.");
-    dispatch({ type: "finalScore", runId: run.id, a: x, b: y });
-  };
-
-  return (
-    <div className="relative overflow-hidden rounded-[26px] bg-[radial-gradient(120%_100%_at_50%_0%,#3a2a1d,#202B30_60%)] p-6 text-paper sm:p-10">
-      <CourtArt className="absolute inset-x-0 -bottom-24 mx-auto h-[420px] opacity-80" stroke="#F47B35" opacity={0.18} />
-      <div className="relative text-center">
-        <div className="mx-auto mb-6 h-14 w-14"><svg viewBox="0 0 40 40" className="bounce-ball"><circle cx="20" cy="20" r="18" fill="#F47B35" /><path d="M2 20h36M20 2v36M8 8c5 5 5 19 0 24M32 8c-5 5-5 19 0 24" stroke="#202B30" strokeWidth="1.5" fill="none" opacity=".7" /></svg></div>
-        <div className="display text-[3.4rem] sm:text-[5rem]">Phone down.<br /><span className="text-ball">Go hoop.</span></div>
-        <div className="num mt-4 text-2xl text-paper/70">{String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}</div>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-paper/60">ruNit stays quiet until the game&apos;s over. Come back when someone hits {run.target}.</p>
-        {!entering ? (
-          <button className="btn-ball mt-8 px-8 py-3" onClick={() => setEntering(true)}>Game over — enter final</button>
-        ) : (
-          <form onSubmit={submit} className="mx-auto mt-8 max-w-sm rounded-2xl bg-paper p-5 text-left text-ink">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
-              <div><label className="label" htmlFor="sa">Shirts</label><input id="sa" inputMode="numeric" className="field num text-center text-2xl font-bold" value={a} onChange={(e) => setA(e.target.value.replace(/\D/g, ""))} /></div>
-              <span className="pb-3 text-ink-3">–</span>
-              <div><label className="label" htmlFor="sb">Skins</label><input id="sb" inputMode="numeric" className="field num text-center text-2xl font-bold" value={b} onChange={(e) => setB(e.target.value.replace(/\D/g, ""))} /></div>
-            </div>
-            {err && <p className="mt-3 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
-            <button className="btn-ink mt-4 w-full">Save final score</button>
-            <p className="mt-2 text-center text-xs text-ink-3">Every player in the game confirms the final too.</p>
-          </form>
-        )}
-      </div>
-    </div>
-  );
+  return <LiveScoreboard run={run} />;
 }
 
 const STAT_FIELDS: { k: keyof StatLine; label: string; max: number }[] = [
@@ -295,7 +253,8 @@ const STAT_FIELDS: { k: keyof StatLine; label: string; max: number }[] = [
 
 function StatsEntry({ run }: { run: Run }) {
   const { state, dispatch } = useStore();
-  const [line, setLine] = useState<StatLine>(EMPTY_LINE);
+  const tallied = state.tallies[run.id]?.mine ?? 0;
+  const [line, setLine] = useState<StatLine>({ ...EMPTY_LINE, pts: tallied });
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const onA = run.teams!.a.includes(state.meId);
@@ -317,7 +276,7 @@ function StatsEntry({ run }: { run: Run }) {
           <div className="eyebrow">Final, {won ? "you won" : "you lost"} {onA ? `${run.score!.a}–${run.score!.b}` : `${run.score!.b}–${run.score!.a}`}</div>
           <div className="display text-[2.2rem]">Your box score</div>
         </div>
-        <span className="text-xs text-ink-3">Just your own line. Takes 20 seconds.</span>
+        <span className="text-sm text-ink-2">{tallied ? `Points filled in from the scoreboard (${tallied}).` : "Just your own line. Takes 20 seconds."}</span>
       </div>
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {STAT_FIELDS.map((f) => (
@@ -405,65 +364,65 @@ function ReviewPanel({ run }: { run: Run }) {
         </div>
       ))}
 
-      <div className="panel overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-paper-line p-5">
-          <div>
-                        <div className="display text-[2rem]">Box score</div>
-          </div>
-          <div className="text-right">
-            <div className="text-[11px] text-ink-3">Your line</div>
-            <StatBadge v={myV} />
-          </div>
+      {issues.length === 0 && <BumpConfirm run={run} />}
+
+      <div className="overflow-hidden rounded-[22px] bg-[radial-gradient(120%_80%_at_50%_0%,#2b3438,#1b2326_70%)] text-paper">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-3 pt-5">
+          <div className="display text-[2.2rem]">Box score</div>
+          <div className="flex items-center gap-2 text-sm text-paper/70">Your line <StatBadge v={myV} /></div>
         </div>
-        {(["a", "b"] as const).map((t) => (
-          <div key={t}>
-            <div className={`flex items-center justify-between px-5 py-2 text-xs font-bold uppercase tracking-wider ${t === "a" ? "bg-paper-warm" : "bg-ink text-paper"}`}>
-              <span>{t === "a" ? "Shirts" : "Skins"}, final <span className="num">{run.score![t]}</span></span>
-              <span className="num">Σ {teamPoints(run, t)}</span>
+        {(["a", "b"] as const).map((t) => {
+          const sum = teamPoints(run, t), off = sum !== run.score![t];
+          return (
+            <div key={t} className={`mx-3 mb-3 rounded-2xl ${off ? "ring-2 ring-ball shadow-[0_0_28px_rgba(244,123,53,.45)]" : "ring-1 ring-white/10"}`}>
+              <div className="flex items-center justify-between px-4 pb-1 pt-3">
+                <span className="text-[15px] font-bold">{t === "a" ? "Shirts" : "Skins"}</span>
+                <span className="text-sm text-paper/70">Final <span className="num text-xl text-sun">{run.score![t]}</span>{"  "}
+                  <span className={off ? "font-bold text-ball" : ""}>Lines add to <span className="num text-xl">{sum}</span></span></span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[540px]">
+                  <thead><tr className="text-[12px] text-paper/50">
+                    <th className="px-4 py-1.5 text-left font-semibold">Player</th>
+                    {["PTS", "AST", "REB", "STL", "BLK", "TO"].map((h) => <th key={h} className="px-2 py-1.5 text-right font-semibold">{h}</th>)}
+                    <th className="px-4 py-1.5 text-right font-semibold"><span className="sr-only">Status</span></th>
+                  </tr></thead>
+                  <tbody>
+                    {run.submissions.filter((s) => teams[t].includes(s.playerId)).map((s) => {
+                      const p = player(s.playerId)!;
+                      const isMe = s.playerId === state.meId;
+                      const conf = s.confirmedBy.includes(state.meId), disp = s.disputedBy.includes(state.meId);
+                      const suspect = off && issues.some((x) => x.suspect?.playerId === s.playerId);
+                      return (
+                        <tr key={s.playerId} className={`border-t border-white/10 ${isMe ? "bg-white/[.05]" : ""} ${suspect ? "bg-ball/[.12]" : ""}`}>
+                          <td className="px-4 py-2.5"><div className="flex items-center gap-2"><Avatar config={p.character} size={28} /><span className="font-semibold">{isMe ? "You" : p.nickname}</span>{s.revised && <span className="rounded bg-sky/25 px-1.5 text-[11px] font-bold text-sky">revised</span>}</div></td>
+                          {(["pts", "ast", "reb", "stl", "blk", "tov"] as const).map((k) => <td key={k} className={`num px-2 py-2.5 text-right ${k === "pts" ? "text-[26px] text-sun" : "text-xl text-paper/85"}`}>{s.line[k]}</td>)}
+                          <td className="px-4 py-2.5 text-right">
+                            {isMe ? (s.confirmedBy.length ? <span className="text-sm font-bold text-emerald">✓ {s.confirmedBy.length}</span> : <span className="text-sm text-paper/50">Waiting</span>) : (
+                              <div className="flex justify-end gap-1">
+                                <button aria-pressed={conf} className={`rounded-full px-3 py-1 text-sm font-bold ${conf ? "bg-emerald text-white" : "bg-white/10 hover:bg-emerald/40"}`} onClick={() => dispatch({ type: "confirmSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{conf ? "✓ Confirmed" : "Confirm"}</button>
+                                <button aria-pressed={disp} className={`rounded-full px-3 py-1 text-sm font-bold ${disp ? "bg-[#b4441a] text-white" : "bg-white/10 hover:bg-[#b4441a]/50"}`} onClick={() => dispatch({ type: "disputeSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{disp ? "Disputed" : "Dispute"}</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-sm">
-                <thead><tr className="text-[11px] text-ink-3">
-                  <th className="px-5 py-2 text-left font-semibold">Player</th>
-                  {["PTS", "AST", "REB", "STL", "BLK", "TO"].map((h) => <th key={h} className="num px-2 py-2 text-right font-semibold">{h}</th>)}
-                  <th className="px-5 py-2 text-right font-semibold">Status</th>
-                </tr></thead>
-                <tbody>
-                  {run.submissions.filter((s) => teams[t].includes(s.playerId)).map((s) => {
-                    const p = player(s.playerId)!;
-                    const isMe = s.playerId === state.meId;
-                    const conf = s.confirmedBy.includes(state.meId), disp = s.disputedBy.includes(state.meId);
-                    return (
-                      <tr key={s.playerId} className={`border-t border-paper-line ${isMe ? "bg-ball/[.05]" : ""}`}>
-                        <td className="px-5 py-2.5"><div className="flex items-center gap-2"><Avatar config={p.character} size={26} /><span className="font-semibold">{p.nickname}{isMe && " (you)"}</span>{s.revised && <span className="rounded bg-sky-soft px-1 text-[10px] font-bold text-[#1d6f96]">revised</span>}</div></td>
-                        {(["pts", "ast", "reb", "stl", "blk", "tov"] as const).map((k) => <td key={k} className={`num px-2 py-2.5 text-right ${k === "pts" ? "font-bold" : ""}`}>{s.line[k]}</td>)}
-                        <td className="px-5 py-2.5 text-right">
-                          {isMe ? <StatBadge v={myV} /> : (
-                            <div className="flex justify-end gap-1">
-                              <button aria-pressed={conf} className={`rounded-full px-2.5 py-1 text-xs font-bold ${conf ? "bg-emerald text-white" : "bg-ink/5 hover:bg-emerald-soft"}`} onClick={() => dispatch({ type: "confirmSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{conf ? "Confirmed" : "Confirm"}</button>
-                              <button aria-pressed={disp} className={`rounded-full px-2.5 py-1 text-xs font-bold ${disp ? "bg-[#b4441a] text-white" : "bg-ink/5 hover:bg-[#f6d7c9]"}`} onClick={() => dispatch({ type: "disputeSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{disp ? "Disputed" : "Dispute"}</button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-paper-line p-5">
-          <div className="text-sm text-ink-2">You&apos;ve reviewed <b className="num text-ink">{reviewed}/{toConfirm.length}</b> other lines.
-            {myV === "self" && <span className="block text-xs text-ink-3">Ask the others to confirm yours.</span>}
-          </div>
+          );
+        })}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-5 py-4">
+          <div className="text-sm text-paper/70">You&apos;ve reviewed <b className="num text-lg text-paper">{reviewed}/{toConfirm.length}</b> other lines.</div>
           <div className="flex flex-wrap gap-2">
             {myV !== "opponent" && (
-              <button className="btn-line" disabled={issues.length > 0 || requesting} title={issues.length ? "Resolve the mismatch first" : undefined} onClick={requestConfirmations}>
-                {requesting ? "Players confirming…" : "Request confirmations"} <DemoTag>sim</DemoTag>
+              <button className="btn border-2 border-paper/30 text-paper hover:bg-white/10" disabled={issues.length > 0 || requesting} title={issues.length ? "Resolve the mismatch first" : undefined} onClick={requestConfirmations}>
+                {requesting ? "Players confirming…" : "Ask everyone to confirm"} <span className="rounded border border-dashed border-paper/40 px-1 text-[10px] font-bold">SIM</span>
               </button>
             )}
-            <button className="btn-ball" disabled={issues.length > 0} onClick={() => { dispatch({ type: "finishReview", runId: run.id }); router.push(`/runs/${run.id}/reflect`); }}>
+            <button className="btn-ball" disabled={issues.length > 0} onClick={() => { swish(); dispatch({ type: "finishReview", runId: run.id }); router.push(`/runs/${run.id}/reflect`); }}>
               Save to My Game
             </button>
           </div>
@@ -490,6 +449,7 @@ function DonePanel({ run }: { run: Run }) {
         {!reflected && <Link href={`/runs/${run.id}/reflect`} className="btn-ball">How did you get your points?</Link>}
         <Link href="/my-game" className="btn-line">Open My Game</Link>
       </div>
+      {rec && <GameCard run={run} />}
     </div>
   );
 }

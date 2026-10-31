@@ -13,8 +13,15 @@ import type {
   Player, Reflection, Run, StatLine, StatSubmission, Verification,
 } from "./types";
 
+export interface QueueEntry { id: string; playerId: string; size: number; at: string }
+export interface Tally { a: number; b: number; mine: number; log: { k: "a" | "b" | "mine"; v: number; at: string }[] }
+
 export interface State {
-  version: 4;
+  version: 5;
+  friends: string[];
+  queues: Record<string, QueueEntry[]>;
+  tallies: Record<string, Tally>;
+  bumped: Record<string, string[]>;
   meId: string;
   courts: Court[];
   players: Player[];
@@ -36,7 +43,11 @@ export interface State {
 
 function fresh(): State {
   return {
-    version: 4,
+    version: 5,
+    friends: ["p-marcus", "p-yari", "p-deshawn"],
+    queues: seed.queues,
+    tallies: {},
+    bumped: {},
     meId: seed.ME,
     courts: seed.courts,
     players: seed.players,
@@ -90,7 +101,15 @@ type Action =
   | { type: "withdrawInterest"; oppId: string }
   | { type: "readNotice"; id: string }
   | { type: "block"; playerId: string }
-  | { type: "report"; playerId: string; reason: string };
+  | { type: "report"; playerId: string; reason: string }
+  | { type: "addFriend"; playerId: string }
+  | { type: "removeFriend"; playerId: string }
+  | { type: "queueJoin"; courtId: string; size: number }
+  | { type: "queueLeave"; courtId: string }
+  | { type: "queueAdvance"; courtId: string }
+  | { type: "tally"; runId: string; k: "a" | "b" | "mine"; v: number }
+  | { type: "undoTally"; runId: string }
+  | { type: "bump"; runId: string; playerId: string };
 
 const now = () => new Date().toISOString();
 const uid = (p: string) => `${p}-${Math.random().toString(36).slice(2, 8)}`;
@@ -256,12 +275,54 @@ function reducer(s: State, a: Action): State {
       return { ...s, notices: s.notices.map((n) => (n.id === a.id ? { ...n, read: true } : n)) };
     case "block":
       return { ...s, blocked: s.blocked.includes(a.playerId) ? s.blocked : [...s.blocked, a.playerId] };
+    case "addFriend":
+      return s.friends.includes(a.playerId) || a.playerId === s.meId ? s : { ...s, friends: [...s.friends, a.playerId] };
+    case "removeFriend":
+      return { ...s, friends: s.friends.filter((f) => f !== a.playerId) };
+    case "queueJoin": {
+      const q = (s.queues[a.courtId] ?? []).filter((e) => e.playerId !== s.meId);
+      return { ...s, queues: { ...s.queues, [a.courtId]: [...q, { id: uid("q"), playerId: s.meId, size: a.size, at: now() }] } };
+    }
+    case "queueLeave":
+      return { ...s, queues: { ...s.queues, [a.courtId]: (s.queues[a.courtId] ?? []).filter((e) => e.playerId !== s.meId) } };
+    case "queueAdvance": {
+      const q = s.queues[a.courtId] ?? [];
+      if (!q.length) return s;
+      const up = q[0];
+      return {
+        ...s,
+        queues: { ...s.queues, [a.courtId]: q.slice(1) },
+        notices: up.playerId === s.meId ? [{ id: uid("n"), at: now(), title: "You've got next", body: `Your group is up at ${s.courts.find((c) => c.id === a.courtId)?.name}. Head to the court.`, href: `/courts?c=${a.courtId}`, read: false }, ...s.notices] : s.notices,
+      };
+    }
+    case "tally": {
+      const t = s.tallies[a.runId] ?? { a: 0, b: 0, mine: 0, log: [] };
+      const next = { ...t, [a.k]: Math.max(0, t[a.k] + a.v), log: [...t.log, { k: a.k, v: a.v, at: now() }] };
+      return { ...s, tallies: { ...s.tallies, [a.runId]: next } };
+    }
+    case "undoTally": {
+      const t = s.tallies[a.runId];
+      if (!t || !t.log.length) return s;
+      const last = t.log[t.log.length - 1];
+      return { ...s, tallies: { ...s.tallies, [a.runId]: { ...t, [last.k]: Math.max(0, t[last.k] - last.v), log: t.log.slice(0, -1) } } };
+    }
+    case "bump": {
+      // Two phones brought together confirm each other's lines at once.
+      const r1 = patchRun(s, a.runId, (r) => ({
+        ...r,
+        submissions: r.submissions.map((x) =>
+          x.playerId === s.meId && !x.confirmedBy.includes(a.playerId) ? { ...x, confirmedBy: [...x.confirmedBy, a.playerId], disputedBy: x.disputedBy.filter((d) => d !== a.playerId) }
+          : x.playerId === a.playerId && !x.confirmedBy.includes(s.meId) ? { ...x, confirmedBy: [...x.confirmedBy, s.meId], disputedBy: x.disputedBy.filter((d) => d !== s.meId) }
+          : x),
+      }));
+      return { ...r1, bumped: { ...s.bumped, [a.runId]: [...new Set([...(s.bumped[a.runId] ?? []), a.playerId])] } };
+    }
     case "report":
       return { ...s, reports: [...s.reports, { playerId: a.playerId, reason: a.reason, at: now() }] };
   }
 }
 
-const KEY = "runit-demo-v4";
+const KEY = "runit-demo-v5";
 
 interface Ctx {
   state: State;
@@ -285,7 +346,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as State;
-        if (parsed.version === 4) dispatch({ type: "hydrate", state: parsed });
+        if (parsed.version === 5) dispatch({ type: "hydrate", state: parsed });
       }
     } catch {
       /* storage unavailable — stay on in-memory seed */

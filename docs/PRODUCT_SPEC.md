@@ -53,3 +53,13 @@ The competitive layer that gives every park a history.
 - **Badges**: First stamp, Road win, Three-court run, Home court (10 wins at one court), King of the court, Every court in town, Every court in the state.
 - **The rule that makes it trustworthy:** only opponent-confirmed games count. Self-reported and teammate-confirmed games stay in your game log but never move a record, stamp, or badge. Each court shows how many games were excluded.
 - **Scale:** courts carry state and county so the same quests work for any state; "every court in the state" counts only courts players have verified, so unconfirmed imports can't make a quest impossible.
+
+## Premium hooper features (added)
+- **Live scoreboard:** big +1/+2 buttons for each team and for your own points, undo, a clock, and pocket mode. "Game over" fills the final from the scoreboard, and your points pre-fill your box score.
+- **Confirm with a tap:** bring phones together to confirm each other's lines in one move. Web build: QR exchange or match code; native: Nearby Interaction / NFC (docs/NATIVE.md).
+- **Scoreboard box score:** dark, big numerals; a team whose lines don't add up glows orange until fixed; confirmed lines show a count.
+- **Game card:** a story-sized image of a saved game (score, your line, court, verification seal) to share or download.
+- **Got next:** a line at every court with group sizes and your place; you get a notice when you're up.
+- **Friends:** add by friend code, QR or invite link (contact picker on Android); head-to-head and together records from confirmed games.
+- **Feel:** synthesized swish on confirmation, taps and buzz where the phone supports it, sound toggle saved per device.
+- **Installable and offline:** add to home screen; the app keeps working at courts with no signal.

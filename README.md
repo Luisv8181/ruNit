@@ -39,6 +39,10 @@ Requires Node 20+ (tested on Node 22). TypeScript is pinned to 5.x (Next 15 does
 | 15 | Check court records | `/courts` → any court → Court records |
 | 16 | Open your court passport | `/my-game/passport` |
 | 17 | Spin the basketball globe | `/courts/globe` (or *Globe* on Courts) |
+| 18 | Keep score live, then confirm with a tap | Run page: scoreboard → box score → *Confirm with a tap* |
+| 19 | Share your game card | After *Save to My Game* |
+| 20 | Get in line at a court | Court detail → *Got next* |
+| 21 | Add friends, see head-to-head | `/community` → Friends |
 
 The fastest path through the signature Game Loop: Home → the dark **“You're up”** card → Scan QR → Simulate arrivals → Tip off → Game over → 21–18 → enter your stats → *Ask Big Bell to recheck* → *Request confirmations* → *Save to My Game* → reflect.
 
@@ -85,3 +89,6 @@ node scripts/fetch-osm-courts.mjs world   # everything (slow; be kind to the pub
 ```
 
 This writes `public/data/osm-courts.json`, which the globe picks up automatically. Court data © OpenStreetMap contributors, ODbL.
+
+## Native-only features
+Lock-screen Live Activities, widgets, true tap-to-confirm (Nearby Interaction / NFC) and native haptics need the iOS and Android apps. They're specified in [docs/NATIVE.md](docs/NATIVE.md); the web build has working stand-ins. Video stat tracking is planned in [docs/VIDEO_TRACKING.md](docs/VIDEO_TRACKING.md).

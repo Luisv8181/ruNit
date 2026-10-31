@@ -41,7 +41,7 @@ async function session(kind) {
   await page.getByRole("button", { name: "Tip off" }).click(); await page.waitForTimeout(400);
   await snap("live", { scrollTo: "text=Phone down.", hideChrome: true });
   await page.getByRole("button", { name: /Game over/ }).click();
-  await page.getByLabel("Shirts").fill("21"); await page.getByLabel("Skins").fill("18");
+  await page.getByLabel("Shirts", { exact: true }).fill("21"); await page.getByLabel("Skins", { exact: true }).fill("18");
   await page.getByRole("button", { name: "Save final score" }).click(); await page.waitForTimeout(500);
   for (let i = 0; i < 9; i++) await page.getByRole("button", { name: "Increase Points" }).click();
   for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Increase Assists" }).click();

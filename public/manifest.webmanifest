@@ -1,0 +1,20 @@
+{
+  "name": "ruNit — Who's got next?",
+  "short_name": "ruNit",
+  "description": "Find a court. Call your run. Know your game.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF9F0",
+  "theme_color": "#FFF9F0",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Call a run", "url": "/create" },
+    { "name": "Courts", "url": "/courts" }
+  ]
+}

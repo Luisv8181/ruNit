@@ -136,3 +136,13 @@ export const activity: ActivityItem[] = [
 
 // Every confirmed and unconfirmed game played at each court — the source for court records and passports.
 export const courtGames = [...seedCourtGames(courts, players, ME), ...myCourtGames(ME, (n) => daysAgo(n))];
+
+// "Got next" lines at courts (fictional). Size = how many in the group, including the person who signed up.
+export const queues: Record<string, { id: string; playerId: string; size: number; at: string }[]> = {
+  "c-northside": [
+    { id: "q1", playerId: "p-kev", size: 3, at: h(-0.4) },
+    { id: "q2", playerId: "p-luisa", size: 2, at: h(-0.2) },
+  ],
+  "c-riverside": [{ id: "q3", playerId: "p-sofia", size: 3, at: h(-0.3) }],
+  "c-elmyard": [{ id: "q4", playerId: "p-deshawn", size: 1, at: h(-0.1) }],
+};

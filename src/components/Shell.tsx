@@ -7,6 +7,7 @@ import { useStore } from "@/lib/store";
 import { ago } from "@/lib/util";
 import { I } from "./icons";
 import { Logo } from "./ui";
+import { setSound, soundOn } from "@/lib/feel";
 
 const NAV = [
   { href: "/", label: "Home", icon: I.Home },
@@ -18,6 +19,20 @@ const NAV = [
 
 function active(path: string, href: string) {
   return href === "/" ? path === "/" : path.startsWith(href);
+}
+
+function SoundToggle() {
+  const [on, setOn] = useState(true);
+  useEffect(() => setOn(soundOn()), []);
+  return (
+    <button aria-label={on ? "Turn sounds off" : "Turn sounds on"} aria-pressed={on} title={on ? "Sounds on" : "Sounds off"}
+      className="grid h-10 w-10 place-items-center rounded-full hover:bg-ink/5" onClick={() => { setSound(!on); setOn(!on); }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M4 10v4h4l5 4V6L8 10H4Z" />
+        {on ? <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /> : <path d="m17 9 5 6M22 9l-5 6" />}
+      </svg>
+    </button>
+  );
 }
 
 function Notices() {
@@ -89,6 +104,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-2 md:ml-0">
+              <SoundToggle />
               <Notices />
               <Link href="/create" className="btn-ball hidden md:inline-flex">Call a run</Link>
             </div>

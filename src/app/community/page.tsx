@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { Friends } from "@/components/Friends";
+import { headToHead } from "@/lib/friends";
 import { useStore } from "@/lib/store";
 import type { Archetype, Player } from "@/lib/types";
 import { ARCH, ARCH_ORDER, archetypeName, earnedArchetypes } from "@/lib/archetypes";
@@ -9,11 +11,11 @@ import { Avatar, PlayerFigure } from "@/components/PlayerFigure";
 import { CourtArt, DNABars, Empty } from "@/components/ui";
 import { I } from "@/components/icons";
 
-const TABS = ["Players", "Squads", "Rankings", "Challenges"] as const;
+const TABS = ["Friends", "Players", "Squads", "Rankings", "Challenges"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function Community() {
-  const [tab, setTab] = useState<Tab>("Players");
+  const [tab, setTab] = useState<Tab>("Friends");
   return (
     <div>
       <h1 className="display text-[3rem] sm:text-[4rem]">Your people</h1>
@@ -23,6 +25,7 @@ export default function Community() {
         </div>
       </div>
       <div className="mt-6">
+        {tab === "Friends" && <Suspense><Friends /></Suspense>}
         {tab === "Players" && <Players />}
         {tab === "Squads" && <Squads />}
         {tab === "Rankings" && <Rankings />}
@@ -115,6 +118,20 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
               ))}
             </div>
           )}
+          {(() => {
+            const h = headToHead(state.meId, p.id, state.courtGames);
+            const isFriend = state.friends.includes(p.id);
+            return (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-ink pt-3">
+                <div>
+                  <div className="text-sm text-ink-2">You vs {p.nickname}</div>
+                  <div className="num text-[34px] leading-none">{h.vsW}–{h.vsL}</div>
+                  {h.withW + h.withL > 0 && <div className="text-sm text-ink-2">Together {h.withW}–{h.withL}</div>}
+                </div>
+                {isFriend ? <span className="text-sm font-bold text-emerald">✓ Friends</span> : <button className="btn-ball py-2" onClick={() => dispatch({ type: "addFriend", playerId: p.id })}>Add friend</button>}
+              </div>
+            );
+          })()}
           <p className="rounded-xl bg-sky-soft/60 p-3 text-xs text-ink-2">Direct messages aren&apos;t in this build. When they arrive they&apos;re adults-only, opt-in, and can be turned off; organizers contact players through runs and events.</p>
           {reporting ? (
             <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (!reason) return; dispatch({ type: "report", playerId: p.id, reason }); setReporting(false); onClose(); }}>

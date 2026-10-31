@@ -8,6 +8,7 @@ import { CourtMap, type Region } from "@/components/CourtMap";
 import { CourtBadge, courtVerificationTip, DemoTag } from "@/components/ui";
 import { I } from "@/components/icons";
 import { CourtRecords } from "@/components/CourtRecords";
+import { GotNext } from "@/components/GotNext";
 import { kingsByCourt } from "@/lib/records";
 import { distLabel, when } from "@/lib/util";
 import type { Court } from "@/lib/types";
@@ -173,6 +174,8 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
           <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{r.title}</span><span className="block text-xs text-ink-3">{when(r.startsAt)}, {r.format}, {r.mode}</span></span>
           <span className="num text-xs text-ink-2">{r.participants.length}/{r.capacity}</span><I.Chevron width={16} height={16} className="text-ink-3" />
         </Link></li>))}</ul> : <p className="mt-2 text-sm text-ink-3">Nothing scheduled. Quiet court — good time to call a run.</p>}
+
+      <GotNext courtId={c.id} />
 
       <CourtRecords courtId={c.id} />
 
