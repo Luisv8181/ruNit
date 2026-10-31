@@ -54,7 +54,6 @@ function Courts() {
     <div>
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow mb-1">The Court Network</div>
           <h1 className="display text-[3rem] sm:text-[4rem]">Find your court</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -98,7 +97,7 @@ function Courts() {
                       <span className={`h-3 w-3 shrink-0 rounded-full ${c.indoor ? "bg-sky" : "bg-ball"}`} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{c.name}</span>
-                        <span className="block text-xs text-ink-3">{c.neighborhood} · {distLabel(c)} · {c.hoops} hoops</span>
+                        <span className="block text-xs text-ink-3">{c.neighborhood}, {distLabel(c)}, {c.hoops} hoops</span>
                       </span>
                       {(activeCounts[c.id] ?? 0) > 0 ? <span className="num rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-paper">{activeCounts[c.id]} runs</span> : <CourtBadge v={c.verification} />}
                     </button>
@@ -109,7 +108,7 @@ function Courts() {
                 <div className="mt-6 rounded-xl bg-sun-soft/60 p-4">
                   <div className="eyebrow mb-2">Your submissions</div>
                   {state.courtSubmissions.map((s) => (
-                    <div key={s.id} className="text-sm"><b>{s.kind === "new_court" ? s.name : `Correction · ${state.courts.find((c) => c.id === s.courtId)?.name}`}</b> — pending community confirmation</div>
+                    <div key={s.id} className="text-sm"><b>{s.kind === "new_court" ? s.name : `Correction, ${state.courts.find((c) => c.id === s.courtId)?.name}`}</b> — pending community confirmation</div>
                   ))}
                 </div>
               )}
@@ -138,7 +137,7 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
           <circle cx="100" cy="45" r="14" fill="none" stroke="#202B30" strokeWidth="2" />
         </svg>
         <button onClick={onClose} aria-label="Close court details" className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-paper/80"><I.X width={16} height={16} /></button>
-        <div className="eyebrow">{c.neighborhood} · {c.city}</div>
+        <div className="eyebrow">{c.neighborhood}, {c.city}</div>
         <h2 className="display mt-1 text-[2.3rem]">{c.name}</h2>
         <div className="mt-3 flex flex-wrap items-center gap-2"><CourtBadge v={c.verification} /><span className="text-xs text-ink-2">{c.confirmations} player confirmations</span></div>
         <p className="mt-2 text-xs text-ink-2">{courtVerificationTip(c.verification)}</p>
@@ -166,7 +165,7 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
       </div>
       {runs.length ? <ul className="mt-2 space-y-2">{runs.map((r) => (
         <li key={r.id}><Link href={`/runs/${r.id}`} className="flex items-center gap-3 rounded-xl border border-paper-line bg-white/60 px-3 py-2.5 hover:border-ink/30">
-          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{r.title}</span><span className="block text-xs text-ink-3">{when(r.startsAt)} · {r.format} · {r.mode}</span></span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{r.title}</span><span className="block text-xs text-ink-3">{when(r.startsAt)}, {r.format}, {r.mode}</span></span>
           <span className="num text-xs text-ink-2">{r.participants.length}/{r.capacity}</span><I.Chevron width={16} height={16} className="text-ink-3" />
         </Link></li>))}</ul> : <p className="mt-2 text-sm text-ink-3">Nothing scheduled. Quiet court — good time to call a run.</p>}
 

@@ -10,26 +10,17 @@ export function Logo({ size = 26, light = false }: { size?: number; light?: bool
         <circle cx="16" cy="16" r="15" fill="#F47B35" />
         <path d="M10 23V9l12 14V9" stroke={light ? "#202B30" : "#FFF9F0"} strokeWidth="3" fill="none" strokeLinejoin="round" strokeLinecap="round" />
       </svg>
-      <span className={`display text-[1.55em] leading-none tracking-tight normal-case ${light ? "text-paper" : "text-ink"}`} style={{ fontStretch: "80%" }}>
-        ru<span className="text-ball">N</span>it
+      <span className={`display text-[1.75em] leading-none ${light ? "text-paper" : "text-ink"}`}>
+        ruNit
       </span>
     </span>
   );
 }
 
 /** Half-court line drawing. Used where the content is literally about a court. */
-export function CourtArt({ className = "", stroke = "#202B30", opacity = 0.14 }: { className?: string; stroke?: string; opacity?: number }) {
-  return (
-    <svg viewBox="0 0 500 470" className={className} fill="none" stroke={stroke} strokeOpacity={opacity} strokeWidth="3" aria-hidden>
-      <rect x="2" y="2" width="496" height="466" />
-      <rect x="170" y="2" width="160" height="190" />
-      <circle cx="250" cy="192" r="60" />
-      <path d="M30 2v140a220 220 0 0 0 440 0V2" />
-      <path d="M220 40h60" />
-      <circle cx="250" cy="52" r="9" />
-      <path d="M190 468a60 60 0 0 1 120 0" />
-    </svg>
-  );
+export function CourtArt(_props: { className?: string; stroke?: string; opacity?: number }) {
+  // Retired: decorative court drawings behind text. The court now appears only as CourtRun, where it carries data.
+  return null;
 }
 
 export function SectionHead({ eyebrow, title, action }: { eyebrow?: string; title: string; action?: React.ReactNode }) {
@@ -107,5 +98,5 @@ export function BackLink({ href, label }: { href: string; label: string }) {
 }
 
 export function DemoTag({ children = "Demo" }: { children?: React.ReactNode }) {
-  return <span className="rounded border border-dashed border-ink/30 px-1.5 py-px text-[10px] font-bold uppercase tracking-wider text-ink-3">{children}</span>;
+  return <span className="rounded border border-dashed border-ink/30 px-1.5 py-px text-[10px] font-bold text-ink-3">{children}</span>;
 }

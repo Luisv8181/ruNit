@@ -14,9 +14,8 @@ export default {
         ink: { DEFAULT: "#202B30", 2: "#46545A", 3: "#7A858A" },
       },
       fontFamily: {
-        display: ["'Archivo Variable'", "system-ui", "sans-serif"],
-        sans: ["'Instrument Sans Variable'", "system-ui", "sans-serif"],
-        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
+        display: ["'Big Shoulders Display Variable'", "system-ui", "sans-serif"],
+        sans: ["'Atkinson Hyperlegible Next Variable'", "system-ui", "sans-serif"],
       },
       borderRadius: { xl2: "1.25rem" },
     },

@@ -72,25 +72,25 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const immersive = path.startsWith("/runs/") && path.includes("/live");
   return (
     <div className="relative z-[1] min-h-screen">
-      <div className="flex items-center justify-center gap-3 bg-ink px-4 py-1.5 text-center text-[11px] font-medium text-paper/80">
-        <span><b className="text-sun">Demo build.</b> Every player, court, game and listing here is fictional sample data for Hazleton &amp; Scranton.</span>
+      <div className="flex items-center justify-center gap-3 bg-ink px-4 py-1.5 text-center text-[13px] text-paper/85">
+        <span>Demo build. Every player, court, game and listing here is made up.</span>
         <button className="underline decoration-paper/30 underline-offset-2 hover:text-paper" onClick={() => { if (confirm("Reset the demo to its starting state?")) dispatch({ type: "reset" }); }}>Reset demo</button>
       </div>
 
       {!immersive && (
-        <header className="sticky top-0 z-40 border-b border-paper-line/80 bg-paper/85 backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
+        <header className="sticky top-0 z-40 bg-paper">
+          <div className="mx-auto flex h-[68px] max-w-6xl items-center gap-8 px-4 sm:px-6">
             <Link href="/" className="shrink-0"><Logo /></Link>
-            <nav className="hidden flex-1 items-center gap-1 md:flex" aria-label="Primary">
+            <nav className="hidden h-full flex-1 items-stretch gap-6 md:flex" aria-label="Primary">
               {NAV.map((n) => (
-                <Link key={n.href} href={n.href} className={`rounded-full px-3.5 py-2 text-sm font-semibold transition ${active(path, n.href) ? "bg-ink text-paper" : "text-ink-2 hover:bg-ink/5 hover:text-ink"}`}>
+                <Link key={n.href} href={n.href} aria-current={active(path, n.href) ? "page" : undefined} className={`flex items-center border-b-4 pt-1 text-[15px] font-bold transition-colors ${active(path, n.href) ? "border-ball text-ink" : "border-transparent text-ink-2 hover:text-ink"}`}>
                   {n.label}
                 </Link>
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-2 md:ml-0">
               <Notices />
-              <Link href="/create" className="btn-ball hidden md:inline-flex"><I.Plus width={16} height={16} /> Create a run</Link>
+              <Link href="/create" className="btn-ball hidden md:inline-flex">Call a run</Link>
             </div>
           </div>
         </header>
@@ -101,17 +101,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
       {!immersive && (
         <>
           {!path.startsWith("/create") && !path.startsWith("/runs/") && !path.startsWith("/my-game/customize") && (
-            <Link href="/create" aria-label="Create a run" className="btn-ball fixed bottom-[84px] right-4 z-40 h-14 w-14 !p-0 md:hidden"><I.Plus width={24} height={24} /></Link>
+            <Link href="/create" aria-label="Call a run" className="btn-ball fixed bottom-[84px] right-4 z-40 h-14 w-14 !p-0 shadow-[0_6px_0_#202B30] md:hidden"><I.Plus width={24} height={24} /></Link>
           )}
-          <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-40 border-t border-paper-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+          <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-paper pb-[env(safe-area-inset-bottom)] md:hidden">
             <ul className="grid grid-cols-5">
               {NAV.map((n) => {
                 const on = active(path, n.href);
                 return (
                   <li key={n.href}>
-                    <Link href={n.href} className={`flex flex-col items-center gap-1 py-2.5 text-[10.5px] font-semibold ${on ? "text-ball" : "text-ink-3"}`}>
-                      <n.icon width={21} height={21} />
-                      {n.label === "Opportunities" ? "Opps" : n.label}
+                    <Link href={n.href} aria-current={on ? "page" : undefined} className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-bold ${on ? "text-ink" : "text-ink-3"}`}>
+                      <n.icon width={22} height={22} className={on ? "text-ball" : ""} />
+                      {n.label}
                     </Link>
                   </li>
                 );

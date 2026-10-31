@@ -80,7 +80,7 @@ function Create() {
       const id = createRun({
         courtId, startsAt: when.toISOString(), format, target, capacity, mode, visibility, title,
         requirement: requirement.trim() || undefined,
-        recurring: recurring ? `Weekly · ${when.toLocaleDateString([], { weekday: "long" })}s ${when.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : undefined,
+        recurring: recurring ? `Weekly, ${when.toLocaleDateString([], { weekday: "long" })}s ${when.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : undefined,
       });
       router.push(`/runs/${id}?new=1`);
     }, 450);
@@ -89,7 +89,6 @@ function Create() {
   return (
     <div className="mx-auto max-w-2xl">
       <div className="relative mb-6 overflow-hidden">
-        <div className="eyebrow mb-1">Create a run</div>
         <h1 className="display text-[3.2rem] sm:text-[4.2rem]">Call your run</h1>
         <p className="mt-2 text-ink-2">Defaults are set to the closest court and the next open slot. Change what you need and go.</p>
       </div>
@@ -99,11 +98,11 @@ function Create() {
           <label className="label" htmlFor="court">Court</label>
           <div className="relative">
             <select id="court" className="field appearance-none pr-10 font-semibold" value={courtId} onChange={(e) => setCourtId(e.target.value)}>
-              {sortedCourts.map((x) => <option key={x.id} value={x.id}>{x.name} — {x.city} · {distLabel(x)}</option>)}
+              {sortedCourts.map((x) => <option key={x.id} value={x.id}>{x.name} — {x.city}, {distLabel(x)}</option>)}
             </select>
             <I.Chevron className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-ink-3" />
           </div>
-          <p className="mt-1.5 text-xs text-ink-3">{c.indoor ? "Indoor" : "Outdoor"} · {c.surface} · {c.lights ? "lights" : "no lights — plan for daylight"}{c.access === "membership" ? " · day pass required" : ""}</p>
+          <p className="mt-1.5 text-xs text-ink-3">{c.indoor ? "Indoor" : "Outdoor"}, {c.surface}, {c.lights ? "lights" : "no lights — plan for daylight"}{c.access === "membership" ? ", day pass required" : ""}</p>
         </section>
 
         <section className="grid grid-cols-2 gap-3">
@@ -154,7 +153,7 @@ function Create() {
         </section>
 
         <section>
-          <label className="label" htmlFor="req">House rules <span className="normal-case tracking-normal text-ink-3">(optional)</span></label>
+          <label className="label" htmlFor="req">House rules <span className=" tracking-normal text-ink-3">(optional)</span></label>
           <input id="req" className="field" value={requirement} onChange={(e) => setRequirement(e.target.value)} placeholder={c.access === "membership" ? "Day pass at the front desk." : "Call your own fouls. Winners stay."} maxLength={140} />
           {errors.req && <p className="mt-1 text-sm font-semibold text-[#b4441a]">{errors.req}</p>}
         </section>
@@ -163,7 +162,7 @@ function Create() {
           <CourtArt className="absolute -right-8 -top-8 h-48" stroke="#fff" opacity={0.12} />
           <div className="eyebrow !text-sun">Preview</div>
           <div className="display mt-1 text-[1.9rem]">{title}</div>
-          <div className="mt-1 text-sm text-paper/75">{format} · first to {target} · {capacity} players · {mode} · {visibility === "public" ? "open to nearby players" : "invite only"}</div>
+          <div className="mt-1 text-sm text-paper/75">{format}, first to {target}, {capacity} players, {mode}, {visibility === "public" ? "open to nearby players" : "invite only"}</div>
           <button className="btn-ball mt-4 w-full py-3 text-base" disabled={saving}>{saving ? "Calling your run…" : "Call it"}</button>
         </div>
       </form>

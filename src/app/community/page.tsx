@@ -16,7 +16,6 @@ export default function Community() {
   const [tab, setTab] = useState<Tab>("Players");
   return (
     <div>
-      <div className="eyebrow mb-1">Community</div>
       <h1 className="display text-[3rem] sm:text-[4rem]">Your people</h1>
       <div className="sticky top-16 z-30 -mx-4 mt-5 bg-paper/90 px-4 py-2 backdrop-blur sm:mx-0 sm:px-0">
         <div className="flex gap-1 overflow-x-auto" role="tablist">
@@ -59,10 +58,10 @@ function Players() {
             const a = earnedArchetypes(p.dna);
             return (
               <li key={p.id}>
-                <button onClick={() => setOpen(p)} className="group flex w-full items-center gap-3 rounded-2xl border border-paper-line bg-white/60 p-3 text-left transition hover:border-ink/30 hover:bg-white">
+                <button onClick={() => setOpen(p)} className="group flex w-full items-center gap-3 rounded-xl py-3 pr-2 text-left hover:bg-ink/[.04]">
                   <div className="relative"><Avatar config={p.character} size={52} />{p.availableNow && <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-paper bg-emerald" title="Free now" />}</div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2"><span className="truncate font-bold">{p.nickname}</span><span className="truncate text-xs text-ink-3">{p.position} · {p.city}</span></div>
+                    <div className="flex items-baseline gap-2"><span className="truncate font-bold">{p.nickname}</span><span className="truncate text-xs text-ink-3">{p.position}, {p.city}</span></div>
                     <div className="mt-0.5 truncate text-sm font-semibold" style={{ color: ARCH[a[0]].color }}>{archetypeName(p.dna, p.position)}</div>
                     <div className="mt-1 flex gap-1">{ARCH_ORDER.map((k) => <span key={k} className="h-1.5 flex-1 rounded-full" style={{ background: ARCH[k].color, opacity: 0.15 + (p.dna[k] / 100) * 0.85 }} />)}</div>
                   </div>
@@ -93,16 +92,16 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
             <PlayerFigure config={p.character} size={120} idSuffix={`sheet-${p.id}`} />
             <div className="pb-6">
               <div className="display text-[2.8rem]">{p.nickname}</div>
-              <div className="text-sm text-paper/70">{p.position} · {heightLabel(p.heightIn)} · {p.city}</div>
+              <div className="text-sm text-paper/70">{p.position}, {heightLabel(p.heightIn)}, {p.city}</div>
               <div className="mt-1 text-sm font-bold" style={{ color: ARCH[earnedArchetypes(p.dna)[0]].color }}>{archetypeName(p.dna, p.position)}</div>
             </div>
           </div>
         </div>
         <div className="space-y-5 p-6">
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-xl bg-ink/[.04] py-3"><div className="num text-xl font-bold">{p.mmr}</div><div className="text-[10px] uppercase tracking-wider text-ink-3">MMR</div></div>
-            <div className="rounded-xl bg-ink/[.04] py-3"><div className="num text-xl font-bold">{p.trust.attendance}%</div><div className="text-[10px] uppercase tracking-wider text-ink-3">Shows up</div></div>
-            <div className="rounded-xl bg-ink/[.04] py-3"><div className="num text-xl font-bold">{p.trust.sportsmanship.toFixed(1)}</div><div className="text-[10px] uppercase tracking-wider text-ink-3">Sportsmanship</div></div>
+            <div className="rounded-xl bg-ink/[.04] py-3"><div className="num text-xl font-bold">{p.mmr}</div><div className="text-[10px] text-ink-3">MMR</div></div>
+            <div className="rounded-xl bg-ink/[.04] py-3"><div className="num text-xl font-bold">{p.trust.attendance}%</div><div className="text-[10px] text-ink-3">Shows up</div></div>
+            <div className="rounded-xl bg-ink/[.04] py-3"><div className="num text-xl font-bold">{p.trust.sportsmanship.toFixed(1)}</div><div className="text-[10px] text-ink-3">Sportsmanship</div></div>
           </div>
           <DNABars dna={p.dna} compact />
           {myRuns.length > 0 && (
@@ -110,7 +109,7 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
               <div className="eyebrow mb-2">Invite to your run</div>
               {myRuns.map((r) => (
                 <button key={r.id} disabled={invited === r.id} onClick={() => { dispatch({ type: "simJoin", runId: r.id, playerId: p.id }); setInvited(r.id); }} className="flex w-full items-center justify-between rounded-xl border border-paper-line px-3 py-2.5 text-left text-sm hover:bg-white">
-                  <span><b>{r.title}</b> · {court(r.courtId)?.name} · {when(r.startsAt)}</span>
+                  <span><b>{r.title}</b>, {court(r.courtId)?.name}, {when(r.startsAt)}</span>
                   <span className="font-bold text-ball">{invited === r.id ? "Accepted (demo)" : "Invite"}</span>
                 </button>
               ))}
@@ -153,7 +152,7 @@ function Squads() {
                     <div className="display text-[2rem]">{s.name}</div>
                     <div className="text-sm text-ink-2">{s.tagline}</div>
                   </div>
-                  <div className="text-right"><div className="num text-2xl font-bold">{s.record.w}–{s.record.l}</div><div className="text-[10px] uppercase tracking-wider text-ink-3">record</div></div>
+                  <div className="text-right"><div className="num text-2xl font-bold">{s.record.w}–{s.record.l}</div><div className="text-[10px] text-ink-3">record</div></div>
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <div className="flex items-center">
@@ -190,7 +189,7 @@ function Rankings() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex rounded-full border border-ink/15 bg-white/60 p-1">{(["Hazleton", "Scranton"] as const).map((r) => <button key={r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => setRegion(r)}>{r}</button>)}</div>
-        <span className="text-xs text-ink-3">Ranked games only · last 90 days · demo season</span>
+        <span className="text-xs text-ink-3">Ranked games only, last 90 days, demo season</span>
       </div>
       <ol className="overflow-hidden rounded-2xl border border-paper-line bg-white/60">
         {list.map((p, i) => (
@@ -198,7 +197,7 @@ function Rankings() {
             <span className={`display text-center text-[2rem] ${i < 3 ? "text-ball" : "text-ink-3"}`}>{i + 1}</span>
             <div className="flex min-w-0 items-center gap-3">
               <Avatar config={p.character} size={36} />
-              <div className="min-w-0"><div className="truncate font-bold">{p.nickname}{p.id === state.meId && " (you)"}</div><div className="truncate text-xs text-ink-3">{archetypeName(p.dna, p.position)} · {p.trust.confirmedGames} confirmed games</div></div>
+              <div className="min-w-0"><div className="truncate font-bold">{p.nickname}{p.id === state.meId && " (you)"}</div><div className="truncate text-xs text-ink-3">{archetypeName(p.dna, p.position)}, {p.trust.confirmedGames} confirmed games</div></div>
             </div>
             <span className="num text-lg font-bold">{p.mmr}</span>
           </li>
@@ -221,7 +220,7 @@ function Challenges() {
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-ink text-sun"><I.Bolt /></span>
             <div className="min-w-0 flex-1">
               <div className="font-bold">{name(c.from)} → {name(c.to)}</div>
-              <div className="text-sm text-ink-2">{c.format} at {court(c.courtId)?.name} · {when(c.when)}</div>
+              <div className="text-sm text-ink-2">{c.format} at {court(c.courtId)?.name}, {when(c.when)}</div>
             </div>
             {c.status === "accepted" ? <span className="flex items-center gap-1 text-sm font-bold text-emerald"><I.Check width={16} height={16} />Accepted</span>
               : forMe ? <button className="btn-ball py-2" onClick={() => dispatch({ type: "acceptChallenge", id: c.id })}>Accept</button>

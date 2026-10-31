@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/archivo/wdth.css";
-import "@fontsource-variable/instrument-sans";
-import "@fontsource/jetbrains-mono/400.css";
-import "@fontsource/jetbrains-mono/700.css";
+import "@fontsource-variable/big-shoulders-display";
+import "@fontsource-variable/atkinson-hyperlegible-next";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { Shell } from "@/components/Shell";

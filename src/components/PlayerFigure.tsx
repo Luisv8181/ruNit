@@ -161,7 +161,7 @@ export function PlayerFigure({ config, size = 220, effects = true, idSuffix = "x
         </>
       )}
       <path d={`M${100 - sh + 7} 80 Q 100 ${cut === "tank" ? 102 : 88}, ${100 + sh - 7} 80`} fill="none" stroke={secondary} strokeWidth="2.5" />
-      <text x="100" y="138" textAnchor="middle" fill={secondary} style={{ fontFamily: "'Archivo Variable'", fontStretch: "75%", fontWeight: 900 }} fontSize="34">{number}</text>
+      <text x="100" y="138" textAnchor="middle" fill={secondary} style={{ fontFamily: "'Big Shoulders Display Variable'", fontWeight: 900 }} fontSize="38">{number}</text>
 
       {/* neck + head */}
       <rect x="94" y="62" width="12" height="16" rx="5" fill={skin} />
@@ -178,15 +178,16 @@ export function PlayerFigure({ config, size = 220, effects = true, idSuffix = "x
   );
 }
 
+/** A player's jersey, worn as their identity token: their colours and their number. */
+export const TANK = "M11 3h6.2c.6 3 2 4.4 2.8 4.4S22.2 6 22.8 3H29l1.2 8.6c2.6 1.1 3.8 3.2 3.8 6.4V37H6V18c0-3.2 1.2-5.3 3.8-6.4L11 3Z";
 export function Avatar({ config, size = 40, ring = true }: { config: CharacterConfig; size?: number; ring?: boolean }) {
-  const skin = SKIN[config.skin] ?? SKIN[2];
+  const { primary, secondary, number } = config.jersey;
+  const light = ["#FFF9F0", "#F4C65E"].includes(primary);
   return (
-    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden className="shrink-0">
-      <circle cx="20" cy="20" r="20" fill={config.jersey.primary} />
-      {ring && <circle cx="20" cy="20" r="18.5" fill="none" stroke={config.jersey.secondary} strokeOpacity=".7" />}
-      <path d="M8 40 C 9 30, 31 30, 32 40" fill={config.jersey.secondary} opacity=".9" />
-      <circle cx="20" cy="17" r="8" fill={skin} />
-      <g transform="translate(-27 -6.97) scale(.47)"><Hair style={config.hair} color="#1d1714" /></g>
+    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden className="shrink-0 overflow-visible">
+      <path d={TANK} fill={primary} stroke={light || ring ? "#202B30" : "none"} strokeOpacity={light ? 0.35 : 0.12} strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M17.2 3c.6 3 2 4.4 2.8 4.4S22.2 6 22.8 3" fill="none" stroke={secondary} strokeWidth="1.6" />
+      <text x="20" y="31" textAnchor="middle" fill={secondary} fontSize={number.length > 1 ? 15.5 : 17} style={{ fontFamily: "'Big Shoulders Display Variable'", fontWeight: 800 }}>{number}</text>
     </svg>
   );
 }

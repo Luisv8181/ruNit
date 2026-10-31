@@ -44,12 +44,12 @@ export default function Reflect({ params }: { params: Promise<{ id: string }> })
     <div className="mx-auto max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
         <Link href={`/runs/${id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-2 hover:text-ink"><I.Back width={16} height={16} />Game</Link>
-        <span className="text-xs text-ink-3">{court(game.courtId)?.name} · {game.result} {game.score} · {game.line.pts} pts</span>
+        <span className="text-xs text-ink-3">{court(game.courtId)?.name}, {game.result} {game.score}, {game.line.pts} pts</span>
       </div>
 
       {stage === "how" && (
         <div className="rise">
-          <div className="eyebrow">Reflection · optional · 30 seconds</div>
+          <div className="eyebrow">Reflection, optional, 30 seconds</div>
           <h1 className="display mt-2 text-[3.2rem] sm:text-[4.4rem]">How did you get your points today?</h1>
           <p className="mt-3 text-ink-2">Pick all that apply. This is the part of your game a box score can&apos;t see.</p>
           <div className="mt-6 flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export default function Reflect({ params }: { params: Promise<{ id: string }> })
             <h1 className="display mt-2 text-[3rem]">Here&apos;s what moved</h1>
           </div>
           <div className="rounded-[22px] bg-ink p-6 text-paper">
-            <div className="eyebrow !text-sun mb-4">Player DNA · {me.nickname}</div>
+            <div className="eyebrow !text-sun mb-4">Player DNA, {me.nickname}</div>
             <DNABars dna={me.dna} dark />
             {log ? (
               <ul className="mt-5 space-y-1 border-t border-paper/10 pt-4 text-sm text-paper/80">
@@ -113,7 +113,7 @@ export default function Reflect({ params }: { params: Promise<{ id: string }> })
             {JSON.stringify(before) !== JSON.stringify(me.dna) && <p className="mt-2 text-[11px] text-paper/40">DNA is built from your reflections and confirmed stats. It describes how you play — it isn&apos;t a rating.</p>}
           </div>
           {insights[0] && (
-            <div className="panel p-5">
+            <div className="panel pt-5">
               <div className="flex items-center gap-2"><I.Bulb className="text-ball" /><span className="eyebrow !text-ball">{insights[0].confidence}</span></div>
               <div className="mt-2 text-lg font-bold">{insights[0].headline}</div>
               <p className="mt-1 text-ink-2">{insights[0].body}</p>

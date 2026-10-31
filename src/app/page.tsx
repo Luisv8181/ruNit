@@ -2,130 +2,123 @@
 
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { archetypeName, ARCH, earnedArchetypes } from "@/lib/archetypes";
-import { ago, distLabel, miles, DEMO_HOME, when } from "@/lib/util";
-import { RunRow } from "@/components/RunRow";
-import { Avatar, PlayerFigure } from "@/components/PlayerFigure";
-import { CourtArt, CourtBadge, Empty } from "@/components/ui";
-import { I } from "@/components/icons";
+import { archetypeName } from "@/lib/archetypes";
+import { ago, distLabel, miles, DEMO_HOME } from "@/lib/util";
+import { RunRow, timeParts } from "@/components/RunRow";
+import { Avatar } from "@/components/PlayerFigure";
+import { CourtRun } from "@/components/CourtRun";
+import { Empty } from "@/components/ui";
+
+function startsIn(iso: string) {
+  const m = Math.round((new Date(iso).getTime() - Date.now()) / 60000);
+  if (m <= -1) return `started ${-m} min ago`;
+  if (m < 1) return "tips now";
+  if (m < 60) return `tips in ${m} min`;
+  const { t, ap, day } = timeParts(iso);
+  return `${day.toLowerCase()} at ${t}${ap}`;
+}
 
 export default function Home() {
-  const { state, me, court } = useStore();
-  const upcoming = state.runs
+  const { state, court, dispatch } = useStore();
+  const mine = state.runs
     .filter((r) => r.participants.includes(state.meId) && r.status !== "reviewed")
     .sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt));
-  const next = upcoming[0];
-  const nearby = state.runs
+  const next = mine[0];
+  const open = state.runs
     .filter((r) => r.visibility === "public" && !r.participants.includes(state.meId) && ["open", "full"].includes(r.status))
     .sort((a, b) => (miles(DEMO_HOME, court(a.courtId)!) > 15 ? 1 : 0) - (miles(DEMO_HOME, court(b.courtId)!) > 15 ? 1 : 0) || +new Date(a.startsAt) - +new Date(b.startsAt));
-  const tonight = nearby.filter((r) => +new Date(r.startsAt) - Date.now() < 12 * 3600e3).length;
-  const avail = state.players.filter((p) => p.availableNow && p.id !== state.meId && !state.blocked.includes(p.id));
+  const featured = next ?? open[0];
+  const fc = featured ? court(featured.courtId) : undefined;
+  const free = state.players.filter((p) => p.availableNow && p.id !== state.meId && !state.blocked.includes(p.id));
   const courtsNear = [...state.courts].sort((a, b) => miles(DEMO_HOME, a) - miles(DEMO_HOME, b)).slice(0, 4);
-  const featured = state.opportunities.find((o) => o.type === "Tournament");
+  const featuredOpp = state.opportunities.find((o) => o.type === "Tournament");
+  const isMine = featured && featured.participants.includes(state.meId);
+  const here = featured ? featured.checkedIn.length : 0;
 
   return (
-    <div className="space-y-10">
-      {/* HERO */}
-      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#FFE7C2] via-[#FFD39A] to-[#F9A866] px-6 pb-7 pt-8 sm:px-10 sm:pt-12">
-        <CourtArt className="pointer-events-none absolute -right-24 -top-10 h-[520px] w-auto rotate-[8deg]" stroke="#7a3d12" opacity={0.16} />
-        <div className="pointer-events-none absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-white/30 blur-3xl" />
-        <div className="relative grid grid-cols-1 items-end gap-6 md:grid-cols-[1fr_auto]">
+    <div>
+      <h1 className="display text-[clamp(3.2rem,9vw,6.5rem)]">Who&apos;s got next?</h1>
+
+      {featured && fc && (
+        <section className="mt-6 grid items-start gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,520px)_1fr]" aria-labelledby="next-run">
           <div>
-            <div className="eyebrow !text-[#8a4a1c]">Hazleton · Tonight</div>
-            <h1 className="display mt-3 text-[clamp(3.6rem,13vw,8.5rem)] text-ink">Who&apos;s got<br />next?</h1>
-            <p className="mt-4 max-w-md text-[15px] text-ink/80">
-              <b className="text-ink">{tonight} runs</b> calling for players near you tonight. <b className="text-ink">{avail.length} hoopers</b> say they&apos;re free right now.
-            </p>
-            {next ? (
-              <Link href={`/runs/${next.id}`} className="group mt-6 flex w-full max-w-xl min-w-0 items-center gap-4 rounded-2xl bg-ink p-4 pr-5 text-paper shadow-[0_20px_40px_-20px_rgba(32,43,48,.8)] transition hover:-translate-y-0.5">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ball"><I.Ball className="text-white" /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="eyebrow !text-sun">You&apos;re up</span>
-                  <span className="block truncate font-semibold">{next.title} · {court(next.courtId)?.name}</span>
-                  <span className="block text-[13px] text-paper/70">{when(next.startsAt)} · {next.checkedIn.length}/{next.capacity} checked in</span>
-                </span>
-                <span className="hidden items-center gap-1 text-sm font-semibold text-sun sm:flex">{next.checkedIn.includes(state.meId) ? "Open" : "Check in"} <I.Chevron width={16} height={16} /></span>
+            {isMine ? (
+              <Link href={`/runs/${featured.id}`} aria-label={`Open ${featured.title}`} className="block rounded-[22px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink/30">
+                <CourtRun run={featured} />
               </Link>
             ) : (
-              <Link href="/create" className="btn-ink mt-6">Call a run</Link>
+              <CourtRun run={featured} onJoin={() => dispatch({ type: "join", runId: featured.id })} />
             )}
           </div>
-          <div className="relative hidden md:block">
-            <PlayerFigure config={me.character} size={210} idSuffix="hero" />
-            <div className="absolute -left-10 bottom-10 rounded-xl bg-paper/90 px-3 py-2 shadow">
-              <div className="eyebrow !text-[9px]">{me.nickname}</div>
-              <div className="text-sm font-bold" style={{ color: ARCH[earnedArchetypes(me.dna)[0]].color }}>{archetypeName(me.dna, me.position)}</div>
+          <div className="lg:pt-2">
+            <p className="text-[15px] font-semibold text-ink-2">{isMine ? "Your next run" : "Closest open run"}</p>
+            <h2 id="next-run" className="display mt-1 text-[clamp(2.4rem,5vw,3.6rem)]">{featured.title}</h2>
+            <p className="mt-3 max-w-md text-lg text-ink-2">
+              {fc.name}, {startsIn(featured.startsAt)}. {featured.format === "1v1" ? "One on one" : `${featured.format.slice(0, 1)} on ${featured.format.slice(0, 1)}`}, first to {featured.target}{featured.mode === "ranked" ? ", ranked" : ""}.
+            </p>
+            <dl className="mt-6 flex gap-10">
+              <div><dt className="text-sm text-ink-2">Spots taken</dt><dd className="num text-[44px] leading-none">{featured.participants.length}<span className="text-ink-3">/{featured.capacity}</span></dd></div>
+              {isMine && <div><dt className="text-sm text-ink-2">At the court</dt><dd className="num text-[44px] leading-none">{here}</dd></div>}
+            </dl>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              {isMine ? (
+                <Link href={`/runs/${featured.id}`} className="btn-ball px-7 py-3 text-base">{featured.checkedIn.includes(state.meId) ? "Open the run" : "Check in"}</Link>
+              ) : (
+                <button className="btn-ball px-7 py-3 text-base" onClick={() => dispatch({ type: "join", runId: featured.id })}>Take a spot</button>
+              )}
+              <Link href="/create" className="btn-line px-6 py-3 text-base">Call your own run</Link>
             </div>
+            {featured.requirement && <p className="mt-6 max-w-md border-l-4 border-ball pl-4 text-[15px] text-ink-2">House rules from the host: {featured.requirement}</p>}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-10">
-          <section>
-            <div className="mb-2 flex items-end justify-between">
-              <h2 className="display text-[2.2rem]">Runs near you</h2>
-              <Link href="/courts" className="text-sm font-semibold text-ball">See map</Link>
-            </div>
-            {nearby.length ? (
-              <div className="panel px-4 sm:px-5">{nearby.map((r) => <RunRow key={r.id} run={r} />)}</div>
-            ) : (
-              <Empty title="No open runs" body="Nobody's called one yet. Be the one." action={<Link href="/create" className="btn-ball">Create a run</Link>} />
-            )}
-          </section>
-
-          {upcoming.length > 1 && (
-            <section>
-              <h2 className="display mb-2 text-[2.2rem]">Your games</h2>
-              <div className="panel px-4 sm:px-5">{upcoming.slice(1).map((r) => <RunRow key={r.id} run={r} />)}</div>
-            </section>
+      <div className="mt-16 grid gap-x-14 gap-y-12 lg:grid-cols-[1fr_320px]">
+        <section aria-labelledby="open-runs">
+          <div className="flex items-baseline justify-between">
+            <h2 id="open-runs" className="display text-[2.4rem]">Open runs near you</h2>
+            <Link href="/courts" className="text-[15px] font-semibold underline decoration-2 underline-offset-4">Map</Link>
+          </div>
+          {open.length ? (
+            <ul className="mt-2">{open.filter((r) => r.id !== featured?.id || isMine).map((r) => <RunRow key={r.id} run={r} />)}</ul>
+          ) : (
+            <Empty title="Nobody's called a run yet" body="Pick a court and a time. Players nearby will see it." action={<Link href="/create" className="btn-ball">Call a run</Link>} />
           )}
+          {mine.length > 1 && (
+            <>
+              <h2 className="display mt-12 text-[2.4rem]">Your other runs</h2>
+              <ul className="mt-2">{mine.slice(1).map((r) => <RunRow key={r.id} run={r} />)}</ul>
+            </>
+          )}
+        </section>
 
-          <section>
-            <h2 className="display mb-3 text-[2.2rem]">On the courts</h2>
-            <ol className="relative space-y-4 border-l-2 border-paper-line pl-5">
-              {state.activity.slice(0, 6).map((a) => (
-                <li key={a.id} className="relative">
-                  <span className={`absolute -left-[27px] top-1.5 h-3 w-3 rounded-full ring-4 ring-paper ${a.kind === "run" ? "bg-ball" : a.kind === "court" ? "bg-emerald" : a.kind === "squad" ? "bg-sky" : a.kind === "achievement" ? "bg-violet" : "bg-sun"}`} />
-                  <div className="text-[15px]">{a.text}</div>
-                  <div className="text-xs text-ink-3">{ago(a.at)}</div>
-                </li>
-              ))}
-            </ol>
-          </section>
-        </div>
-
-        <aside className="space-y-8">
-          <section>
-            <div className="eyebrow mb-3">Free to play now</div>
-            <ul className="space-y-1">
-              {avail.map((p) => (
-                <li key={p.id} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/60">
+        <aside className="space-y-12">
+          <section aria-labelledby="free-now">
+            <h2 id="free-now" className="display text-[1.9rem]">Free to play now</h2>
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4">
+              {free.map((p) => (
+                <li key={p.id} className="flex items-center gap-2.5">
                   <Avatar config={p.character} size={38} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold">{p.nickname} <span className="font-normal text-ink-3">· {p.position}</span></div>
-                    <div className="truncate text-xs" style={{ color: ARCH[earnedArchetypes(p.dna)[0]].color }}>{archetypeName(p.dna, p.position)}</div>
-                  </div>
-                  <span className="text-xs text-ink-3">{p.city}</span>
+                  <span className="min-w-0 leading-tight">
+                    <span className="block truncate font-bold">{p.nickname}</span>
+                    <span className="block truncate text-[13px] text-ink-2">{archetypeName(p.dna, p.position)}</span>
+                  </span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section>
-            <div className="eyebrow mb-3">Courts near you</div>
-            <ul className="space-y-2">
+          <section aria-labelledby="courts-near">
+            <h2 id="courts-near" className="display text-[1.9rem]">Courts near you</h2>
+            <ul className="mt-3">
               {courtsNear.map((c) => {
-                const active = state.runs.filter((r) => r.courtId === c.id && r.status !== "reviewed").length;
+                const live = state.runs.filter((r) => r.courtId === c.id && !["final", "reviewed"].includes(r.status)).length;
                 return (
-                  <li key={c.id}>
-                    <Link href={`/courts?c=${c.id}`} className="flex items-center gap-3 rounded-xl border border-transparent px-2 py-2 hover:border-paper-line hover:bg-white/60">
-                      <span className={`grid h-10 w-10 place-items-center rounded-lg ${c.indoor ? "bg-sky-soft text-[#1d6f96]" : "bg-sun-soft text-[#8a6413]"}`}><I.Pin width={18} height={18} /></span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{c.name}</span>
-                        <span className="block text-xs text-ink-3">{distLabel(c)} · {c.indoor ? "Indoor" : "Outdoor"}{c.lights ? " · Lights" : ""}</span>
-                      </span>
-                      {active > 0 ? <span className="num rounded-full bg-ball/10 px-2 py-0.5 text-[11px] font-bold text-ball">{active} live</span> : <CourtBadge v={c.verification} />}
+                  <li key={c.id} className="border-t border-ink/10 first:border-0">
+                    <Link href={`/courts?c=${c.id}`} className="flex items-center gap-3 py-3 hover:underline decoration-2 underline-offset-4">
+                      <span className={`h-3 w-3 shrink-0 rounded-full ${c.indoor ? "bg-[#E7BE86] ring-2 ring-[#D9AB6E]" : "bg-emerald"}`} aria-hidden />
+                      <span className="flex-1 font-semibold">{c.name}</span>
+                      <span className="text-sm text-ink-2">{live ? `${live} ${live === 1 ? "run" : "runs"}` : distLabel(c)}</span>
                     </Link>
                   </li>
                 );
@@ -133,17 +126,24 @@ export default function Home() {
             </ul>
           </section>
 
-          {featured && (
-            <Link href={`/opportunities?o=${featured.id}`} className="block overflow-hidden rounded-2xl bg-emerald text-paper">
-              <div className="relative p-5">
-                <CourtArt className="absolute -right-10 -top-6 h-52 w-auto" stroke="#fff" opacity={0.18} />
-                <div className="eyebrow !text-paper/70">Featured · {featured.type}</div>
-                <div className="display mt-2 text-[1.9rem]">{featured.title}</div>
-                <div className="mt-2 text-sm text-paper/80">{when(featured.date)} · {featured.cost}</div>
-                <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">{featured.spots} team spots left <I.Chevron width={16} height={16} /></div>
-              </div>
-            </Link>
+          {featuredOpp && (
+            <section aria-labelledby="coming-up">
+              <h2 id="coming-up" className="display text-[1.9rem]">Coming up</h2>
+              <Link href={`/opportunities?o=${featuredOpp.id}`} className="mt-3 block hover:underline decoration-2 underline-offset-4">
+                <span className="block text-lg font-bold">{featuredOpp.title}</span>
+                <span className="block text-[15px] text-ink-2">{new Date(featuredOpp.date).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}. {featuredOpp.spots} team spots left.</span>
+              </Link>
+            </section>
           )}
+
+          <section aria-labelledby="activity">
+            <h2 id="activity" className="display text-[1.9rem]">On the courts</h2>
+            <ul className="mt-3 space-y-3">
+              {state.activity.slice(0, 5).map((a) => (
+                <li key={a.id} className="text-[15px] leading-snug">{a.text} <span className="whitespace-nowrap text-ink-3">{ago(a.at)}</span></li>
+              ))}
+            </ul>
+          </section>
         </aside>
       </div>
     </div>

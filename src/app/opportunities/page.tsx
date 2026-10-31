@@ -36,12 +36,11 @@ function Opps() {
 
   return (
     <div>
-      <section className="relative mb-8 overflow-hidden rounded-[28px] bg-emerald px-6 py-9 text-paper sm:px-10">
+      <section className="mb-8">
         <CourtArt className="absolute -right-20 -top-16 h-[440px] rotate-[-6deg]" stroke="#fff" opacity={0.14} />
         <div className="relative max-w-xl">
-          <div className="eyebrow !text-paper/70">Opportunities</div>
-          <h1 className="display mt-2 text-[3.2rem] sm:text-[4.6rem]">Open the next door</h1>
-          <p className="mt-3 text-paper/85">Tournaments, coaching, reffing, jobs and programs near you. Every listing shows who posted it and whether they&apos;re verified. ruNit never promises recruitment or scholarships, and ratings never decide who gets picked.</p>
+                    <h1 className="display text-[3.2rem] sm:text-[4.6rem]">Open the next door</h1>
+          <p className="mt-3 text-lg text-ink-2">Tournaments, coaching, reffing, jobs and programs near you. Every listing shows who posted it and whether they&apos;re verified. ruNit never promises recruitment or scholarships, and ratings never decide who gets picked.</p>
         </div>
       </section>
 
@@ -67,16 +66,16 @@ function Opps() {
               <li key={o.id}>
                 <button className="grid w-full grid-cols-[64px_1fr] items-center gap-4 px-4 py-4 text-left hover:bg-white sm:grid-cols-[72px_1fr_auto] sm:px-6" onClick={() => setOpen(o.id)}>
                   <div className="text-center">
-                    <div className="eyebrow !text-[10px]">{d.toLocaleDateString([], { month: "short" })}</div>
+                    <div className="eyebrow ">{d.toLocaleDateString([], { month: "short" })}</div>
                     <div className="display text-[2.4rem] leading-none">{d.getDate()}</div>
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded px-1.5 py-px text-[10px] font-bold uppercase tracking-wider text-white" style={{ background: TYPE_COLOR[o.type] }}>{o.type}</span>
+                      <span className="rounded px-1.5 py-px text-[10px] font-bold text-white" style={{ background: TYPE_COLOR[o.type] }}>{o.type}</span>
                       {o.organizerVerified ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald"><I.Shield width={13} height={13} />Verified organizer</span> : <span className="text-[11px] font-semibold text-[#b4441a]">Unverified organizer</span>}
                     </div>
                     <div className="mt-1 truncate text-[17px] font-bold">{o.title}</div>
-                    <div className="truncate text-sm text-ink-2">{o.org} · {o.city} · {o.eligibility}</div>
+                    <div className="truncate text-sm text-ink-2">{o.org}, {o.city}, {o.eligibility}</div>
                   </div>
                   <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
                     <span className="text-sm font-semibold">{o.cost}</span>
@@ -103,7 +102,7 @@ function OppSheet({ o, onClose }: { o: Opportunity; onClose: () => void }) {
       <div className="rise max-h-[92vh] w-full max-w-lg overflow-auto rounded-t-[28px] bg-paper sm:rounded-[28px]" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={o.title}>
         <div className="relative p-6" style={{ background: `${TYPE_COLOR[o.type]}22` }}>
           <button onClick={onClose} aria-label="Close" className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-paper"><I.X width={16} height={16} /></button>
-          <div className="eyebrow">{o.type} · {new Date(o.date).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}</div>
+          <div className="eyebrow">{o.type}, {new Date(o.date).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}</div>
           <h2 className="display mt-2 pr-10 text-[2.4rem]">{o.title}</h2>
           <div className="mt-1 text-sm text-ink-2">{o.org}</div>
         </div>

@@ -100,7 +100,7 @@ function DemoMap({ courts, region, selected, activeCounts, onSelect }: Props) {
           </g>
         );
       })}
-      <text x={W - 16} y={H - 14} textAnchor="end" fontSize="13" fill="#7A858A">Stylized demo map · streets are decorative · court positions approximate</text>
+      <text x={W - 16} y={H - 14} textAnchor="end" fontSize="13" fill="#7A858A">Stylized demo map, streets are decorative, court positions approximate</text>
     </svg>
   );
 }

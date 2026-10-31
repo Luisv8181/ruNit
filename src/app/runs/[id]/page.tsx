@@ -10,6 +10,7 @@ import { archetypeName } from "@/lib/archetypes";
 import { Avatar } from "@/components/PlayerFigure";
 import { BackLink, CourtArt, DemoTag, StatBadge } from "@/components/ui";
 import { Qr } from "@/components/Qr";
+import { CourtRun } from "@/components/CourtRun";
 import { I } from "@/components/icons";
 
 const STEPS = ["Join", "Check in", "Teams", "Play", "Score", "Stats", "Confirm", "Reflect"];
@@ -47,57 +48,59 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
   const step = stepOf(run, state.meId);
   const isHost = run.hostId === state.meId;
 
+  const FW: Record<string, string> = { "1v1": "One on one", "2v2": "Twos", "3v3": "Threes", "5v5": "Fives" };
+  const courtSide = step !== 3;
   return (
-    <div className="mx-auto max-w-3xl">
+    <div>
       <BackLink href="/" label="Home" />
       {search.get("new") && run.participants.length < run.capacity && (
-        <div className="rise mb-4 flex items-center gap-3 rounded-2xl bg-emerald px-4 py-3 text-sm text-paper">
-          <I.Check /> <span><b>Your run is live.</b> Share code <span className="num font-bold">{run.code}</span>. <span className="opacity-80">(Demo: fictional nearby players will join on their own.)</span></span>
+        <div className="rise mb-6 border-l-4 border-emerald py-1 pl-4 text-[15px]" role="status">
+          <b>Your run is posted.</b> Share code <span className="num text-lg">{run.code}</span> with your people. In this demo, made-up nearby players will take the open spots.
         </div>
       )}
 
-      <header className="relative overflow-hidden rounded-[26px] bg-ink px-6 pb-6 pt-7 text-paper sm:px-8">
-        <CourtArt className="pointer-events-none absolute -right-16 -top-10 h-[360px]" stroke="#F4C65E" opacity={0.14} />
-        <div className="relative">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="eyebrow !text-sun">{when(run.startsAt)}</span>
-            {run.mode === "ranked" && <span className="rounded bg-ball px-1.5 py-px text-[10px] font-bold uppercase tracking-wider">Ranked</span>}
-            {run.visibility === "private" && <span className="rounded border border-paper/30 px-1.5 py-px text-[10px] font-bold uppercase tracking-wider">Invite only</span>}
-          </div>
-          <h1 className="display mt-2 text-[2.6rem] sm:text-[3.6rem]">{run.title}</h1>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-paper/75">
-            <Link href={`/courts?c=${c.id}`} className="inline-flex items-center gap-1 hover:text-paper"><I.Pin width={15} height={15} />{c.name}</Link>
-            <span>{run.format} · first to {run.target}</span>
-            <span>Host: {host.nickname}</span>
-            {run.recurring && <span>{run.recurring}</span>}
-          </div>
-          {run.requirement && <p className="mt-3 text-sm text-paper/90">“{run.requirement}”</p>}
-        </div>
+      <header>
+        <p className="text-[15px] font-semibold text-ink-2">{when(run.startsAt)}{run.recurring ? `, repeats ${run.recurring.toLowerCase()}` : ""}</p>
+        <h1 className="display mt-1 text-[clamp(2.8rem,7vw,5rem)]">{run.title}</h1>
+        <p className="mt-2 max-w-2xl text-lg text-ink-2">
+          {FW[run.format]} to {run.target} at <Link href={`/courts?c=${c.id}`} className="font-semibold text-ink underline decoration-2 underline-offset-4">{c.name}</Link>.
+          {" "}{run.mode === "ranked" ? "Ranked, so it counts toward MMR." : "Casual."} {run.visibility === "private" ? "Invite only." : ""} Hosted by {isHost ? "you" : host.nickname}.
+        </p>
+        {run.requirement && <p className="mt-4 max-w-2xl border-l-4 border-ball pl-4 text-[15px]">{run.requirement}</p>}
 
-        {/* Game loop rail */}
-        <ol className="relative mt-7 grid grid-cols-8 gap-1" aria-label="Game progress">
+        <ol className="mt-8 flex gap-x-5 gap-y-2 overflow-x-auto pb-1 text-[15px]" aria-label="Game progress">
           {STEPS.map((s, i) => (
-            <li key={s} className="text-center">
-              <div className={`h-1.5 rounded-full ${i < step ? "bg-sun" : i === step ? "bg-ball" : "bg-paper/15"}`} />
-              <div className={`mt-1.5 hidden text-[10px] font-bold uppercase tracking-wider sm:block ${i === step ? "text-paper" : "text-paper/45"}`}>{s}</div>
+            <li key={s} aria-current={i === step ? "step" : undefined} className={`flex shrink-0 items-center gap-1.5 border-b-4 pb-1.5 ${i === step ? "border-ball font-bold text-ink" : i < step ? "border-transparent text-ink-2" : "border-transparent text-ink-3"}`}>
+              {i < step ? <I.Check width={15} height={15} className="text-emerald" /> : <span className="num text-base">{i + 1}</span>}
+              {s}
             </li>
           ))}
         </ol>
-        <div className="mt-2 text-[11px] font-bold uppercase tracking-wider text-paper/70 sm:hidden">Step {step + 1} · {STEPS[step]}</div>
       </header>
 
-      <div className="mt-6 space-y-6">
-        {step === 0 && <JoinPanel run={run} />}
-        {(step === 1 || step === 2) && <CheckInPanel run={run} isHost={isHost} />}
-        {step === 2 && <TeamsPanel run={run} isHost={isHost} />}
-        {step === 3 && <LivePanel run={run} />}
-        {step === 5 && <StatsEntry run={run} />}
-        {step === 6 && <ReviewPanel run={run} />}
-        {step === 7 && <DonePanel run={run} />}
-        {step < 3 && <RosterPanel run={run} />}
-        {step < 3 && run.participants.includes(state.meId) && !isHost && (
-          <button className="btn-ghost text-[#b4441a]" onClick={() => dispatch({ type: "leave", runId: run.id })}>Can&apos;t make it — leave run</button>
+      <div className={`mt-8 grid items-start gap-10 ${courtSide ? "lg:grid-cols-[minmax(0,460px)_1fr]" : ""}`}>
+        {courtSide && (
+          <div className="lg:sticky lg:top-24">
+            <CourtRun run={run} onJoin={step === 0 ? () => dispatch({ type: "join", runId: run.id }) : undefined} />
+            <p className="mt-3 text-sm text-ink-2">
+              {run.participants.length} of {run.capacity} spots taken{run.checkedIn.length && run.status !== "reviewed" && run.status !== "final" ? `, ${run.checkedIn.length} at the court` : ""}.
+              {run.teams && step >= 2 ? " Light side is Shirts, the guarding side is Skins." : ""}
+            </p>
+          </div>
         )}
+        <div className="min-w-0 space-y-8">
+          {step === 0 && <JoinPanel run={run} />}
+          {(step === 1 || step === 2) && <CheckInPanel run={run} isHost={isHost} />}
+          {step === 2 && <TeamsPanel run={run} isHost={isHost} />}
+          {step === 3 && <LivePanel run={run} />}
+          {step === 5 && <StatsEntry run={run} />}
+          {step === 6 && <ReviewPanel run={run} />}
+          {step === 7 && <DonePanel run={run} />}
+          {step < 3 && <RosterPanel run={run} />}
+          {step < 3 && run.participants.includes(state.meId) && !isHost && (
+            <button className="btn-ghost px-0 text-[#b4441a]" onClick={() => dispatch({ type: "leave", runId: run.id })}>Can&apos;t make it? Leave the run</button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -107,7 +110,7 @@ function JoinPanel({ run }: { run: Run }) {
   const { dispatch } = useStore();
   const open = run.capacity - run.participants.length;
   return (
-    <div className="panel flex flex-wrap items-center justify-between gap-4 p-5">
+    <div className="panel flex flex-wrap items-center justify-between gap-4 pt-5">
       <div>
         <div className="display text-2xl">{open > 0 ? `${open} ${open === 1 ? "spot" : "spots"} open` : "Run is full"}</div>
         <p className="text-sm text-ink-2">Joining tells the host you&apos;re coming. No-shows lower your Trust score; cancelling ahead doesn&apos;t.</p>
@@ -128,7 +131,7 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
 
   if (mine) {
     return (
-      <div className="panel flex flex-wrap items-center gap-5 p-5">
+      <div className="panel flex flex-wrap items-center gap-5 pt-5">
         <div className="rounded-xl bg-paper p-2"><Qr value={`runit:${run.code}`} size={96} /></div>
         <div className="flex-1">
           <div className="flex items-center gap-2 text-emerald"><I.Check /><span className="font-bold">You&apos;re checked in</span></div>
@@ -146,7 +149,7 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
   }
 
   return (
-    <div className="panel grid gap-6 p-5 sm:grid-cols-[1fr_auto]">
+    <div className="panel grid gap-6 pt-5 sm:grid-cols-[1fr_auto]">
       <div>
         <div className="eyebrow mb-1">At the court?</div>
         <div className="display text-[2rem]">Check in</div>
@@ -156,7 +159,7 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
           if (code.trim().toUpperCase() !== run.code) return setErr("That code doesn't match this run. Ask the host to show theirs.");
           setErr(null); doCheckIn();
         }}>
-          <input className="field num uppercase tracking-widest" placeholder={run.code.replace(/\d/g, "0")} value={code} onChange={(e) => setCode(e.target.value)} aria-label="Game code" maxLength={8} />
+          <input className="field num " placeholder={run.code.replace(/\d/g, "0")} value={code} onChange={(e) => setCode(e.target.value)} aria-label="Game code" maxLength={8} />
           <button className="btn-ink shrink-0">Check in</button>
         </form>
         {err && <p className="mt-2 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
@@ -169,7 +172,7 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
         <button className="btn-ball mt-4" disabled={scanning} onClick={() => { setScanning(true); setTimeout(() => { setScanning(false); doCheckIn(); }, 900); }}>
           {scanning ? "Scanning…" : "Scan QR"}
         </button>
-        <span className="mt-2 text-[10px] uppercase tracking-wider text-paper/50">Simulated camera in demo</span>
+        <span className="mt-2 text-[10px] text-paper/50">Simulated camera in demo</span>
       </div>
     </div>
   );
@@ -196,11 +199,10 @@ function TeamsPanel({ run, isHost }: { run: Run; isHost: boolean }) {
     dispatch({ type: "setTeams", runId: run.id, teams: inA ? { a: nf, b: nt } : { a: nt, b: nf } });
   };
   return (
-    <div className="panel p-5">
+    <div className="panel pt-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="eyebrow">Teams</div>
-          <div className="display text-[2rem]">Shirts vs Skins</div>
+                    <div className="display text-[2rem]">Shirts vs Skins</div>
           <p className="text-sm text-ink-2">{run.mode === "ranked" ? "Balanced by rating." : "Auto-picked."} {isHost ? "Tap a player to swap sides." : "The host can swap players."}</p>
         </div>
         {isHost ? (
@@ -211,7 +213,7 @@ function TeamsPanel({ run, isHost }: { run: Run; isHost: boolean }) {
       </div>
       <div className="mt-5 grid grid-cols-2 gap-3">
         {(["a", "b"] as const).map((t) => (
-          <div key={t} className={`rounded-2xl p-3 ${t === "a" ? "bg-paper-warm" : "bg-ink text-paper"}`}>
+          <div key={t} className={`rounded-lg p-3 ${t === "a" ? "bg-paper-warm" : "bg-ink text-paper"}`}>
             <div className="mb-2 flex items-center justify-between px-1">
               <span className="display text-xl">{t === "a" ? "Shirts" : "Skins"}</span>
               {run.mode === "ranked" && <span className={`num text-[11px] ${t === "a" ? "text-ink-3" : "text-paper/50"}`}>avg {avg(teams[t])}</span>}
@@ -309,10 +311,10 @@ function StatsEntry({ run }: { run: Run }) {
     }, 700);
   };
   return (
-    <div className="panel p-5 sm:p-6">
+    <div className="panel pt-5 ">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <div className="eyebrow">Final · {won ? "you won" : "you lost"} {onA ? `${run.score!.a}–${run.score!.b}` : `${run.score!.b}–${run.score!.a}`}</div>
+          <div className="eyebrow">Final, {won ? "you won" : "you lost"} {onA ? `${run.score!.a}–${run.score!.b}` : `${run.score!.b}–${run.score!.a}`}</div>
           <div className="display text-[2.2rem]">Your box score</div>
         </div>
         <span className="text-xs text-ink-3">Just your own line. Takes 20 seconds.</span>
@@ -383,7 +385,7 @@ function ReviewPanel({ run }: { run: Run }) {
   return (
     <div className="space-y-5">
       {issues.map((x) => (
-        <div key={x.team} className="rise rounded-2xl border-2 border-sun bg-sun-soft/70 p-5" role="alert">
+        <div key={x.team} className="rise border-l-4 border-sun bg-sun-soft/60 py-5 pl-5 pr-4" role="alert">
           <div className="flex items-start gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sun text-ink"><I.Flag width={18} height={18} /></span>
             <div className="flex-1">
@@ -406,8 +408,7 @@ function ReviewPanel({ run }: { run: Run }) {
       <div className="panel overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-paper-line p-5">
           <div>
-            <div className="eyebrow">Evidence</div>
-            <div className="display text-[2rem]">Box score</div>
+                        <div className="display text-[2rem]">Box score</div>
           </div>
           <div className="text-right">
             <div className="text-[11px] text-ink-3">Your line</div>
@@ -417,7 +418,7 @@ function ReviewPanel({ run }: { run: Run }) {
         {(["a", "b"] as const).map((t) => (
           <div key={t}>
             <div className={`flex items-center justify-between px-5 py-2 text-xs font-bold uppercase tracking-wider ${t === "a" ? "bg-paper-warm" : "bg-ink text-paper"}`}>
-              <span>{t === "a" ? "Shirts" : "Skins"} · final <span className="num">{run.score![t]}</span></span>
+              <span>{t === "a" ? "Shirts" : "Skins"}, final <span className="num">{run.score![t]}</span></span>
               <span className="num">Σ {teamPoints(run, t)}</span>
             </div>
             <div className="overflow-x-auto">
@@ -478,7 +479,7 @@ function DonePanel({ run }: { run: Run }) {
   const rec = state.history.find((h) => h.runId === run.id);
   const reflected = state.reflections.some((r) => r.runId === run.id);
   return (
-    <div className="panel p-6">
+    <div className="panel pt-6">
       <div className="eyebrow">Saved to My Game</div>
       <div className="display mt-1 text-[2.4rem]">{rec?.result === "W" ? "Dub." : "Run it back."} <span className="num text-ink-2">{rec?.score}</span></div>
       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
@@ -498,25 +499,25 @@ function RosterPanel({ run }: { run: Run }) {
   const empty = run.capacity - run.participants.length;
   return (
     <div>
-      <div className="eyebrow mb-2">Roster · {run.participants.length}/{run.capacity}</div>
-      <ul className="grid gap-2 sm:grid-cols-2">
+      <h2 className="display mb-2 text-[1.8rem]">Who&apos;s coming</h2>
+      <ul className="grid gap-x-8 sm:grid-cols-2">
         {run.participants.map((id) => {
           const p = player(id)!;
           const here = run.checkedIn.includes(id);
           return (
-            <li key={id} className="rise flex items-center gap-3 rounded-xl border border-paper-line bg-white/60 px-3 py-2.5">
+            <li key={id} className="flex items-center gap-3 border-t border-ink/10 py-3">
               <Avatar config={p.character} size={36} />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">{p.nickname}{id === state.meId && " (you)"}{id === run.hostId && <span className="ml-1.5 text-[10px] font-bold uppercase text-ball">host</span>}</div>
-                <div className="truncate text-xs text-ink-3">{archetypeName(p.dna, p.position)} · Trust {p.trust.attendance}%</div>
+                <div className="truncate text-sm font-semibold">{p.nickname}{id === state.meId && " (you)"}{id === run.hostId && <span className="ml-1.5 text-[10px] font-bold text-ball">host</span>}</div>
+                <div className="truncate text-xs text-ink-3">{archetypeName(p.dna, p.position)}, Trust {p.trust.attendance}%</div>
               </div>
               {here ? <span className="flex items-center gap-1 text-xs font-bold text-emerald"><I.Check width={14} height={14} />Here</span> : <span className="text-xs text-ink-3">Coming</span>}
             </li>
           );
         })}
         {Array.from({ length: empty }).map((_, i) => (
-          <li key={i} className="flex items-center gap-3 rounded-xl border border-dashed border-ink/20 px-3 py-2.5 text-sm text-ink-3">
-            <span className="h-9 w-9 rounded-full border-2 border-dashed border-ink/20" /> Open spot
+          <li key={i} className="flex items-center gap-3 border-t border-ink/10 py-3 text-ink-3">
+            <span className="h-9 w-9 rounded-full border-2 border-dashed border-ink/25" /> Open spot
           </li>
         ))}
       </ul>

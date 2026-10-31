@@ -61,7 +61,7 @@ export default function Customize() {
           <div className="relative flex h-full flex-col items-center justify-end px-4 pb-6 pt-10">
             <PlayerFigure config={cfg} size={300} idSuffix="edit" />
             <div className="display mt-2 text-[3rem] text-ink">{nick || "—"}</div>
-            <div className="text-xs font-semibold uppercase tracking-[.2em] text-ink/50">{cfg.effects.length ? cfg.effects.map((e) => ARCH[e].effect).join(" + ") : "No skill effect"}</div>
+            <div className="text-xs font-semibold tracking-[.2em] text-ink/50">{cfg.effects.length ? cfg.effects.map((e) => ARCH[e].effect).join(" + ") : "No skill effect"}</div>
           </div>
         </div>
 
@@ -113,8 +113,8 @@ export default function Customize() {
                         <button disabled={!unlocked} aria-pressed={on} onClick={() => toggleFx(a)} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${on ? "border-ink bg-white" : "border-paper-line bg-white/50"} ${!unlocked ? "cursor-not-allowed opacity-50" : "hover:border-ink/40"}`}>
                           <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: ARCH[a].soft, color: ARCH[a].color }}><I.Bolt /></span>
                           <span className="flex-1">
-                            <span className="block font-bold">{ARCH[a].label} · <span className="font-medium text-ink-2">{ARCH[a].effect}</span></span>
-                            <span className="block text-xs text-ink-3">{unlocked ? ARCH[a].read : `Locked · DNA ${me.dna[a]} — becomes available when it's one of your defining traits`}</span>
+                            <span className="block font-bold">{ARCH[a].label}, <span className="font-medium text-ink-2">{ARCH[a].effect}</span></span>
+                            <span className="block text-xs text-ink-3">{unlocked ? ARCH[a].read : `Locked, DNA ${me.dna[a]} — becomes available when it's one of your defining traits`}</span>
                           </span>
                           {on && <I.Check className="text-emerald" />}
                         </button>
