@@ -62,7 +62,7 @@ function Courts() {
           <h1 className="display text-[3rem] sm:text-[4rem]">Find your court</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-full border border-ink/15 bg-white/60 p-1" role="tablist">
+          <div className="inline-flex rounded-full border border-ink/15 bg-surface/60 p-1" role="tablist">
             {(["Hazleton", "Scranton"] as Region[]).map((r) => (
               <button key={r} role="tab" aria-selected={region === r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => { setRegion(r); setSelected(undefined); }}>{r}</button>
             ))}
@@ -80,7 +80,7 @@ function Courts() {
       </div>
 
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_400px]">
-        <div className="relative overflow-hidden rounded-[22px] border border-paper-line bg-[#FBF3E6] lg:sticky lg:top-24 lg:h-[620px]">
+        <div className="relative overflow-hidden rounded-[22px] border border-paper-line bg-[var(--map-bg)] lg:sticky lg:top-24 lg:h-[620px]">
           <div className="aspect-[1000/640] lg:aspect-auto lg:h-full">
             <CourtMap courts={visible} region={region} selected={selected} activeCounts={activeCounts} onSelect={onSelect} />
           </div>
@@ -99,7 +99,7 @@ function Courts() {
               <ul className="space-y-1">
                 {visible.map((c) => (
                   <li key={c.id}>
-                    <button onClick={() => setSelected(c.id)} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-white/70">
+                    <button onClick={() => setSelected(c.id)} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-surface/70">
                       <span className={`h-3 w-3 shrink-0 rounded-full ${c.indoor ? "bg-sky" : "bg-ball"}`} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{c.name}</span>
@@ -138,9 +138,9 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
     <div className="rise">
       <div className={`relative overflow-hidden rounded-2xl p-5 ${c.indoor ? "bg-sky-soft" : "bg-sun-soft"}`}>
         <svg viewBox="0 0 200 90" className="pointer-events-none absolute -bottom-6 -right-6 h-24 opacity-15" aria-hidden>
-          <rect x="2" y="2" width="196" height="86" fill="none" stroke="#202B30" strokeWidth="2" />
-          <path d="M100 2v86M2 30h40v30H2M198 30h-40v30h40" fill="none" stroke="#202B30" strokeWidth="2" />
-          <circle cx="100" cy="45" r="14" fill="none" stroke="#202B30" strokeWidth="2" />
+          <rect x="2" y="2" width="196" height="86" fill="none" stroke="currentColor" strokeWidth="2" />
+          <path d="M100 2v86M2 30h40v30H2M198 30h-40v30h40" fill="none" stroke="currentColor" strokeWidth="2" />
+          <circle cx="100" cy="45" r="14" fill="none" stroke="currentColor" strokeWidth="2" />
         </svg>
         <button onClick={onClose} aria-label="Close court details" className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-paper/80"><I.X width={16} height={16} /></button>
         <div className="eyebrow">{c.neighborhood}, {c.city}</div>
@@ -167,10 +167,10 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
 
       <div className="mt-5 flex items-center justify-between">
         <div className="eyebrow">Runs here</div>
-        <Link href={`/create?court=${c.id}`} className="text-sm font-semibold text-ball">Call one here</Link>
+        <Link href={`/create?court=${c.id}`} className="text-sm font-semibold text-ball-ink">Call one here</Link>
       </div>
       {runs.length ? <ul className="mt-2 space-y-2">{runs.map((r) => (
-        <li key={r.id}><Link href={`/runs/${r.id}`} className="flex items-center gap-3 rounded-xl border border-paper-line bg-white/60 px-3 py-2.5 hover:border-ink/30">
+        <li key={r.id}><Link href={`/runs/${r.id}`} className="flex items-center gap-3 rounded-xl border border-paper-line bg-surface/60 px-3 py-2.5 hover:border-ink/30">
           <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{r.title}</span><span className="block text-xs text-ink-3">{when(r.startsAt)}, {r.format}, {r.mode}</span></span>
           <span className="num text-xs text-ink-2">{r.participants.length}/{r.capacity}</span><I.Chevron width={16} height={16} className="text-ink-3" />
         </Link></li>))}</ul> : <p className="mt-2 text-sm text-ink-3">Nothing scheduled. Quiet court — good time to call a run.</p>}
@@ -213,7 +213,7 @@ function AddCourt({ onClose, region }: { onClose: () => void; region: Region }) 
     setDone(true);
   };
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-ink/40 p-0 sm:place-items-center sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-end bg-night/60 p-0 sm:place-items-center sm:p-6" onClick={onClose}>
       <div className="rise w-full max-w-md rounded-t-3xl bg-paper p-6 sm:rounded-3xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Add a missing court">
         <div className="flex items-center justify-between"><h2 className="display text-[2rem]">Add a court</h2><DemoTag /></div>
         {done ? (
@@ -232,7 +232,7 @@ function AddCourt({ onClose, region }: { onClose: () => void; region: Region }) 
             </div>
             <div><label className="label" htmlFor="cd">Where is it?</label><textarea id="cd" className="field min-h-[80px]" value={details} onChange={(e) => setDetails(e.target.value)} placeholder="Cross streets, landmark, how to get in" /></div>
             <p className="text-xs text-ink-3">In the live app you&apos;d drop a pin. Exact home addresses are never requested.</p>
-            {err && <p className="text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
+            {err && <p className="text-sm font-semibold text-warn" role="alert">{err}</p>}
             <div className="flex gap-2"><button type="button" className="btn-line flex-1" onClick={onClose}>Cancel</button><button className="btn-ball flex-1">Submit court</button></div>
           </form>
         )}

@@ -2,37 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --ball: #f47b35;
-  --paper: #fff9f0;
-  --sun: #f4c65e;
-  --emerald: #239b72;
-  --sky: #56b8e8;
-  --ink: #202b30;
-  --violet: #8a6be0;
-  --line: #eadcc6;
+/* ============================================================
+   Three looks. Colors are "r g b" triplets so Tailwind can add alpha.
+   lights: a night run under the park lamps (default)
+   paint:  daytime blacktop, court paint and stencil numbers
+   card:   collectible trading card, foil only where it's verified
+   ============================================================ */
+
+:root, [data-theme="lights"] {
+  --c-paper: 20 24 29;       --c-paper-warm: 27 32 39;   --c-paper-line: 44 52 61;  --c-surface: 27 32 39;
+  --c-ink: 237 235 228;      --c-ink-2: 169 179 188;     --c-ink-3: 134 146 158;
+  --c-ball: 255 178 56;      --c-ball-deep: 232 154 30;  --c-ball-soft: 58 44 18;   --c-ball-ink: 255 178 56;  --c-on-ball: 20 24 29;
+  --c-sun: 255 210 122;      --c-sun-soft: 46 39 22;     --c-sun-deep: 255 210 122;
+  --c-emerald: 61 211 155;   --c-emerald-soft: 16 46 35; --c-on-emerald: 13 16 20;
+  --c-sky: 110 195 240;      --c-sky-soft: 15 37 51;     --c-sky-deep: 158 216 247;
+  --c-violet: 166 139 255;   --c-violet-soft: 34 27 58;
+  --c-warn: 255 138 101;     --c-on-warn: 13 16 20;
+  --c-night: 13 16 20;       --c-chalk: 237 235 228;
+  --night-ink-2: 70 82 94;   --night-ink-3: 100 112 124;
+
+  --font-display: "Archivo Variable"; --display-weight: 800; --display-stretch: 68%; --display-style: normal; --display-track: -0.012em;
+  --font-sans: "Archivo Variable";    --sans-stretch: 100%;
+  --font-num: "Archivo Variable";     --num-weight: 700; --num-stretch: 78%; --num-style: normal;
+  --font-score: "Doto Variable";      --score-weight: 900; --score-style: normal; --score-track: 0.02em;
+  --btn-radius: 14px;
+
+  --court-out-floor: #1F5444; --court-out-apron: #163C31; --court-in-floor: #9A7448; --court-in-apron: #7E5E3A;
+  --court-key: #C8641F; --court-line-out: #EDEBE4; --court-line-in: rgba(13,16,20,.6); --court-rim: #0D1014;
+  --court-tag: rgba(13,16,20,.86); --court-tag-text: #EDEBE4; --court-me: #FFB238; --court-me-text: #14181D;
+  --map-bg: #161B21; --map-park: #1B3229; --map-water: #17303F; --map-street: #262E37; --map-road: #3A3222; --map-label: #EDEBE4; --map-halo: #161B21; --map-pin-off: #14181D;
+  color-scheme: dark;
 }
 
-html { background: var(--paper); color: var(--ink); -webkit-tap-highlight-color: transparent; }
+[data-theme="paint"] {
+  --c-paper: 46 106 85;      --c-paper-warm: 40 94 75;   --c-paper-line: 88 146 124; --c-surface: 36 40 42;
+  --c-ink: 247 246 241;      --c-ink-2: 222 232 226;     --c-ink-3: 210 225 216;
+  --c-ball: 201 71 30;       --c-ball-deep: 168 56 20;   --c-ball-soft: 122 52 24;  --c-ball-ink: 255 221 200; --c-on-ball: 247 246 241;
+  --c-sun: 242 193 78;       --c-sun-soft: 94 82 30;     --c-sun-deep: 255 226 154;
+  --c-emerald: 181 238 200;  --c-emerald-soft: 31 78 62; --c-on-emerald: 27 30 31;
+  --c-sky: 142 197 232;      --c-sky-soft: 33 70 92;     --c-sky-deep: 205 235 250;
+  --c-violet: 200 184 255;   --c-violet-soft: 62 52 102;
+  --c-warn: 255 220 207;     --c-on-warn: 27 30 31;
+  --c-night: 27 30 31;       --c-chalk: 247 246 241;
+  --night-ink-2: 70 76 80;   --night-ink-3: 96 104 108;
+
+  --font-display: "Big Shoulders Stencil Variable"; --display-weight: 900; --display-stretch: 100%; --display-style: normal; --display-track: 0;
+  --font-sans: "Schibsted Grotesk Variable"; --sans-stretch: 100%;
+  --font-num: "Big Shoulders Stencil Variable"; --num-weight: 800; --num-stretch: 100%; --num-style: normal;
+  --font-score: "Big Shoulders Stencil Variable"; --score-weight: 900; --score-style: normal; --score-track: -0.01em;
+  --btn-radius: 12px;
+
+  --court-out-floor: #3C8069; --court-out-apron: #2E6A55; --court-in-floor: #D9A86C; --court-in-apron: #C4935A;
+  --court-key: #C9471E; --court-line-out: #F7F6F1; --court-line-in: rgba(27,30,31,.6); --court-rim: #1B1E1F;
+  --court-tag: #1B1E1F; --court-tag-text: #F7F6F1; --court-me: #F2C14E; --court-me-text: #1B1E1F;
+  --map-bg: #24282A; --map-park: #2E6A55; --map-water: #21465C; --map-street: #33393C; --map-road: #4A4F52; --map-label: #F7F6F1; --map-halo: #24282A; --map-pin-off: #24282A;
+  color-scheme: dark;
+}
+
+[data-theme="card"] {
+  --c-paper: 238 240 236;    --c-paper-warm: 228 231 226; --c-paper-line: 203 208 218; --c-surface: 255 255 255;
+  --c-ink: 21 33 59;         --c-ink-2: 74 84 104;        --c-ink-3: 94 104 128;
+  --c-ball: 37 70 216;       --c-ball-deep: 27 53 174;    --c-ball-soft: 221 227 251; --c-ball-ink: 37 70 216; --c-on-ball: 255 255 255;
+  --c-sun: 233 162 59;       --c-sun-soft: 251 235 201;   --c-sun-deep: 138 100 19;
+  --c-emerald: 21 131 95;    --c-emerald-soft: 214 238 228; --c-on-emerald: 255 255 255;
+  --c-sky: 45 140 196;       --c-sky-soft: 220 238 248;   --c-sky-deep: 29 111 150;
+  --c-violet: 106 79 208;    --c-violet-soft: 231 225 250;
+  --c-warn: 180 68 26;       --c-on-warn: 255 255 255;
+  --c-night: 21 33 59;       --c-chalk: 244 245 242;
+  --night-ink-2: 74 84 104;  --night-ink-3: 94 104 128;
+
+  --font-display: "Kanit"; --display-weight: 900; --display-stretch: 100%; --display-style: italic; --display-track: -0.005em;
+  --font-sans: "Instrument Sans Variable"; --sans-stretch: 100%;
+  --font-num: "Kanit"; --num-weight: 800; --num-stretch: 100%; --num-style: italic;
+  --font-score: "Kanit"; --score-weight: 900; --score-style: italic; --score-track: -0.01em;
+  --btn-radius: 16px;
+
+  --court-out-floor: #2F56E0; --court-out-apron: #2546D8; --court-in-floor: #E3C08F; --court-in-apron: #D3AE7A;
+  --court-key: #15213B; --court-line-out: #F4F5F2; --court-line-in: rgba(21,33,59,.55); --court-rim: #15213B;
+  --court-tag: rgba(21,33,59,.88); --court-tag-text: #F4F5F2; --court-me: #F2B33D; --court-me-text: #15213B;
+  --map-bg: #E4E7E2; --map-park: #D6EEE4; --map-water: #DCEEF8; --map-street: #D3D8D0; --map-road: #CBD0DA; --map-label: #15213B; --map-halo: #E4E7E2; --map-pin-off: #FFFFFF;
+  color-scheme: light;
+}
+
+/* A dark panel that stays dark in every look (scoreboards, the king of the court, the demo banner).
+   Inside it, ink/paper keep their light-theme meaning: bg-ink is dark, text-paper is light. */
+.scope-night {
+  --c-ink: var(--c-night); --c-paper: var(--c-chalk); --c-ink-2: var(--night-ink-2); --c-ink-3: var(--night-ink-3);
+  --c-surface: var(--c-chalk); --c-paper-line: var(--night-ink-3);
+}
+/* Card's royal blue disappears on navy, so dark panels in Card use a lighter blue. */
+[data-theme="card"] .scope-night { --c-ball: 132 160 255; --c-ball-deep: 160 182 255; --c-ball-ink: 160 182 255; --c-on-ball: 21 33 59; --c-emerald: 110 220 170; --c-on-emerald: 21 33 59; --c-warn: 255 160 130; --c-on-warn: 21 33 59; --c-sky-deep: 170 220 245; }
+/* The reverse: a light area inside a dark panel (the final-score form on the scoreboard). */
+.scope-chalk {
+  --c-ink: var(--c-night); --c-paper: var(--c-chalk); --c-surface: 255 255 255; --c-paper-line: 203 208 218;
+  --c-ink-2: var(--night-ink-2); --c-ink-3: var(--night-ink-3); color-scheme: light;
+}
+
+html { background: rgb(var(--c-paper)); color: rgb(var(--c-ink)); -webkit-tap-highlight-color: transparent; }
 body {
-  font-family: "Atkinson Hyperlegible Next Variable", system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-stretch: var(--sans-stretch);
   font-size: 16px;
   line-height: 1.5;
-  background: var(--paper);
+  background: rgb(var(--c-paper));
   min-height: 100vh;
-  font-feature-settings: "tnum" 1;
+}
+/* Lights: one warm pool of lamp light at the top of every page. */
+[data-theme="lights"] body, :root:not([data-theme]) body {
+  background: radial-gradient(900px 520px at 88% -8%, rgb(255 178 56 / .11), transparent 62%) no-repeat, rgb(var(--c-paper));
 }
 
 @layer components {
-  /* Headlines and scoreboard figures share one face, always sentence case. */
-  .display { font-family: "Big Shoulders Display Variable", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.005em; line-height: 0.92; }
-  .num { font-family: "Big Shoulders Display Variable", system-ui, sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
-  /* Small section label: sentence case, no tracking. */
-  .eyebrow { font-size: 0.875rem; font-weight: 600; color: #5d6a70; }
+  .display { font-family: var(--font-display), system-ui, sans-serif; font-weight: var(--display-weight); font-stretch: var(--display-stretch); font-style: var(--display-style); letter-spacing: var(--display-track); line-height: 0.92; }
+  .num { font-family: var(--font-num), system-ui, sans-serif; font-weight: var(--num-weight); font-stretch: var(--num-stretch); font-style: var(--num-style); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+  /* Scoreboard figures: dot-matrix lamps, stencil paint or card italics, depending on the look. */
+  .score { font-family: var(--font-score), system-ui, sans-serif; font-weight: var(--score-weight); font-style: var(--score-style); letter-spacing: var(--score-track); font-variant-numeric: tabular-nums; line-height: 0.9; }
+  .eyebrow { font-size: 0.875rem; font-weight: 600; color: rgb(var(--c-ink-2)); }
 
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[15px] font-semibold transition-colors active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper; }
-  .btn-ball { @apply btn bg-ball text-ink hover:bg-[#ff8b47]; }
-  .btn-ink { @apply btn bg-ink text-paper hover:bg-black; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-[var(--btn-radius)] px-5 py-2.5 text-[15px] font-semibold transition-colors active:translate-y-px disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper; }
+  .btn-ball { @apply btn bg-ball text-on-ball hover:bg-ball-deep; }
+  .btn-ink { @apply btn bg-ink text-paper hover:bg-ink/90; }
   .btn-line { @apply btn border-2 border-ink/80 bg-transparent text-ink hover:bg-ink hover:text-paper; }
   .btn-ghost { @apply btn px-3 text-ink-2 hover:text-ink hover:bg-ink/5; }
 
@@ -40,9 +129,49 @@ body {
   .chip { @apply inline-flex items-center gap-1.5 rounded-full border border-ink/15 bg-transparent px-3 py-1 text-sm font-semibold text-ink-2 hover:border-ink/40; }
   .chip-on { @apply border-ink bg-ink text-paper hover:border-ink; }
 
-  .field { @apply w-full rounded-xl border-2 border-ink/15 bg-white px-3.5 py-2.5 text-base text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none; }
+  .field { @apply w-full rounded-xl border-2 border-ink/15 bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none; }
   .label { @apply mb-1.5 block text-sm font-semibold text-ink; }
 }
+
+/* ---------- Lights: lamp glow on scoreboard figures ---------- */
+[data-theme="lights"] .glow, :root:not([data-theme]) .glow { text-shadow: 0 0 22px rgb(var(--c-ball) / .55); }
+[data-theme="lights"] .board { background: radial-gradient(120% 80% at 50% -10%, rgb(255 178 56 / .16), transparent 60%), rgb(var(--c-night)); }
+[data-theme="lights"] .board-side { border: 1px solid rgb(255 255 255 / .08); }
+[data-theme="lights"] .board-side .score { color: rgb(var(--c-chalk)); }
+[data-theme="lights"] .board-side.is-leading .score { color: rgb(255 178 56); text-shadow: 0 0 26px rgb(255 178 56 / .55); }
+[data-theme="lights"] .pip-on { box-shadow: 0 0 9px rgb(var(--c-ball) / .7); background: rgb(var(--c-ball)) !important; }
+
+[data-theme="lights"] .run-time { color: rgb(var(--c-ball)); text-shadow: 0 0 14px rgb(var(--c-ball) / .35); font-size: 23px; letter-spacing: 0; }
+[data-theme="lights"] .run-row { grid-template-columns: 92px 1fr auto; }
+[data-theme="paint"] .run-time { color: rgb(var(--c-sun)); }
+
+.tip-time { color: rgb(var(--c-ink)); }
+[data-theme="lights"] .tip-time { color: rgb(var(--c-ball)); }
+[data-theme="paint"] .court-frame svg { filter: drop-shadow(6px 6px 0 rgb(var(--c-night))); }
+
+/* ---------- Paint: hard sticker shadows, painted scoreboard bands ---------- */
+[data-theme="paint"] .btn-ball, [data-theme="paint"] .btn-ink, [data-theme="paint"] .sticker { box-shadow: 4px 4px 0 rgb(var(--c-night)); }
+[data-theme="paint"] .btn-ball:active, [data-theme="paint"] .btn-ink:active { box-shadow: 1px 1px 0 rgb(var(--c-night)); transform: translate(3px, 3px); }
+[data-theme="paint"] .board { background: rgb(var(--c-night)); }
+[data-theme="paint"] .board-side { border-radius: 14px; }
+[data-theme="paint"] .board-a { background: rgb(var(--c-ball)); }
+[data-theme="paint"] .board-b { background: rgb(var(--c-sky)); --c-paper: var(--c-night); --c-ink: var(--c-chalk); color: rgb(var(--c-night)); }
+[data-theme="paint"] .board-side .score { color: inherit; filter: none; font-size: 112px; }
+[data-theme="paint"] .board-a .score { color: rgb(var(--c-chalk)); }
+[data-theme="paint"] .board-side.is-leading { box-shadow: inset 0 0 0 4px rgb(var(--c-chalk)); }
+[data-theme="paint"] .pip-on { background: rgb(var(--c-sun)) !important; }
+
+/* ---------- Card: foil reserved for verified, ticket-stub runs, card-edged scoreboard ---------- */
+.foil { background: linear-gradient(115deg, #9EE7E5, #C8B6FF 30%, #FFD3A5 55%, #B7F0A8 80%, #9EE7E5); }
+[data-theme="card"] .seal-verified { background: linear-gradient(115deg, #9EE7E5, #C8B6FF, #FFD3A5, #B7F0A8) !important; color: #15213B !important; border-color: transparent !important; }
+[data-theme="card"] .board { background: rgb(var(--c-night)); box-shadow: 0 0 0 4px rgb(203 208 218); }
+[data-theme="card"] .board-side .score { color: rgb(var(--c-chalk)); }
+[data-theme="card"] .board-side:not(.is-leading) .score { opacity: .5; }
+[data-theme="card"] .run-row { background: rgb(var(--c-surface)); border: 0 !important; border-radius: 14px; padding: 14px 0 14px 16px; margin-bottom: 10px; grid-template-columns: 80px 1fr 104px; box-shadow: 0 1px 0 rgb(21 33 59 / .12); }
+[data-theme="card"] .run-row-stub { align-self: stretch; justify-content: center; align-items: center; border-left: 2px dashed rgb(var(--c-paper-line)); position: relative; padding: 0 10px; }
+[data-theme="card"] .run-row-stub::before, [data-theme="card"] .run-row-stub::after { content: ""; position: absolute; left: -10px; width: 18px; height: 18px; border-radius: 50%; background: rgb(var(--c-paper)); }
+[data-theme="card"] .run-row-stub::before { top: -23px; }
+[data-theme="card"] .run-row-stub::after { bottom: -23px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .holo-pulse { animation: holo 3.2s ease-in-out infinite; }
@@ -58,5 +187,6 @@ body {
 @keyframes spot { from { transform: scale(.4); opacity: 0 } to { transform: scale(1); opacity: 1 } }
 
 svg [role="button"]:focus { outline: none; }
-svg [role="button"]:focus-visible .focus-ring { stroke: #202B30; stroke-width: 3; }
-::selection { background: rgba(244, 123, 53, .3); }
+svg [role="button"]:focus-visible .focus-ring { stroke: rgb(var(--c-ink)); stroke-width: 3; }
+::selection { background: rgb(var(--c-ball) / .3); }
+[data-theme="card"] .run-time { font-size: 26px; }

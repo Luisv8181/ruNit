@@ -45,15 +45,15 @@ export function LiveScoreboard({ run }: { run: Run }) {
   };
 
   const Side = ({ k, label }: { k: "a" | "b"; label: string }) => (
-    <div className={`rounded-2xl p-4 transition-colors ${leader === k ? "bg-white/[.07] ring-1 ring-sun/40" : "bg-white/[.03]"}`}>
+    <div className={`board-side board-${k} rounded-2xl p-4 transition-colors ${leader === k ? "is-leading bg-white/[.07]" : "bg-white/[.03]"}`}>
       <div className="flex items-baseline justify-between">
         <span className="text-[15px] font-bold text-paper/80">{label}{(k === "a") === onA ? " (you)" : ""}</span>
         {leader === k && <span className="text-xs font-bold text-sun">Leading</span>}
       </div>
-      <div className="num mt-1 text-center text-[96px] leading-none text-sun drop-shadow-[0_0_24px_rgba(244,198,94,.35)]" aria-live="polite">{t[k]}</div>
+      <div className="score mt-2 text-center text-[104px]" aria-live="polite">{t[k]}</div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {[1, 2].map((v) => (
-          <button key={v} aria-label={`Add ${v} for ${label}`} onClick={() => add(k, v)} className="num h-14 rounded-xl bg-paper text-[28px] text-ink active:scale-95">+{v}</button>
+          <button key={v} aria-label={`Add ${v} for ${label}`} onClick={() => add(k, v)} className="num h-14 rounded-[var(--btn-radius)] bg-paper text-[28px] text-ink active:scale-95">+{v}</button>
         ))}
       </div>
     </div>
@@ -61,9 +61,9 @@ export function LiveScoreboard({ run }: { run: Run }) {
 
   if (pocket) {
     return (
-      <div className="rounded-[26px] bg-ink p-8 text-center text-paper">
-        <div className="display text-[3.4rem]">Phone down.<br /><span className="text-ball">Go hoop.</span></div>
-        <div className="num mt-4 text-3xl text-paper/70">{String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}</div>
+      <div className="scope-night board rounded-[26px] bg-ink p-8 text-center text-paper">
+        <div className="display text-[3.4rem]">Phone down.<br /><span className="text-ball-ink">Go hoop.</span></div>
+        <div className="score glow mt-5 text-5xl text-ball">{String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}</div>
         <div className="mt-8 flex justify-center gap-2">
           <button className="btn border-2 border-paper/30 text-paper" onClick={() => setPocket(false)}>Show scoreboard</button>
           <button className="btn-ball" onClick={() => { setPocket(false); open(); }}>Game over</button>
@@ -73,9 +73,9 @@ export function LiveScoreboard({ run }: { run: Run }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[26px] bg-[radial-gradient(120%_90%_at_50%_0%,#33281f,#1b2326_65%)] p-4 text-paper sm:p-6">
+    <div className="scope-night board overflow-hidden rounded-[26px] bg-night p-4 text-paper sm:p-6">
       <div className="flex items-center justify-between px-1">
-        <span className="num text-2xl text-paper/70">{String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}</span>
+        <span className="score text-[28px] text-paper/80">{String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}</span>
         <span className="text-[15px] text-paper/70">First to {run.target}</span>
         <button className="text-[15px] font-semibold text-paper underline decoration-paper/40 underline-offset-4" onClick={() => setPocket(true)}>Pocket mode</button>
       </div>
@@ -88,11 +88,11 @@ export function LiveScoreboard({ run }: { run: Run }) {
       <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white/[.04] p-4">
         <div className="min-w-0 flex-1">
           <div className="text-[15px] font-bold">Your points</div>
-          <div className="text-sm text-paper/60">Adds to your team too. Becomes your box score.</div>
+          <div className="text-sm text-paper/70">Counts for your team too.</div>
         </div>
-        <span className="num w-16 text-center text-[52px] leading-none">{t.mine}</span>
+        <span className="score glow w-16 text-center text-[56px] text-ball">{t.mine}</span>
         {[1, 2].map((v) => (
-          <button key={v} aria-label={`Add ${v} to my points`} onClick={() => add("mine", v)} className="num h-14 w-14 rounded-xl bg-ball text-[26px] text-ink active:scale-95">+{v}</button>
+          <button key={v} aria-label={`Add ${v} to my points`} onClick={() => add("mine", v)} className="num h-14 w-14 rounded-[var(--btn-radius)] bg-ball text-[26px] text-on-ball active:scale-95">+{v}</button>
         ))}
       </div>
 
@@ -102,13 +102,13 @@ export function LiveScoreboard({ run }: { run: Run }) {
       </div>
 
       {entering && (
-        <form onSubmit={submit} className="rise mt-4 rounded-2xl bg-paper p-5 text-ink">
+        <form onSubmit={submit} className="scope-chalk rise mt-4 rounded-2xl bg-paper p-5 text-ink">
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
             <div><label className="label" htmlFor="sa">Shirts</label><input id="sa" inputMode="numeric" className="field num text-center text-3xl" value={a} onChange={(e) => setA(e.target.value.replace(/\D/g, ""))} /></div>
             <span className="pb-3 text-ink-3">–</span>
             <div><label className="label" htmlFor="sb">Skins</label><input id="sb" inputMode="numeric" className="field num text-center text-3xl" value={b} onChange={(e) => setB(e.target.value.replace(/\D/g, ""))} /></div>
           </div>
-          {err && <p className="mt-3 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
+          {err && <p className="mt-3 text-sm font-semibold text-warn" role="alert">{err}</p>}
           <button className="btn-ink mt-4 w-full">Save final score</button>
           <p className="mt-2 text-center text-sm text-ink-2">Filled in from the scoreboard. Fix it if someone missed a bucket.</p>
         </form>

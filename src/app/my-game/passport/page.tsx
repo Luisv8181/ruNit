@@ -83,7 +83,7 @@ export default function Passport() {
         <ul>
           {list.map((b) => (
             <li key={b.id} className="grid grid-cols-[36px_1fr_auto] items-center gap-4 border-b border-ink/10 py-4">
-              <span className={`grid h-9 w-9 place-items-center rounded-full ${b.earned ? "bg-ball text-ink" : "border-2 border-dashed border-ink/25 text-ink-3"}`}>{b.earned ? <I.Check width={18} height={18} /> : null}</span>
+              <span className={`grid h-9 w-9 place-items-center rounded-full ${b.earned ? "bg-ball text-on-ball" : "border-2 border-dashed border-ink/25 text-ink-3"}`}>{b.earned ? <I.Check width={18} height={18} /> : null}</span>
               <div>
                 <div className={`text-[17px] font-bold ${b.earned ? "" : "text-ink-2"}`}>{b.name}</div>
                 <div className="text-[15px] text-ink-2">{b.how}</div>

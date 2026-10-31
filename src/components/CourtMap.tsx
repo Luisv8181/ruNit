@@ -53,23 +53,23 @@ function DemoMap({ courts, region, selected, activeCounts, onSelect }: Props) {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" role="application" aria-label={`${region} court map`}>
-      <rect width={W} height={H} fill="#FBF3E6" />
+      <rect width={W} height={H} style={{ fill: "var(--map-bg)" }} />
       {/* parks / greenery */}
       {region === "Hazleton" ? (
         <>
-          <path d="M120 420 C 200 360, 330 380, 360 470 C 380 560, 210 600, 140 560 Z" fill="#D4EEE3" />
-          <path d="M640 80 C 760 40, 900 90, 880 190 C 860 260, 700 250, 650 190 Z" fill="#D4EEE3" />
+          <path d="M120 420 C 200 360, 330 380, 360 470 C 380 560, 210 600, 140 560 Z" style={{ fill: "var(--map-park)" }} />
+          <path d="M640 80 C 760 40, 900 90, 880 190 C 860 260, 700 250, 650 190 Z" style={{ fill: "var(--map-park)" }} />
         </>
       ) : (
         <>
-          <path d="M60 120 C 180 80, 260 140, 240 240 C 220 320, 90 300, 60 230 Z" fill="#D4EEE3" />
-          <path d="M700 380 C 820 340, 960 420, 930 520 C 900 600, 760 600, 720 520 Z" fill="#D4EEE3" />
+          <path d="M60 120 C 180 80, 260 140, 240 240 C 220 320, 90 300, 60 230 Z" style={{ fill: "var(--map-park)" }} />
+          <path d="M700 380 C 820 340, 960 420, 930 520 C 900 600, 760 600, 720 520 Z" style={{ fill: "var(--map-park)" }} />
           {/* river */}
-          <path d="M-20 520 C 200 470, 320 600, 520 560 C 720 520, 800 300, 1020 260" stroke="#BFE4F6" strokeWidth="26" fill="none" strokeLinecap="round" />
+          <path d="M-20 520 C 200 470, 320 600, 520 560 C 720 520, 800 300, 1020 260" style={{ stroke: "var(--map-water)" }} strokeWidth="26" fill="none" strokeLinecap="round" />
         </>
       )}
-      <g stroke="#E9DCC7" strokeWidth="3">{streets.map((d, i) => <path key={i} d={d} />)}</g>
-      <path d={region === "Hazleton" ? "M-20 300 C 300 260, 600 340, 1020 250" : "M300 -20 C 380 200, 420 420, 560 660"} stroke="#F2D7A8" strokeWidth="10" fill="none" />
+      <g style={{ stroke: "var(--map-street)" }} strokeWidth="3">{streets.map((d, i) => <path key={i} d={d} />)}</g>
+      <path d={region === "Hazleton" ? "M-20 300 C 300 260, 600 340, 1020 250" : "M300 -20 C 380 200, 420 420, 560 660"} style={{ stroke: "var(--map-road)" }} strokeWidth="10" fill="none" />
 
       {region === "Hazleton" && (
         <g transform={`translate(${home.x} ${home.y})`} aria-label="Your approximate area">
@@ -82,25 +82,25 @@ function DemoMap({ courts, region, selected, activeCounts, onSelect }: Props) {
         const p = proj(c.lat, c.lng);
         const on = selected === c.id;
         const active = activeCounts[c.id] ?? 0;
-        const color = c.indoor ? "#56B8E8" : "#F47B35";
+        const color = c.indoor ? "rgb(var(--c-sky))" : "rgb(var(--c-ball))";
         const verified = c.verification === "community_verified" || c.verification === "officially_verified";
         return (
           <g key={c.id} transform={`translate(${p.x} ${p.y})`} className="cursor-pointer" onClick={() => onSelect(c.id)} role="button" tabIndex={0} aria-label={`${c.name}${active ? `, ${active} active runs` : ""}`} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(c.id)}>
             {active > 0 && <circle r="30" fill={color} opacity=".18" className="holo-pulse" />}
-            <circle r={on ? 20 : 15} fill={verified ? color : "#FFF9F0"} stroke={color} strokeWidth={verified ? 0 : 3} strokeDasharray={c.verification === "imported" ? "4 3" : undefined} />
+            <circle r={on ? 20 : 15} fill={verified ? color : "var(--map-pin-off)"} stroke={color} strokeWidth={verified ? 0 : 3} strokeDasharray={c.verification === "imported" ? "4 3" : undefined} />
             {/* tiny hoop glyph */}
             <path d="M-6 -1h12M-4 -1l1.5 6h5L4 -1" stroke={verified ? "#fff" : color} strokeWidth="2" fill="none" strokeLinecap="round" />
             {active > 0 && (
               <g transform="translate(13 -13)">
-                <circle r="10" fill="#202B30" />
-                <text textAnchor="middle" dy="4" fontSize="11" fontWeight="700" fill="#fff" style={{ fontFamily: "JetBrains Mono" }}>{active}</text>
+                <circle r="10" style={{ fill: "var(--map-label)" }} />
+                <text textAnchor="middle" dy="4" fontSize="11" fontWeight="700" style={{ fill: "var(--map-bg)" }}>{active}</text>
               </g>
             )}
-            <text y={on ? 40 : 34} textAnchor="middle" fontSize={on ? 17 : 15} fontWeight={on ? 700 : 600} fill="#202B30" stroke="#FBF3E6" strokeWidth="4" paintOrder="stroke">{c.name}</text>
+            <text y={on ? 40 : 34} textAnchor="middle" fontSize={on ? 17 : 15} fontWeight={on ? 700 : 600} style={{ fill: "var(--map-label)", stroke: "var(--map-halo)" }} strokeWidth="4" paintOrder="stroke">{c.name}</text>
           </g>
         );
       })}
-      <text x={W - 16} y={H - 14} textAnchor="end" fontSize="13" fill="#7A858A">Stylized demo map, streets are decorative, court positions approximate</text>
+      <text x={W - 16} y={H - 14} textAnchor="end" fontSize="13" style={{ fill: "var(--map-label)", opacity: 0.6 }}>Stylized demo map, streets are decorative, court positions approximate</text>
     </svg>
   );
 }

@@ -100,7 +100,7 @@ export default function Reflect({ params }: { params: Promise<{ id: string }> })
             <div className="eyebrow">Saved</div>
             <h1 className="display mt-2 text-[3rem]">Here&apos;s what moved</h1>
           </div>
-          <div className="rounded-[22px] bg-ink p-6 text-paper">
+          <div className="rounded-[22px] scope-night bg-ink p-6 text-paper">
             <div className="eyebrow !text-sun mb-4">Player DNA, {me.nickname}</div>
             <DNABars dna={me.dna} dark />
             {log ? (
@@ -114,7 +114,7 @@ export default function Reflect({ params }: { params: Promise<{ id: string }> })
           </div>
           {insights[0] && (
             <div className="panel pt-5">
-              <div className="flex items-center gap-2"><I.Bulb className="text-ball" /><span className="eyebrow !text-ball">{insights[0].confidence}</span></div>
+              <div className="flex items-center gap-2"><I.Bulb className="text-ball-ink" /><span className="eyebrow !text-ball-ink">{insights[0].confidence}</span></div>
               <div className="mt-2 text-lg font-bold">{insights[0].headline}</div>
               <p className="mt-1 text-ink-2">{insights[0].body}</p>
               {insights[0].suggestion && <p className="mt-3 rounded-xl bg-ball/[.07] p-3 text-sm">{insights[0].suggestion}</p>}

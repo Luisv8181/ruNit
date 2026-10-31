@@ -102,7 +102,7 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
           {step === 7 && <DonePanel run={run} />}
           {step < 3 && <RosterPanel run={run} />}
           {step < 3 && run.participants.includes(state.meId) && !isHost && (
-            <button className="btn-ghost px-0 text-[#b4441a]" onClick={() => dispatch({ type: "leave", runId: run.id })}>Can&apos;t make it? Leave the run</button>
+            <button className="btn-ghost px-0 text-warn" onClick={() => dispatch({ type: "leave", runId: run.id })}>Can&apos;t make it? Leave the run</button>
           )}
         </div>
       </div>
@@ -166,10 +166,10 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
           <input className="field num " placeholder={run.code.replace(/\d/g, "0")} value={code} onChange={(e) => setCode(e.target.value)} aria-label="Game code" maxLength={8} />
           <button className="btn-ink shrink-0">Check in</button>
         </form>
-        {err && <p className="mt-2 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
+        {err && <p className="mt-2 text-sm font-semibold text-warn" role="alert">{err}</p>}
         <p className="mt-2 text-xs text-ink-3">Demo hint: this run&apos;s code is <span className="num font-bold">{run.code}</span>.</p>
       </div>
-      <div className="flex flex-col items-center justify-center rounded-2xl bg-ink p-5 text-paper">
+      <div className="scope-night flex flex-col items-center justify-center rounded-2xl bg-ink p-5 text-paper">
         <div className={`grid h-28 w-28 place-items-center rounded-xl border-2 ${scanning ? "border-sun" : "border-paper/30"} border-dashed`}>
           {scanning ? <span className="text-xs text-sun">Reading…</span> : <I.Qr width={40} height={40} />}
         </div>
@@ -217,7 +217,7 @@ function TeamsPanel({ run, isHost }: { run: Run; isHost: boolean }) {
       </div>
       <div className="mt-5 grid grid-cols-2 gap-3">
         {(["a", "b"] as const).map((t) => (
-          <div key={t} className={`rounded-lg p-3 ${t === "a" ? "bg-paper-warm" : "bg-ink text-paper"}`}>
+          <div key={t} className={`rounded-lg p-3 ${t === "a" ? "bg-paper-warm" : "scope-night bg-ink text-paper"}`}>
             <div className="mb-2 flex items-center justify-between px-1">
               <span className="display text-xl">{t === "a" ? "Shirts" : "Skins"}</span>
               {run.mode === "ranked" && <span className={`num text-[11px] ${t === "a" ? "text-ink-3" : "text-paper/50"}`}>avg {avg(teams[t])}</span>}
@@ -227,7 +227,7 @@ function TeamsPanel({ run, isHost }: { run: Run; isHost: boolean }) {
                 const p = player(id)!;
                 return (
                   <li key={id}>
-                    <button disabled={!isHost} onClick={() => swap(id)} className={`flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left ${isHost ? (t === "a" ? "hover:bg-white" : "hover:bg-white/10") : ""}`}>
+                    <button disabled={!isHost} onClick={() => swap(id)} className={`flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left ${isHost ? (t === "a" ? "hover:bg-surface" : "hover:bg-white/10") : ""}`}>
                       <Avatar config={p.character} size={30} />
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.nickname}{id === state.meId && " (you)"}</span>
                     </button>
@@ -290,7 +290,7 @@ function StatsEntry({ run }: { run: Run }) {
           </div>
         ))}
       </div>
-      {err && <p className="mt-3 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
+      {err && <p className="mt-3 text-sm font-semibold text-warn" role="alert">{err}</p>}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-sm text-xs text-ink-3">Your line starts as <b>self-reported</b>. It becomes confirmed when teammates and opponents agree with it.</p>
         <button className="btn-ball px-7 py-3" disabled={saving} onClick={submit}>{saving ? "Comparing with the other players…" : "Submit my stats"}</button>
@@ -366,7 +366,7 @@ function ReviewPanel({ run }: { run: Run }) {
 
       {issues.length === 0 && <BumpConfirm run={run} />}
 
-      <div className="overflow-hidden rounded-[22px] bg-[radial-gradient(120%_80%_at_50%_0%,#2b3438,#1b2326_70%)] text-paper">
+      <div className="scope-night board overflow-hidden rounded-[22px] bg-night text-paper">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-3 pt-5">
           <div className="display text-[2.2rem]">Box score</div>
           <div className="flex items-center gap-2 text-sm text-paper/70">Your line <StatBadge v={myV} /></div>
@@ -378,7 +378,7 @@ function ReviewPanel({ run }: { run: Run }) {
               <div className="flex items-center justify-between px-4 pb-1 pt-3">
                 <span className="text-[15px] font-bold">{t === "a" ? "Shirts" : "Skins"}</span>
                 <span className="text-sm text-paper/70">Final <span className="num text-xl text-sun">{run.score![t]}</span>{"  "}
-                  <span className={off ? "font-bold text-ball" : ""}>Lines add to <span className="num text-xl">{sum}</span></span></span>
+                  <span className={off ? "font-bold text-ball-ink" : ""}>Lines add to <span className="num text-xl">{sum}</span></span></span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[540px]">
@@ -400,8 +400,8 @@ function ReviewPanel({ run }: { run: Run }) {
                           <td className="px-4 py-2.5 text-right">
                             {isMe ? (s.confirmedBy.length ? <span className="text-sm font-bold text-emerald">✓ {s.confirmedBy.length}</span> : <span className="text-sm text-paper/50">Waiting</span>) : (
                               <div className="flex justify-end gap-1">
-                                <button aria-pressed={conf} className={`rounded-full px-3 py-1 text-sm font-bold ${conf ? "bg-emerald text-white" : "bg-white/10 hover:bg-emerald/40"}`} onClick={() => dispatch({ type: "confirmSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{conf ? "✓ Confirmed" : "Confirm"}</button>
-                                <button aria-pressed={disp} className={`rounded-full px-3 py-1 text-sm font-bold ${disp ? "bg-[#b4441a] text-white" : "bg-white/10 hover:bg-[#b4441a]/50"}`} onClick={() => dispatch({ type: "disputeSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{disp ? "Disputed" : "Dispute"}</button>
+                                <button aria-pressed={conf} className={`rounded-full px-3 py-1 text-sm font-bold ${conf ? "bg-emerald text-on-emerald" : "bg-white/10 hover:bg-emerald/40"}`} onClick={() => dispatch({ type: "confirmSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{conf ? "✓ Confirmed" : "Confirm"}</button>
+                                <button aria-pressed={disp} className={`rounded-full px-3 py-1 text-sm font-bold ${disp ? "bg-warn text-on-warn" : "bg-white/10 hover:bg-warn/50"}`} onClick={() => dispatch({ type: "disputeSub", runId: run.id, playerId: s.playerId, by: state.meId })}>{disp ? "Disputed" : "Dispute"}</button>
                               </div>
                             )}
                           </td>
@@ -443,7 +443,7 @@ function DonePanel({ run }: { run: Run }) {
       <div className="display mt-1 text-[2.4rem]">{rec?.result === "W" ? "Dub." : "Run it back."} <span className="num text-ink-2">{rec?.score}</span></div>
       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
         {rec && <StatBadge v={rec.verification} />}
-        {rec?.mmrDelta !== undefined && <span className={`num font-bold ${rec.mmrDelta >= 0 ? "text-emerald" : "text-[#b4441a]"}`}>{rec.mmrDelta >= 0 ? "+" : ""}{rec.mmrDelta} MMR</span>}
+        {rec?.mmrDelta !== undefined && <span className={`num font-bold ${rec.mmrDelta >= 0 ? "text-emerald" : "text-warn"}`}>{rec.mmrDelta >= 0 ? "+" : ""}{rec.mmrDelta} MMR</span>}
       </div>
       <div className="mt-5 flex flex-wrap gap-2">
         {!reflected && <Link href={`/runs/${run.id}/reflect`} className="btn-ball">How did you get your points?</Link>}
@@ -468,7 +468,7 @@ function RosterPanel({ run }: { run: Run }) {
             <li key={id} className="flex items-center gap-3 border-t border-ink/10 py-3">
               <Avatar config={p.character} size={36} />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">{p.nickname}{id === state.meId && " (you)"}{id === run.hostId && <span className="ml-1.5 text-[10px] font-bold text-ball">host</span>}</div>
+                <div className="truncate text-sm font-semibold">{p.nickname}{id === state.meId && " (you)"}{id === run.hostId && <span className="ml-1.5 text-[10px] font-bold text-ball-ink">host</span>}</div>
                 <div className="truncate text-xs text-ink-3">{archetypeName(p.dna, p.position)}, Trust {p.trust.attendance}%</div>
               </div>
               {here ? <span className="flex items-center gap-1 text-xs font-bold text-emerald"><I.Check width={14} height={14} />Here</span> : <span className="text-xs text-ink-3">Coming</span>}

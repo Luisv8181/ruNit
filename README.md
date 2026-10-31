@@ -57,6 +57,18 @@ The fastest path through the signature Game Loop: Home → the dark **“You're 
 - `scripts/screenshots.mjs` — end-to-end visual QA walk-through (desktop + mobile)
 - `docs/` — product, design, schema, architecture, flows, demo data, trailer production, roadmap
 
+## Three looks
+
+The palette button in the header switches between three complete looks. The choice is saved on the device and applied before the first paint.
+
+| Look | Feel | Signature |
+| --- | --- | --- |
+| **Lights** (default) | A night run under the park lamps | Dot-matrix scoreboard digits that glow like a park scoreboard |
+| **Paint** | Daytime blacktop | Stencil numbers, court-paint colors, sticker shadows, the record book drawn on a half court |
+| **Card** | Collectible trading card | Your player card on Home, ticket-stub runs, holographic foil used only on verified stats |
+
+Every color is a CSS variable (`src/app/globals.css`, `[data-theme=...]`); Tailwind classes like `bg-paper` and `text-ink` resolve per look. Panels that should stay dark in every look (scoreboards, the king of the court) use `.scope-night`. `node scripts/looks.mjs <outDir>` screenshots key screens in all three.
+
 ## Trailer
 
 Rendered files: `trailer/out/ruNit-demo-trailer-16x9.mp4` and `trailer/out/ruNit-demo-trailer-9x16.mp4` (72 s). To re-render, see [docs/TRAILER_PRODUCTION.md](docs/TRAILER_PRODUCTION.md).

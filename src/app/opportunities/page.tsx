@@ -58,13 +58,13 @@ function Opps() {
       </div>
 
       {list.length === 0 ? <Empty title="Nothing in that window" body="Widen the date range or clear a filter." /> : (
-        <ul className="divide-y divide-paper-line overflow-hidden rounded-[22px] border border-paper-line bg-white/60">
+        <ul className="divide-y divide-paper-line overflow-hidden rounded-[22px] border border-paper-line bg-surface/60">
           {list.map((o) => {
             const d = new Date(o.date);
             const interested = !!state.interests[o.id];
             return (
               <li key={o.id}>
-                <button className="grid w-full grid-cols-[64px_1fr] items-center gap-4 px-4 py-4 text-left hover:bg-white sm:grid-cols-[72px_1fr_auto] sm:px-6" onClick={() => setOpen(o.id)}>
+                <button className="grid w-full grid-cols-[64px_1fr] items-center gap-4 px-4 py-4 text-left hover:bg-surface sm:grid-cols-[72px_1fr_auto] sm:px-6" onClick={() => setOpen(o.id)}>
                   <div className="text-center">
                     <div className="eyebrow ">{d.toLocaleDateString([], { month: "short" })}</div>
                     <div className="display text-[2.4rem] leading-none">{d.getDate()}</div>
@@ -72,14 +72,14 @@ function Opps() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded px-1.5 py-px text-[10px] font-bold text-white" style={{ background: TYPE_COLOR[o.type] }}>{o.type}</span>
-                      {o.organizerVerified ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald"><I.Shield width={13} height={13} />Verified organizer</span> : <span className="text-[11px] font-semibold text-[#b4441a]">Unverified organizer</span>}
+                      {o.organizerVerified ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald"><I.Shield width={13} height={13} />Verified organizer</span> : <span className="text-[11px] font-semibold text-warn">Unverified organizer</span>}
                     </div>
                     <div className="mt-1 truncate text-[17px] font-bold">{o.title}</div>
                     <div className="truncate text-sm text-ink-2">{o.org}, {o.city}, {o.eligibility}</div>
                   </div>
                   <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
                     <span className="text-sm font-semibold">{o.cost}</span>
-                    {interested ? <span className="flex items-center gap-1 text-xs font-bold text-emerald"><I.Check width={14} height={14} />Interested</span> : <span className="text-xs font-semibold text-ball">Details</span>}
+                    {interested ? <span className="flex items-center gap-1 text-xs font-bold text-emerald"><I.Check width={14} height={14} />Interested</span> : <span className="text-xs font-semibold text-ball-ink">Details</span>}
                   </div>
                 </button>
               </li>
@@ -98,7 +98,7 @@ function OppSheet({ o, onClose }: { o: Opportunity; onClose: () => void }) {
   const [share, setShare] = useState(false);
   const [sending, setSending] = useState(false);
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-ink/50 sm:place-items-center sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-end bg-night/60 sm:place-items-center sm:p-6" onClick={onClose}>
       <div className="rise max-h-[92vh] w-full max-w-lg overflow-auto rounded-t-[28px] bg-paper sm:rounded-[28px]" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={o.title}>
         <div className="relative p-6" style={{ background: `${TYPE_COLOR[o.type]}22` }}>
           <button onClick={onClose} aria-label="Close" className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-paper"><I.X width={16} height={16} /></button>
@@ -107,8 +107,8 @@ function OppSheet({ o, onClose }: { o: Opportunity; onClose: () => void }) {
           <div className="mt-1 text-sm text-ink-2">{o.org}</div>
         </div>
         <div className="space-y-5 p-6">
-          <div className={`flex items-start gap-3 rounded-xl p-3 text-sm ${o.organizerVerified ? "bg-emerald-soft/70" : "bg-[#f6d7c9]/60"}`}>
-            <I.Shield className={o.organizerVerified ? "text-emerald" : "text-[#b4441a]"} />
+          <div className={`flex items-start gap-3 rounded-xl p-3 text-sm ${o.organizerVerified ? "bg-emerald-soft/70" : "bg-warn/15"}`}>
+            <I.Shield className={o.organizerVerified ? "text-emerald" : "text-warn"} />
             <div>{o.organizerVerified ? <><b>Verified organizer.</b> Identity and organization confirmed by ruNit staff.</> : <><b>Not verified yet.</b> Confirm details directly before paying anything.</>}</div>
           </div>
           <p>{o.summary}</p>
@@ -127,7 +127,7 @@ function OppSheet({ o, onClose }: { o: Opportunity; onClose: () => void }) {
           ) : (
             <div className="space-y-3">
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-paper-line p-3">
-                <input type="checkbox" className="mt-1 h-4 w-4 accent-[#F47B35]" checked={share} onChange={(e) => setShare(e.target.checked)} />
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-ball" checked={share} onChange={(e) => setShare(e.target.checked)} />
                 <span className="text-sm"><b>Share my player card with this organizer</b><span className="block text-ink-3">Off by default. Includes verified games, DNA and achievements — never your contact info.</span></span>
               </label>
               <button className="btn-ball w-full py-3" disabled={sending} onClick={() => { setSending(true); setTimeout(() => { dispatch({ type: "interest", oppId: o.id, shareCard: share }); setSending(false); }, 500); }}>{sending ? "Sending…" : "I'm interested"}</button>

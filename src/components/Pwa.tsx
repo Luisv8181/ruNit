@@ -15,7 +15,7 @@ export function Pwa() {
   }, []);
   if (online) return null;
   return (
-    <div role="status" className="fixed inset-x-3 top-3 z-[60] mx-auto max-w-md rounded-2xl bg-ink px-4 py-3 text-[15px] text-paper shadow-lg">
+    <div role="status" className="fixed inset-x-3 top-3 z-[60] mx-auto max-w-md rounded-2xl scope-night bg-ink px-4 py-3 text-[15px] text-paper shadow-lg">
       <b>You&apos;re offline.</b> Check-ins, scores and stats still save on this phone.
     </div>
   );

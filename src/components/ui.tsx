@@ -7,8 +7,8 @@ export function Logo({ size = 26, light = false }: { size?: number; light?: bool
   return (
     <span className="inline-flex items-center gap-2" aria-label="ruNit">
       <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-        <circle cx="16" cy="16" r="15" fill="#F47B35" />
-        <path d="M10 23V9l12 14V9" stroke={light ? "#202B30" : "#FFF9F0"} strokeWidth="3" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+        <circle cx="16" cy="16" r="15" style={{ fill: "rgb(var(--c-ball))" }} />
+        <path d="M10 23V9l12 14V9" style={{ stroke: "rgb(var(--c-on-ball))" }} strokeWidth="3" fill="none" strokeLinejoin="round" strokeLinecap="round" />
       </svg>
       <span className={`display text-[1.75em] leading-none ${light ? "text-paper" : "text-ink"}`}>
         ruNit
@@ -37,9 +37,9 @@ export function SectionHead({ eyebrow, title, action }: { eyebrow?: string; titl
 
 const COURT_V: Record<CourtVerification, { label: string; cls: string; tip: string }> = {
   imported: { label: "Imported", cls: "bg-ink/5 text-ink-2 border-ink/10", tip: "From open map data. Not yet confirmed by players." },
-  community_submitted: { label: "Submitted", cls: "bg-sun-soft text-[#8a6413] border-sun/50", tip: "Added by a player. Needs 5 confirmations." },
-  community_verified: { label: "Community verified", cls: "bg-emerald-soft text-emerald border-emerald/30", tip: "Confirmed by 5+ players who played here." },
-  officially_verified: { label: "Official", cls: "bg-sky-soft text-[#1d6f96] border-sky/40", tip: "Confirmed by the facility operator." },
+  community_submitted: { label: "Submitted", cls: "bg-sun-soft text-sun-deep border-sun/50", tip: "Added by a player. Needs 5 confirmations." },
+  community_verified: { label: "Community verified", cls: "seal-verified bg-emerald-soft text-emerald border-emerald/30", tip: "Confirmed by 5+ players who played here." },
+  officially_verified: { label: "Official", cls: "seal-verified bg-sky-soft text-sky-deep border-sky/40", tip: "Confirmed by the facility operator." },
 };
 export function CourtBadge({ v }: { v: CourtVerification }) {
   const x = COURT_V[v];
@@ -49,9 +49,9 @@ export const courtVerificationTip = (v: CourtVerification) => COURT_V[v].tip;
 
 const STAT_V: Record<Verification, { label: string; cls: string; step: number }> = {
   self: { label: "Self-reported", cls: "text-ink-2 bg-ink/5", step: 1 },
-  participant: { label: "Teammate-confirmed", cls: "text-[#8a6413] bg-sun-soft", step: 2 },
-  opponent: { label: "Opponent-confirmed", cls: "text-emerald bg-emerald-soft", step: 3 },
-  video: { label: "Video-supported", cls: "text-[#1d6f96] bg-sky-soft", step: 4 },
+  participant: { label: "Teammate-confirmed", cls: "text-sun-deep bg-sun-soft", step: 2 },
+  opponent: { label: "Opponent-confirmed", cls: "seal-verified text-emerald bg-emerald-soft", step: 3 },
+  video: { label: "Video-supported", cls: "seal-verified text-sky-deep bg-sky-soft", step: 4 },
 };
 export function StatBadge({ v }: { v: Verification }) {
   const x = STAT_V[v];

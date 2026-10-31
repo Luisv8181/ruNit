@@ -97,7 +97,7 @@ export function BumpConfirm({ run }: { run: Run }) {
       </ul>
 
       {with_ && theirs && (
-        <div className="fixed inset-0 z-50 grid place-items-end bg-ink/60 sm:place-items-center sm:p-6" onClick={() => !meeting && setWith(null)}>
+        <div className="fixed inset-0 z-50 grid place-items-end bg-night/70 sm:place-items-center sm:p-6" onClick={() => !meeting && setWith(null)}>
           <div className="rise w-full max-w-md rounded-t-[28px] bg-paper p-6 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Confirm with ${player(with_)?.nickname}`}>
             <div className="relative mx-auto h-28 w-56" aria-hidden>
               <div className={`absolute top-2 h-24 w-14 rounded-[14px] border-4 border-ink bg-ball transition-all duration-700 ${meeting ? "left-[78px] rotate-0" : "left-6 -rotate-6"}`} />
@@ -127,7 +127,7 @@ export function BumpConfirm({ run }: { run: Run }) {
                     </div>
                   </div>
                 )}
-                {err && <p className="mt-3 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
+                {err && <p className="mt-3 text-sm font-semibold text-warn" role="alert">{err}</p>}
                 <div className="mt-5 flex items-center justify-between border-t border-ink/10 pt-4">
                   <button className="btn-ghost px-0" onClick={() => setWith(null)}>Cancel</button>
                   <button className="btn-line" onClick={() => complete(with_)}><DemoTag>Demo</DemoTag> Their phone</button>

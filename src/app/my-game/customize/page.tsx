@@ -110,7 +110,7 @@ export default function Customize() {
                     const on = cfg.effects.includes(a);
                     return (
                       <li key={a}>
-                        <button disabled={!unlocked} aria-pressed={on} onClick={() => toggleFx(a)} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${on ? "border-ink bg-white" : "border-paper-line bg-white/50"} ${!unlocked ? "cursor-not-allowed opacity-50" : "hover:border-ink/40"}`}>
+                        <button disabled={!unlocked} aria-pressed={on} onClick={() => toggleFx(a)} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${on ? "border-ink bg-surface" : "border-paper-line bg-surface/50"} ${!unlocked ? "cursor-not-allowed opacity-50" : "hover:border-ink/40"}`}>
                           <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: ARCH[a].soft, color: ARCH[a].color }}><I.Bolt /></span>
                           <span className="flex-1">
                             <span className="block font-bold">{ARCH[a].label}, <span className="font-medium text-ink-2">{ARCH[a].effect}</span></span>
@@ -126,7 +126,7 @@ export default function Customize() {
             )}
           </div>
 
-          {err && <p className="mt-5 text-sm font-semibold text-[#b4441a]" role="alert">{err}</p>}
+          {err && <p className="mt-5 text-sm font-semibold text-warn" role="alert">{err}</p>}
           <div className="mt-8 flex gap-2">
             <button className="btn-line flex-1" onClick={() => { setCfg(me.character); setNick(me.nickname); setErr(null); }}>Revert</button>
             <button className="btn-ball flex-1" onClick={save}>Save look</button>

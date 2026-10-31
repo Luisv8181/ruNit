@@ -43,9 +43,10 @@ export function CourtRun({ run, onJoin, labels = true, className = "" }: Props) 
   const { state, court, player } = useStore();
   const c = court(run.courtId);
   const indoor = !!c?.indoor;
-  const floor = indoor ? "#E7BE86" : "#2E9C77";
-  const apron = indoor ? "#D9AB6E" : "#24876A";
-  const line = indoor ? "rgba(32,43,48,.55)" : "#FFF9F0";
+  const floor = indoor ? "var(--court-in-floor)" : "var(--court-out-floor)";
+  const apron = indoor ? "var(--court-in-apron)" : "var(--court-out-apron)";
+  const line = indoor ? "var(--court-line-in)" : "var(--court-line-out)";
+  const mark = indoor ? "var(--court-rim)" : "var(--court-line-out)";
   const checking = ["checkin", "full", "open"].includes(run.status) && run.checkedIn.length > 0;
   const onCourt = Math.min(run.capacity, 10);
   const teamsSet = !!run.teams && run.status !== "open";
@@ -77,11 +78,11 @@ export function CourtRun({ run, onJoin, labels = true, className = "" }: Props) 
           <clipPath id={`clip-${run.id}`}><rect x="0" y="0" width="400" height="372" rx="22" /></clipPath>
         </defs>
         <g clipPath={`url(#clip-${run.id})`}>
-          <rect width="400" height="372" fill={apron} />
-          <rect x="14" y="10" width="372" height="362" fill={floor} />
+          <rect width="400" height="372" style={{ fill: apron }} />
+          <rect x="14" y="10" width="372" height="362" style={{ fill: floor }} />
           {/* painted key */}
-          <rect x="152" y="10" width="96" height="146" fill="#F47B35" />
-          <g fill="none" stroke={line} strokeWidth="3">
+          <rect x="152" y="10" width="96" height="146" style={{ fill: "var(--court-key)" }} />
+          <g fill="none" style={{ stroke: line }} strokeWidth="3">
             <rect x="14" y="10" width="372" height="362" />
             <rect x="152" y="10" width="96" height="146" />
             <path d="M152 156 a48 48 0 0 0 96 0" />
@@ -90,8 +91,8 @@ export function CourtRun({ run, onJoin, labels = true, className = "" }: Props) 
             <path d="M152 372 a48 48 0 0 1 96 0" />
           </g>
           {/* backboard and rim */}
-          <path d="M176 32 h48" stroke="#202B30" strokeWidth="4" strokeLinecap="round" />
-          <circle cx="200" cy="44" r="9" fill="none" stroke="#202B30" strokeWidth="3" />
+          <path d="M176 32 h48" style={{ stroke: "var(--court-rim)" }} strokeWidth="4" strokeLinecap="round" />
+          <circle cx="200" cy="44" r="9" fill="none" style={{ stroke: "var(--court-rim)" }} strokeWidth="3" />
           <rect width="400" height="372" fill={`url(#sun-${run.id})`} />
         </g>
 
@@ -104,12 +105,12 @@ export function CourtRun({ run, onJoin, labels = true, className = "" }: Props) 
               <g key={`open-${i}`} transform={`translate(${t.x} ${t.y})`}
                 {...(clickable ? { role: "button", tabIndex: 0, "aria-label": "Take this spot", onClick: onJoin, onKeyDown: (e: React.KeyboardEvent) => (e.key === "Enter" || e.key === " ") && onJoin!() } : {})}
                 className={clickable ? "cursor-pointer" : undefined}>
-                <circle className="focus-ring" r="19" fill={clickable ? "rgba(255,249,240,.28)" : "rgba(255,249,240,.08)"} stroke={indoor ? "#202B30" : "#FFF9F0"} strokeOpacity={clickable ? 0.9 : 0.55} strokeWidth="2.5" strokeDasharray="5 5" />
-                <path d="M-7 0h14M0-7v14" stroke={indoor ? "#202B30" : "#FFF9F0"} strokeOpacity={clickable ? 0.95 : 0.5} strokeWidth="2.5" strokeLinecap="round" />
+                <circle className="focus-ring" r="19" fill={clickable ? "rgba(255,255,255,.26)" : "rgba(255,255,255,.08)"} style={{ stroke: mark }} strokeOpacity={clickable ? 0.9 : 0.55} strokeWidth="2.5" strokeDasharray="5 5" />
+                <path d="M-7 0h14M0-7v14" style={{ stroke: mark }} strokeOpacity={clickable ? 0.95 : 0.5} strokeWidth="2.5" strokeLinecap="round" />
                 {clickable && labels && (
                   <g transform="translate(0 34)">
-                    <rect x="-40" y="-11" width="80" height="22" rx="11" fill="#202B30" />
-                    <text textAnchor="middle" y="5" fontSize="13" fontWeight="700" fill="#FFF9F0">Take spot</text>
+                    <rect x="-40" y="-11" width="80" height="22" rx="11" style={{ fill: "var(--court-tag)" }} />
+                    <text textAnchor="middle" y="5" fontSize="13" fontWeight="700" style={{ fill: "var(--court-tag-text)" }}>Take spot</text>
                   </g>
                 )}
               </g>
@@ -120,15 +121,15 @@ export function CourtRun({ run, onJoin, labels = true, className = "" }: Props) 
           const me = p.id === state.meId;
           return (
             <g key={p.id} transform={`translate(${t.x} ${t.y})`} opacity={dim ? 0.5 : 1} className="spot-in" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: `${i * 40}ms` }}>
-              {me && <circle r="27" fill="#F4C65E" opacity=".9" />}
+              {me && <circle r="27" style={{ fill: "var(--court-me)" }} opacity=".9" />}
               <g transform="translate(-20 -21)">
                 <path d={TANK} fill={p.character.jersey.primary} stroke="#202B30" strokeOpacity=".3" strokeWidth="1.2" strokeLinejoin="round" />
                 <text x="20" y="31" textAnchor="middle" fill={p.character.jersey.secondary} fontSize={p.character.jersey.number.length > 1 ? 15.5 : 17} style={{ fontFamily: "'Big Shoulders Display Variable'", fontWeight: 800 }}>{p.character.jersey.number}</text>
               </g>
               {labels && (
                 <g transform={`translate(0 ${t.team === "b" ? -34 : 34})`}>
-                  <rect x={-(p.nickname.length * 4 + 12)} y="-11" width={p.nickname.length * 8 + 24} height="22" rx="11" fill={me ? "#F4C65E" : "rgba(32,43,48,.82)"} />
-                  <text textAnchor="middle" y="5" fontSize="13" fontWeight="700" fill={me ? "#202B30" : "#FFF9F0"}>{me ? "You" : p.nickname}</text>
+                  <rect x={-(p.nickname.length * 4 + 12)} y="-11" width={p.nickname.length * 8 + 24} height="22" rx="11" style={{ fill: me ? "var(--court-me)" : "var(--court-tag)" }} />
+                  <text textAnchor="middle" y="5" fontSize="13" fontWeight="700" style={{ fill: me ? "var(--court-me-text)" : "var(--court-tag-text)" }}>{me ? "You" : p.nickname}</text>
                 </g>
               )}
             </g>

@@ -108,7 +108,7 @@ function Create() {
         <section className="grid grid-cols-2 gap-3">
           <div><label className="label" htmlFor="date">Date</label><input id="date" type="date" className="field" value={date} onChange={(e) => setDate(e.target.value)} /></div>
           <div><label className="label" htmlFor="time">Tip-off</label><input id="time" type="time" className="field" value={time} onChange={(e) => setTime(e.target.value)} /></div>
-          {errors.when && <p className="col-span-2 text-sm font-semibold text-[#b4441a]" role="alert">{errors.when}</p>}
+          {errors.when && <p className="col-span-2 text-sm font-semibold text-warn" role="alert">{errors.when}</p>}
         </section>
 
         <section>
@@ -135,7 +135,7 @@ function Create() {
             <span className="label">Type</span>
             <Seg label="Game type" value={mode} onChange={setMode} options={[{ v: "casual", label: "Casual" }, { v: "ranked", label: "Ranked" }]} />
             <p className="mt-1.5 text-xs text-ink-3">{mode === "ranked" ? "Counts toward MMR. Stats need confirmation from players in the game." : "Just hoop. Stats still build your Player DNA."}</p>
-            {errors.mode && <p className="mt-1 text-sm font-semibold text-[#b4441a]" role="alert">{errors.mode}</p>}
+            {errors.mode && <p className="mt-1 text-sm font-semibold text-warn" role="alert">{errors.mode}</p>}
           </div>
         </section>
 
@@ -155,10 +155,10 @@ function Create() {
         <section>
           <label className="label" htmlFor="req">House rules <span className=" tracking-normal text-ink-3">(optional)</span></label>
           <input id="req" className="field" value={requirement} onChange={(e) => setRequirement(e.target.value)} placeholder={c.access === "membership" ? "Day pass at the front desk." : "Call your own fouls. Winners stay."} maxLength={140} />
-          {errors.req && <p className="mt-1 text-sm font-semibold text-[#b4441a]">{errors.req}</p>}
+          {errors.req && <p className="mt-1 text-sm font-semibold text-warn">{errors.req}</p>}
         </section>
 
-        <div className="relative overflow-hidden rounded-2xl bg-ink p-5 text-paper">
+        <div className="scope-night relative overflow-hidden rounded-2xl bg-ink p-5 text-paper">
           <CourtArt className="absolute -right-8 -top-8 h-48" stroke="#fff" opacity={0.12} />
           <div className="eyebrow !text-sun">Preview</div>
           <div className="display mt-1 text-[1.9rem]">{title}</div>

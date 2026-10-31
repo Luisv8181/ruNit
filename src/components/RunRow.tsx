@@ -24,7 +24,7 @@ export function SpotPips({ run }: { run: Run }) {
   return (
     <span className="inline-flex items-center gap-[3px]" aria-label={`${run.participants.length} of ${run.capacity} spots taken`}>
       {Array.from({ length: shown }).map((_, i) => (
-        <span key={i} className={`h-2.5 w-2.5 rounded-full ${i < run.participants.length ? "bg-ink" : "border-2 border-ink/25"}`} />
+        <span key={i} className={`h-2.5 w-2.5 rounded-full ${i < run.participants.length ? "pip-on bg-ink" : "border-2 border-ink/25"}`} />
       ))}
     </span>
   );
@@ -37,10 +37,10 @@ export function RunRow({ run, showCourt = true }: { run: Run; showCourt?: boolea
   const open = run.capacity - run.participants.length;
   const { t, ap, day } = timeParts(run.startsAt);
   return (
-    <li className="group relative grid grid-cols-[72px_1fr_auto] items-center gap-x-4 gap-y-2 border-t border-ink/10 py-4 first:border-t-0">
+    <li className="run-row group relative grid grid-cols-[72px_1fr_auto] items-center gap-x-4 gap-y-2 border-t border-ink/10 py-4 first:border-t-0">
       <div className="leading-none">
         <div className="text-[13px] font-semibold text-ink-2">{day}</div>
-        <div className="num mt-1 text-[30px] leading-none">{t}<span className="ml-0.5 text-base text-ink-2">{ap}</span></div>
+        <div className="run-time score mt-1 text-[30px] leading-none">{t}<span className="ml-0.5 text-base text-ink-2">{ap}</span></div>
       </div>
       <div className="min-w-0">
         <Link href={`/runs/${run.id}`} className="block text-[17px] font-bold leading-snug after:absolute after:inset-0 after:content-[''] hover:underline decoration-2 underline-offset-4">
@@ -51,7 +51,7 @@ export function RunRow({ run, showCourt = true }: { run: Run; showCourt?: boolea
           {FORMAT_WORD[run.format]} to {run.target}{run.mode === "ranked" ? ", ranked" : ""}.
         </div>
       </div>
-      <div className="relative z-10 flex flex-col items-end gap-2">
+      <div className="run-row-stub relative z-10 flex flex-col items-end gap-2">
         {mine ? (
           <Link href={`/runs/${run.id}`} className="text-[15px] font-bold text-ink underline decoration-2 underline-offset-4">You&apos;re in</Link>
         ) : open > 0 ? (

@@ -36,7 +36,7 @@ export default function MyGame() {
   return (
     <div className="space-y-10">
       {/* PLAYER CARD */}
-      <section className="relative overflow-hidden rounded-[30px] bg-ink text-paper">
+      <section className="scope-night relative overflow-hidden rounded-[30px] bg-ink text-paper">
         <div className="absolute inset-0 bg-[radial-gradient(70%_80%_at_75%_30%,rgba(244,123,53,.35),transparent_60%),radial-gradient(50%_60%_at_10%_100%,rgba(244,198,94,.18),transparent_60%)]" />
         <CourtArt className="absolute -bottom-40 right-0 h-[560px]" stroke="#FFF9F0" opacity={0.07} />
         <div className="relative grid gap-6 p-6 sm:p-10 md:grid-cols-[1fr_auto]">
@@ -88,7 +88,7 @@ export default function MyGame() {
               {insights.map((x) => (
                 <article key={x.id} className="panel pt-5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${x.confidence === "Consistent pattern" ? "bg-emerald-soft text-emerald" : x.confidence === "Emerging pattern" ? "bg-sun-soft text-[#8a6413]" : "bg-ink/5 text-ink-2"}`}>{x.confidence}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${x.confidence === "Consistent pattern" ? "bg-emerald-soft text-emerald" : x.confidence === "Emerging pattern" ? "bg-sun-soft text-sun-deep" : "bg-ink/5 text-ink-2"}`}>{x.confidence}</span>
                     <span className="text-[11px] text-ink-3">{x.evidence}</span>
                   </div>
                   <h3 className="mt-3 text-xl font-bold">{x.headline}</h3>
@@ -111,10 +111,10 @@ export default function MyGame() {
               ))}
             </div>
             {games.length === 0 ? <Empty title="No games yet" body="Your first saved game will show here." /> : (
-              <ul className="divide-y divide-paper-line rounded-2xl border border-paper-line bg-white/60">
+              <ul className="divide-y divide-paper-line rounded-2xl border border-paper-line bg-surface/60">
                 {games.map((g) => (
                   <li key={g.runId} className="grid grid-cols-[44px_1fr_auto] items-center gap-3 px-4 py-3">
-                    <span className={`display grid h-11 w-11 place-items-center rounded-xl text-xl ${g.result === "W" ? "bg-emerald text-paper" : "bg-ink/[.06] text-ink-2"}`}>{g.result}</span>
+                    <span className={`display grid h-11 w-11 place-items-center rounded-xl text-xl ${g.result === "W" ? "bg-emerald text-on-emerald" : "bg-ink/[.06] text-ink-2"}`}>{g.result}</span>
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold">{court(g.courtId)?.name}, <span className="num">{g.score}</span></div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-ink-3">
@@ -124,7 +124,7 @@ export default function MyGame() {
                     </div>
                     <div className="text-right">
                       <div className="num text-sm"><b>{g.line.pts}</b> pts, {g.line.reb} reb, {g.line.ast} ast</div>
-                      {g.mmrDelta !== undefined && <div className={`num text-xs font-bold ${g.mmrDelta >= 0 ? "text-emerald" : "text-[#b4441a]"}`}>{g.mmrDelta >= 0 ? "+" : ""}{g.mmrDelta}</div>}
+                      {g.mmrDelta !== undefined && <div className={`num text-xs font-bold ${g.mmrDelta >= 0 ? "text-emerald" : "text-warn"}`}>{g.mmrDelta >= 0 ? "+" : ""}{g.mmrDelta}</div>}
                     </div>
                   </li>
                 ))}
@@ -136,7 +136,7 @@ export default function MyGame() {
             <h2 className="display mb-3 text-[2.4rem]">Reflections</h2>
             <ul className="space-y-3">
               {[...state.reflections].sort((a, b) => +new Date(b.date) - +new Date(a.date)).map((r) => (
-                <li key={r.runId} className="rounded-2xl border border-paper-line bg-white/60 p-4">
+                <li key={r.runId} className="rounded-2xl border border-paper-line bg-surface/60 p-4">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="mr-1 text-xs text-ink-3">{dateShort(r.date)}</span>
                     {r.scoring.map((t) => <span key={t} className="rounded-full bg-ink/[.05] px-2 py-0.5 text-xs font-semibold">{t}</span>)}
@@ -196,7 +196,7 @@ function ShareCard({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink/60 p-4" onClick={onClose}>
       <div className="rise w-full max-w-[340px]" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Share player card">
-        <div className="relative aspect-[9/14] overflow-hidden rounded-[26px] bg-gradient-to-b from-[#F9A866] via-[#F47B35] to-[#202B30] p-5 text-paper">
+        <div className="relative aspect-[9/14] scope-night overflow-hidden rounded-[26px] bg-gradient-to-b from-ball/80 via-ball to-night p-5 text-paper">
           <CourtArt className="absolute -right-10 top-10 h-[360px]" stroke="#fff" opacity={0.12} />
           <div className="relative flex h-full flex-col">
             <div className="flex items-center justify-between"><span className="display text-xl ">ru<span className="text-ink">N</span>it</span><span className="num text-xs">#{me.character.jersey.number}</span></div>

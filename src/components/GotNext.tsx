@@ -39,7 +39,7 @@ export function GotNext({ courtId }: { courtId: string }) {
       {mineIdx >= 0 ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sun-soft/70 p-3">
           <span className="text-[15px]">{mineIdx === 0 ? <b>You&apos;re up next.</b> : <>You&apos;re <b>{mineIdx + 1}{["st", "nd", "rd"][mineIdx] ?? "th"}</b> in line. We&apos;ll buzz you when you&apos;re up.</>}</span>
-          <button className="btn-ghost px-2 text-[#b4441a]" onClick={() => dispatch({ type: "queueLeave", courtId })}>Leave the line</button>
+          <button className="btn-ghost px-2 text-warn" onClick={() => dispatch({ type: "queueLeave", courtId })}>Leave the line</button>
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap items-center gap-2">

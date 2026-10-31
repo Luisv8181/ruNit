@@ -86,9 +86,9 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
   const [invited, setInvited] = useState<string | null>(null);
   const myRuns = state.runs.filter((r) => r.hostId === state.meId && ["open", "full", "checkin"].includes(r.status) && !r.participants.includes(p.id) && r.participants.length < r.capacity);
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-ink/50 sm:place-items-center sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-end bg-night/60 sm:place-items-center sm:p-6" onClick={onClose}>
       <div className="rise max-h-[92vh] w-full max-w-lg overflow-auto rounded-t-[28px] bg-paper sm:rounded-[28px]" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`${p.nickname} profile`}>
-        <div className="relative overflow-hidden bg-ink p-6 text-paper">
+        <div className="scope-night relative overflow-hidden bg-ink p-6 text-paper">
           <CourtArt className="absolute -right-10 -top-10 h-72" stroke="#fff" opacity={0.08} />
           <button onClick={onClose} aria-label="Close" className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/10"><I.X width={16} height={16} /></button>
           <div className="relative flex items-end gap-4">
@@ -111,9 +111,9 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
             <div>
               <div className="eyebrow mb-2">Invite to your run</div>
               {myRuns.map((r) => (
-                <button key={r.id} disabled={invited === r.id} onClick={() => { dispatch({ type: "simJoin", runId: r.id, playerId: p.id }); setInvited(r.id); }} className="flex w-full items-center justify-between rounded-xl border border-paper-line px-3 py-2.5 text-left text-sm hover:bg-white">
+                <button key={r.id} disabled={invited === r.id} onClick={() => { dispatch({ type: "simJoin", runId: r.id, playerId: p.id }); setInvited(r.id); }} className="flex w-full items-center justify-between rounded-xl border border-paper-line px-3 py-2.5 text-left text-sm hover:bg-surface">
                   <span><b>{r.title}</b>, {court(r.courtId)?.name}, {when(r.startsAt)}</span>
-                  <span className="font-bold text-ball">{invited === r.id ? "Accepted (demo)" : "Invite"}</span>
+                  <span className="font-bold text-ball-ink">{invited === r.id ? "Accepted (demo)" : "Invite"}</span>
                 </button>
               ))}
             </div>
@@ -143,7 +143,7 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
           ) : (
             <div className="flex gap-2 border-t border-paper-line pt-4">
               <button className="btn-ghost text-ink-2" onClick={() => setReporting(true)}><I.Flag width={15} height={15} />Report</button>
-              <button className="btn-ghost text-[#b4441a]" onClick={() => { dispatch({ type: "block", playerId: p.id }); onClose(); }}>Block</button>
+              <button className="btn-ghost text-warn" onClick={() => { dispatch({ type: "block", playerId: p.id }); onClose(); }}>Block</button>
               {state.reports.some((r) => r.playerId === p.id) && <span className="ml-auto self-center text-xs text-ink-3">Report sent</span>}
             </div>
           )}
@@ -161,7 +161,7 @@ function Squads() {
         {state.squads.map((s) => {
           const mine = s.members.includes(state.meId);
           return (
-            <li key={s.id} className="relative overflow-hidden rounded-[22px] border border-paper-line bg-white/70">
+            <li key={s.id} className="relative overflow-hidden rounded-[22px] border border-paper-line bg-surface/70">
               <div className="h-2" style={{ background: s.color }} />
               <div className="p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -205,13 +205,13 @@ function Rankings() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-full border border-ink/15 bg-white/60 p-1">{(["Hazleton", "Scranton"] as const).map((r) => <button key={r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => setRegion(r)}>{r}</button>)}</div>
+        <div className="inline-flex rounded-full border border-ink/15 bg-surface/60 p-1">{(["Hazleton", "Scranton"] as const).map((r) => <button key={r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => setRegion(r)}>{r}</button>)}</div>
         <span className="text-xs text-ink-3">Ranked games only, last 90 days, demo season</span>
       </div>
-      <ol className="overflow-hidden rounded-2xl border border-paper-line bg-white/60">
+      <ol className="overflow-hidden rounded-2xl border border-paper-line bg-surface/60">
         {list.map((p, i) => (
           <li key={p.id} className={`grid grid-cols-[44px_1fr_auto] items-center gap-3 border-b border-paper-line px-4 py-3 last:border-0 ${p.id === state.meId ? "bg-ball/[.08]" : ""}`}>
-            <span className={`display text-center text-[2rem] ${i < 3 ? "text-ball" : "text-ink-3"}`}>{i + 1}</span>
+            <span className={`display text-center text-[2rem] ${i < 3 ? "text-ball-ink" : "text-ink-3"}`}>{i + 1}</span>
             <div className="flex min-w-0 items-center gap-3">
               <Avatar config={p.character} size={36} />
               <div className="min-w-0"><div className="truncate font-bold">{p.nickname}{p.id === state.meId && " (you)"}</div><div className="truncate text-xs text-ink-3">{archetypeName(p.dna, p.position)}, {p.trust.confirmedGames} confirmed games</div></div>
@@ -233,7 +233,7 @@ function Challenges() {
       {state.challenges.map((c) => {
         const forMe = c.to === state.meId || state.squads.find((s) => s.id === c.to)?.members.includes(state.meId);
         return (
-          <li key={c.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-paper-line bg-white/60 p-4">
+          <li key={c.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-paper-line bg-surface/60 p-4">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-ink text-sun"><I.Bolt /></span>
             <div className="min-w-0 flex-1">
               <div className="font-bold">{name(c.from)} → {name(c.to)}</div>

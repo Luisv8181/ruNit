@@ -80,7 +80,7 @@ export function Friends() {
                 <div className="text-right">
                   {played ? (
                     <>
-                      <div className="num text-[34px] leading-none"><span className={h.vsW >= h.vsL ? "text-emerald" : ""}>{h.vsW}</span><span className="text-ink-3">–</span><span className={h.vsL > h.vsW ? "text-[#b4441a]" : ""}>{h.vsL}</span></div>
+                      <div className="score text-[38px]"><span className={h.vsW >= h.vsL ? "text-emerald" : ""}>{h.vsW}</span><span className="text-ink-3">–</span><span className={h.vsL > h.vsW ? "text-warn" : ""}>{h.vsL}</span></div>
                       <div className="text-xs text-ink-2">vs {p.nickname}</div>
                     </>
                   ) : <span className="text-sm text-ink-2">No games against yet</span>}
@@ -92,7 +92,7 @@ export function Friends() {
       )}
 
       {adding && (
-        <div className="fixed inset-0 z-50 grid place-items-end bg-ink/50 sm:place-items-center sm:p-6" onClick={() => setAdding(false)}>
+        <div className="fixed inset-0 z-50 grid place-items-end bg-night/60 sm:place-items-center sm:p-6" onClick={() => setAdding(false)}>
           <div className="rise max-h-[92vh] w-full max-w-md overflow-auto rounded-t-[28px] bg-paper p-6 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Add a friend">
             <h2 className="display text-[2.2rem]">Add a friend</h2>
             <div className="mt-4 flex items-center gap-4 rounded-2xl bg-white p-4">
