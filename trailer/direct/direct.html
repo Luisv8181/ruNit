@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>ruNit Direct</title>
+<!-- Deterministic compositor: window.render(t) draws time t (seconds). Timeline arrives as window.TL (injected by render-direct.mjs). -->
+<style>
+  @font-face { font-family: "Big Shoulders"; src: url("../../node_modules/@fontsource-variable/big-shoulders-display/files/big-shoulders-display-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+  @font-face { font-family: "Atkinson"; src: url("../../node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; }
+  :root { --ball:#F47B35; --paper:#FFF9F0; --sun:#F4C65E; --ink:#202B30; --ink2:#5d6a70; }
+  html, body { margin: 0; background: #000; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); font-family: Atkinson, sans-serif; color: var(--ink); }
+  .layer { position: absolute; inset: 0; display: none; }
+  .abs { position: absolute; }
+  .disp { font-family: "Big Shoulders"; font-weight: 800; line-height: .9; letter-spacing: -.005em; }
+  .shot { position: absolute; border-radius: 26px; overflow: hidden; background: #fff; box-shadow: 0 40px 90px -30px rgba(32,43,48,.38), 0 0 0 1px rgba(32,43,48,.06); }
+  .shot img { display: block; width: 100%; }
+  .phone { position: absolute; border-radius: 64px; background: #11171a; padding: 14px; box-shadow: 0 50px 100px -30px rgba(32,43,48,.45); }
+  .phone .scr { border-radius: 50px; overflow: hidden; background: var(--paper); height: 100%; }
+  .phone img { display: block; width: 100%; }
+  #caption { position: absolute; left: 0; right: 0; bottom: 54px; text-align: center; font: 600 34px Atkinson; color: var(--ink); padding: 0 260px; line-height: 1.3; }
+  #caption span { background: rgba(255,249,240,.92); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 2px 14px; border-radius: 8px; }
+  #bug { position: absolute; left: 64px; top: 52px; display: flex; align-items: center; gap: 12px; font: 800 30px "Big Shoulders"; color: var(--ink); }
+  #card { position: absolute; inset: 0; background: var(--ball); display: none; }
+  #card .t { position: absolute; left: 150px; bottom: 210px; font-size: 230px; color: var(--ink); white-space: nowrap; }
+  #card .bar { position: absolute; left: 156px; bottom: 170px; height: 10px; background: var(--ink); border-radius: 5px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const TL = window.TL;
+const stage = document.getElementById("stage");
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lin = (t, a, b) => clamp((t - a) / (b - a));
+const oc = (x) => 1 - Math.pow(1 - x, 3);
+const io = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const el = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; (parent || stage).appendChild(e); return e; };
+const css = (e, o) => Object.assign(e.style, o);
+const A = (n) => `assets/${n}.png`;
+const seg = Object.fromEntries(TL.segments.map((s) => [s.id, s]));
+const LOGO = (size, fg = "#FFF9F0") => `<svg width="${size}" height="${size}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#F47B35"/><path d="M10 23V9l12 14V9" stroke="${fg}" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+const BALL = `<svg viewBox="0 0 100 100" width="100%" height="100%"><defs><radialGradient id="bg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFB27C"/><stop offset=".55" stop-color="#F47B35"/><stop offset="1" stop-color="#C25A1F"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#bg)"/><g stroke="#202B30" stroke-width="3" fill="none"><path d="M2 50h96M50 2v96"/><path d="M18 14c14 14 14 58 0 72M82 14c-14 14-14 58 0 72"/></g></svg>`;
+
+function phone(parent, src, h) {
+  const p = el("div", "phone", parent); const w = h * 390 / 844 + 28;
+  css(p, { width: w + "px", height: h + "px" });
+  const s = el("div", "scr", p); const i = el("img", "", s); i.src = A(src);
+  return { p, w, h };
+}
+function shot(parent, src, w) { const s = el("div", "shot", parent); css(s, { width: w + "px" }); const i = el("img", "", s); i.src = A(src); return s; }
+
+const scenes = [];
+function scene(id, from, to, build) { const root = el("div", "layer"); const up = build(root, to - from); scenes.push({ id, from, to, root, up }); }
+
+// ---------- open: a ball drops, bounces, becomes the logo ----------
+const OPEN_BOUNCES = [0.95, 1.6, 2.08];
+scene("open", 0, seg.open.end, (root) => {
+  const ball = el("div", "abs", root, BALL); const shadow = el("div", "abs", root);
+  css(shadow, { borderRadius: "50%", background: "radial-gradient(closest-side, rgba(32,43,48,.28), transparent)" });
+  const word = el("div", "abs disp", root, "ruNit"); css(word, { fontSize: "230px", left: "880px", top: "380px" });
+  const direct = el("div", "abs disp", root, "Direct"); css(direct, { fontSize: "120px", color: "#F47B35", left: "886px", top: "590px" });
+  const sub = el("div", "abs", root, "A first look at the prototype"); css(sub, { font: "600 34px Atkinson", color: "#5d6a70", left: "890px", top: "740px" });
+  return (lt) => {
+    // physics through the bounce times, then glide into the logo spot
+    const gy = 640, x0 = 960; let y = 0;
+    const k = OPEN_BOUNCES.findIndex((b) => b > lt);
+    if (k === 0) { const p = lt / OPEN_BOUNCES[0]; y = 560 * (1 - p * p); }
+    else if (k > 0) { const a = OPEN_BOUNCES[k - 1], b = OPEN_BOUNCES[k], p = (lt - a) / (b - a); y = 4 * (k === 1 ? 160 : 70) * p * (1 - p); }
+    const g = io(lin(lt, 2.15, 2.85));
+    const size = 220 - g * 20, cx = x0 + (720 - x0) * g, cy = (gy - y - size / 2) + ((500) - (gy - size / 2)) * g;
+    css(ball, { width: size + "px", height: size + "px", left: cx - size / 2 + "px", top: cy - size / 2 + "px", transform: `rotate(${lt * 90}deg)` });
+    css(shadow, { width: 280 + "px", height: 40 + "px", left: x0 - 140 + "px", top: gy - 20 + "px", opacity: (1 - g) * (0.4 + 0.6 * (1 - Math.min(1, y / 560))) });
+    const w = oc(lin(lt, 2.55, 3.15)); css(word, { opacity: w, transform: `translateX(${(1 - w) * 30}px)` });
+    const d = oc(lin(lt, 2.95, 3.5)); css(direct, { opacity: d, transform: `translateX(${(1 - d) * 30}px)` });
+    css(sub, { opacity: lin(lt, 3.3, 3.9) });
+  };
+});
+
+// ---------- intro ----------
+scene("intro", seg.intro.start, seg.intro.end, (root, D) => {
+  const s = shot(root, "desk-home", 1300); css(s, { left: "310px", top: "150px" });
+  return (lt) => { const p = oc(lin(lt, 0, 1.1)); css(s, { opacity: p, transform: `translateY(${(1 - p) * 60}px) scale(${0.94 + lt * 0.006})` }); };
+});
+
+// ---------- find ----------
+scene("find", seg.find.shotStart, seg.find.end, (root, D) => {
+  const s = shot(root, "desk-home", 1180); css(s, { left: "150px", top: "170px" });
+  const P = phone(root, "phone-home", 780); css(P.p, { left: "1360px", top: "130px" });
+  return (lt) => {
+    css(s, { transform: `scale(${1 + lt * 0.005})` });
+    const p = oc(lin(lt, D * 0.38, D * 0.38 + 0.8)); css(P.p, { transform: `translateY(${(1 - p) * 900}px) rotate(${(1 - p) * 6}deg)` });
+  };
+});
+
+// ---------- call ----------
+scene("call", seg.call.shotStart, seg.call.end, (root, D) => {
+  const P1 = phone(root, "phone-create", 790), P2 = phone(root, "phone-teams", 790);
+  css(P1.p, { left: "550px", top: "100px" }); css(P2.p, { left: "1010px", top: "100px" });
+  return (lt) => {
+    const a = oc(lin(lt, 0, 0.8)); css(P1.p, { opacity: a, transform: `translateY(${(1 - a) * 80}px)` });
+    const b = oc(lin(lt, D * 0.45, D * 0.45 + 0.8)); css(P2.p, { opacity: b, transform: `translateY(${(1 - b) * 80}px)` });
+  };
+});
+
+// ---------- prove: a three-phone carousel ----------
+scene("prove", seg.prove.shotStart, seg.prove.end, (root, D) => {
+  const names = ["phone-live", "phone-mismatch", "phone-confirmed"];
+  const Ps = names.map((n) => phone(root, n, 790));
+  const cuts = [0, D * 0.36, D * 0.66];
+  return (lt) => {
+    let f = 0; cuts.forEach((c, i) => { if (lt >= c) f = i + oc(lin(lt, c, c + 0.7)) - 1 + (i === 0 ? 1 : 0); });
+    f = 0; for (let i = 1; i < cuts.length; i++) f += io(lin(lt, cuts[i], cuts[i] + 0.75));
+    Ps.forEach((P, i) => {
+      const d = i - f; const x = 960 - P.w / 2 + d * 520; const sc = 1 - Math.min(1, Math.abs(d)) * 0.16;
+      css(P.p, { left: x + "px", top: "100px", transform: `scale(${sc})`, opacity: Math.abs(d) > 1.6 ? 0 : 1 - Math.min(1, Math.abs(d)) * 0.55, zIndex: 10 - Math.round(Math.abs(d) * 3) });
+    });
+    const intro = oc(lin(lt, 0, 0.7)); css(root, { opacity: intro });
+  };
+});
+
+// ---------- know ----------
+scene("know", seg.know.shotStart, seg.know.end, (root, D) => {
+  const P1 = phone(root, "phone-reflect", 790), P2 = phone(root, "phone-dna", 790);
+  css(P1.p, { left: "550px", top: "100px" }); css(P2.p, { left: "1010px", top: "100px" });
+  return (lt) => {
+    const a = oc(lin(lt, 0, 0.8)); css(P1.p, { opacity: a, transform: `translateY(${(1 - a) * 80}px)` });
+    const b = oc(lin(lt, D * 0.55, D * 0.55 + 0.8)); css(P2.p, { opacity: b, transform: `translateY(${(1 - b) * 80}px)` });
+  };
+});
+
+// ---------- own: the record book card, panning ----------
+scene("own", seg.own.shotStart, seg.own.end, (root, D) => {
+  const frame = el("div", "shot", root); css(frame, { left: "580px", top: "100px", width: "760px", height: "820px", padding: "0" });
+  const img = el("img", "", frame); img.src = A("desk-records"); css(img, { width: "760px", display: "block" });
+  return (lt) => {
+    const p = oc(lin(lt, 0, 0.9)); css(frame, { opacity: p, transform: `translateY(${(1 - p) * 60}px)` });
+    const h = img.naturalHeight ? img.naturalHeight * 760 / img.naturalWidth : 1600;
+    css(img, { transform: `translateY(${-Math.max(0, h - 820) * io(lin(lt, D * 0.35, D - 0.6))}px)` });
+  };
+});
+
+// ---------- stamp ----------
+scene("stamp", seg.stamp.shotStart, seg.stamp.end, (root, D) => {
+  const a = shot(root, "desk-passport", 1400); css(a, { left: "260px", top: "120px", padding: "26px 30px 22px", boxSizing: "border-box" });
+  const b = shot(root, "desk-badges", 1000); css(b, { left: "460px", top: "500px", padding: "22px 30px", boxSizing: "border-box", height: "420px" });
+  return (lt) => {
+    const p = oc(lin(lt, 0, 0.9)); css(a, { opacity: p, transform: `translateY(${(1 - p) * 50}px)` });
+    const q = oc(lin(lt, D * 0.5, D * 0.5 + 0.9)); css(b, { opacity: q, transform: `translateY(${(1 - q) * 120}px)` });
+  };
+});
+
+// ---------- one more thing: the globe ----------
+const GLOBE_FRAMES = window.GLOBE_FRAMES || 250;
+const globeImg = (() => { const i = new Image(); return i; })();
+scene("globe", seg.more.shotStart, seg.more.end, (root, D) => {
+  const g = el("div", "abs", root); css(g, { left: "490px", top: "50px", width: "940px", height: "940px", borderRadius: "40px", overflow: "hidden" });
+  g.appendChild(globeImg); css(globeImg, { width: "100%", height: "100%", display: "block" });
+  return (lt) => {
+    const idx = Math.min(GLOBE_FRAMES - 1, Math.max(0, Math.floor((lt / D) * GLOBE_FRAMES * 1.0)));
+    const src = `globe/${String(idx).padStart(4, "0")}.jpg`;
+    if (!globeImg.src.endsWith(src)) globeImg.src = src;
+    css(g, { opacity: oc(lin(lt, 0, 0.6)) });
+  };
+});
+
+// ---------- close ----------
+scene("close", seg.close.start, TL.duration + 1, (root, D) => {
+  const logo = el("div", "abs", root, LOGO(150)); css(logo, { left: "640px", top: "300px" });
+  const word = el("div", "abs disp", root, "ruNit"); css(word, { fontSize: "220px", left: "820px", top: "250px" });
+  const tag = el("div", "abs disp", root, "Your city. Your court. Your run."); css(tag, { fontSize: "92px", width: "1920px", textAlign: "center", top: "540px" });
+  const when = el("div", "abs", root, "Coming first to Hazleton and Scranton, Pennsylvania"); css(when, { font: "600 36px Atkinson", color: "#5d6a70", width: "1920px", textAlign: "center", top: "680px" });
+  const thanks = el("div", "abs", root, "Thanks for watching."); css(thanks, { font: "700 40px Atkinson", width: "1920px", textAlign: "center", top: "780px" });
+  const foot = el("div", "abs", root, "Prototype. Every player, court and game shown is made up.<br>Narration voice: Piper TTS trained on LibriTTS (CC BY 4.0). Music and sound design: original."); css(foot, { font: "500 22px Atkinson", color: "#7a858a", width: "1920px", textAlign: "center", top: "930px", lineHeight: 1.5 });
+  return (lt) => {
+    const a = oc(lin(lt, 0.1, 0.9)); css(logo, { opacity: a, transform: `scale(${0.8 + 0.2 * a})` }); css(word, { opacity: a, transform: `translateX(${(1 - a) * 30}px)` });
+    css(tag, { opacity: oc(lin(lt, 1.6, 2.3)) }); css(when, { opacity: lin(lt, 4.2, 4.8) }); css(thanks, { opacity: lin(lt, 6.6, 7.2) }); css(foot, { opacity: lin(lt, 5.5, 6.2) });
+  };
+});
+
+// ---------- global overlays ----------
+const bug = el("div", ""); bug.id = "bug"; bug.innerHTML = `${LOGO(34)}<span>ruNit Direct</span>`;
+const card = el("div", ""); card.id = "card";
+const cardT = el("div", "t disp", card); const cardBar = el("div", "bar", card);
+const caption = el("div", ""); caption.id = "caption";
+const fade = el("div", "abs"); css(fade, { inset: 0, background: "#000", pointerEvents: "none" });
+
+window.render = async (t) => {
+  for (const s of scenes) {
+    const on = t >= s.from && t < s.to;
+    s.root.style.display = on ? "block" : "none";
+    if (on) s.up(t - s.from);
+  }
+  // Direct-style segment card: orange wipes in from the left, holds, wipes off to the right
+  const c = TL.segments.find((s) => s.cardStart !== undefined && t >= s.cardStart && t < s.cardStart + 1.7 + 0.45);
+  if (c) {
+    const lt = t - c.cardStart;
+    const inP = io(lin(lt, 0, 0.38)), outP = io(lin(lt, 1.45, 1.95));
+    card.style.display = "block";
+    card.style.clipPath = `inset(0 ${(1 - inP) * 100}% 0 ${outP * 100}%)`;
+    cardT.textContent = c.title;
+    const tp = oc(lin(lt, 0.18, 0.7)); css(cardT, { transform: `translateX(${(1 - tp) * -60}px)`, opacity: tp });
+    css(cardBar, { width: `${oc(lin(lt, 0.3, 0.9)) * 420}px` });
+  } else card.style.display = "none";
+  // captions
+  const cap = t >= seg.close.start ? null : TL.segments.flatMap((s) => s.captions || []).find((x) => t >= x.t0 && t < x.t1 + 0.15);
+  caption.innerHTML = cap ? `<span>${cap.text}</span>` : "";
+  // bug visible during shots (not on open/close or cards)
+  css(bug, { opacity: t > seg.intro.start + 0.5 && t < seg.close.start ? 0.85 : 0 });
+  css(fade, { opacity: t < 0.35 ? 1 - t / 0.35 : t > TL.duration - 0.8 ? lin(t, TL.duration - 0.8, TL.duration) : 0 });
+  // wait for the globe frame to decode before the screenshot
+  if (globeImg.src && !globeImg.complete) await new Promise((r) => { globeImg.onload = r; globeImg.onerror = r; });
+  return true;
+};
+window.ready = document.fonts.ready.then(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+</script>
+</body>
+</html>

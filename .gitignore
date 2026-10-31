@@ -6,3 +6,8 @@ trailer/out/*.log
 tsconfig.tsbuildinfo
 trailer/out/*.mp4
 trailer/out/*.wav
+trailer/direct/frames
+trailer/direct/globe
+trailer/direct/assets
+trailer/direct/vo
+trailer/direct/out

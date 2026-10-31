@@ -1,0 +1,285 @@
+{
+ "duration": 97.652,
+ "segments": [
+  {
+   "id": "open",
+   "kind": "open",
+   "dur": 4.6,
+   "start": 0.0,
+   "end": 4.6
+  },
+  {
+   "id": "intro",
+   "kind": "shot",
+   "visual": "intro",
+   "start": 4.6,
+   "shotStart": 4.6,
+   "voStart": 5.05,
+   "voDur": 5.656,
+   "captions": [
+    {
+     "t0": 5.05,
+     "t1": 7.3,
+     "text": "Hi, and welcome to the ruNit Direct."
+    },
+    {
+     "t0": 7.3,
+     "t1": 10.706,
+     "text": "We have a lot to show you today, so let's jump right in."
+    }
+   ],
+   "end": 11.606
+  },
+  {
+   "id": "find",
+   "kind": "segment",
+   "title": "Find a run",
+   "visual": "find",
+   "start": 11.606,
+   "cardStart": 11.606,
+   "shotStart": 13.306,
+   "voStart": 13.756,
+   "voDur": 7.88,
+   "captions": [
+    {
+     "t0": 13.756,
+     "t1": 16.575,
+     "text": "Open the app, and you'll see who's got next."
+    },
+    {
+     "t0": 16.575,
+     "t1": 19.586,
+     "text": "Every run is drawn as the court it's played on."
+    },
+    {
+     "t0": 19.586,
+     "t1": 21.636,
+     "text": "Tap an open spot, and you're in."
+    }
+   ],
+   "end": 22.535
+  },
+  {
+   "id": "call",
+   "kind": "segment",
+   "title": "Call your own",
+   "visual": "call",
+   "start": 22.535,
+   "cardStart": 22.535,
+   "shotStart": 24.235,
+   "voStart": 24.685,
+   "voDur": 6.533,
+   "captions": [
+    {
+     "t0": 24.685,
+     "t1": 25.708,
+     "text": "Want to host?"
+    },
+    {
+     "t0": 25.708,
+     "t1": 28.463,
+     "text": "Pick a court, a time, and a format."
+    },
+    {
+     "t0": 28.463,
+     "t1": 31.218,
+     "text": "Players nearby fill the open spots."
+    }
+   ],
+   "end": 32.118
+  },
+  {
+   "id": "prove",
+   "kind": "segment",
+   "title": "Play. Then prove it.",
+   "visual": "prove",
+   "start": 32.118,
+   "cardStart": 32.118,
+   "shotStart": 33.818,
+   "voStart": 34.268,
+   "voDur": 10.306,
+   "captions": [
+    {
+     "t0": 34.268,
+     "t1": 37.726,
+     "text": "When the game ends, everyone enters their own stats."
+    },
+    {
+     "t0": 37.726,
+     "t1": 41.582,
+     "text": "If the numbers don't add up, players sort it out together."
+    },
+    {
+     "t0": 41.582,
+     "t1": 44.574,
+     "text": "Nothing counts until the other team confirms."
+    }
+   ],
+   "end": 45.474
+  },
+  {
+   "id": "know",
+   "kind": "segment",
+   "title": "Know your game",
+   "visual": "know",
+   "start": 45.474,
+   "cardStart": 45.474,
+   "shotStart": 47.174,
+   "voStart": 47.624,
+   "voDur": 6.254,
+   "captions": [
+    {
+     "t0": 47.624,
+     "t1": 48.789,
+     "text": "Then, one question."
+    },
+    {
+     "t0": 48.789,
+     "t1": 50.874,
+     "text": "How did you get your points today?"
+    },
+    {
+     "t0": 50.874,
+     "t1": 53.878,
+     "text": "Over time, your answers become your Player DNA."
+    }
+   ],
+   "end": 54.778
+  },
+  {
+   "id": "own",
+   "kind": "segment",
+   "title": "Own the court",
+   "visual": "own",
+   "start": 54.778,
+   "cardStart": 54.778,
+   "shotStart": 56.478,
+   "voStart": 56.928,
+   "voDur": 8.078,
+   "captions": [
+    {
+     "t0": 56.928,
+     "t1": 59.88,
+     "text": "Every court keeps its own record book."
+    },
+    {
+     "t0": 59.88,
+     "t1": 60.656,
+     "text": "Most wins."
+    },
+    {
+     "t0": 60.656,
+     "t1": 61.822,
+     "text": "Longest streak."
+    },
+    {
+     "t0": 61.822,
+     "t1": 62.598,
+     "text": "Best game."
+    },
+    {
+     "t0": 62.598,
+     "t1": 65.006,
+     "text": "And somebody's name at the top."
+    }
+   ],
+   "end": 65.906
+  },
+  {
+   "id": "stamp",
+   "kind": "segment",
+   "title": "Stamp your passport",
+   "visual": "stamp",
+   "start": 65.906,
+   "cardStart": 65.906,
+   "shotStart": 67.606,
+   "voStart": 68.056,
+   "voDur": 6.166,
+   "captions": [
+    {
+     "t0": 68.056,
+     "t1": 71.391,
+     "text": "Win at a court, and it gets stamped in your passport."
+    },
+    {
+     "t0": 71.391,
+     "t1": 74.222,
+     "text": "Now try winning at every court in your state."
+    }
+   ],
+   "end": 75.123
+  },
+  {
+   "id": "more",
+   "kind": "segment",
+   "title": "One more thing",
+   "visual": "globe",
+   "tail": 3.4,
+   "start": 75.123,
+   "cardStart": 75.123,
+   "shotStart": 76.823,
+   "voStart": 77.273,
+   "voDur": 5.232,
+   "captions": [
+    {
+     "t0": 77.273,
+     "t1": 79.017,
+     "text": "Oh, and one more thing."
+    },
+    {
+     "t0": 79.017,
+     "t1": 80.382,
+     "text": "The ball is round."
+    },
+    {
+     "t0": 80.382,
+     "t1": 82.505,
+     "text": "So we put every court on it."
+    }
+   ],
+   "end": 85.905
+  },
+  {
+   "id": "close",
+   "kind": "close",
+   "visual": "close",
+   "start": 85.905,
+   "shotStart": 85.905,
+   "voStart": 86.355,
+   "voDur": 8.097,
+   "captions": [
+    {
+     "t0": 86.355,
+     "t1": 86.952,
+     "text": "ruNit."
+    },
+    {
+     "t0": 86.952,
+     "t1": 87.804,
+     "text": "Your city."
+    },
+    {
+     "t0": 87.804,
+     "t1": 88.741,
+     "text": "Your court."
+    },
+    {
+     "t0": 88.741,
+     "t1": 89.508,
+     "text": "Your run."
+    },
+    {
+     "t0": 89.508,
+     "t1": 92.747,
+     "text": "Coming first to Hazleton and Scranton."
+    },
+    {
+     "t0": 92.747,
+     "t1": 94.452,
+     "text": "Thanks for watching."
+    }
+   ],
+   "end": 97.652
+  }
+ ]
+}

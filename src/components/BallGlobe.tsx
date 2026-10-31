@@ -337,6 +337,16 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
 
   useImperativeHandle(ref, () => ({ flyTo }), [flyTo]);
 
+  // Film hook: lets the trailer pipeline place the camera exactly (window.__runitGlobe.set({lng, lat, zoom})).
+  useEffect(() => {
+    const w = window as unknown as { __runitGlobe?: unknown };
+    w.__runitGlobe = {
+      set: (v: Partial<{ lng: number; lat: number; zoom: number }>) => { idle.current = false; Object.assign(view.current, v); if (view.current.zoom > 4) loadDetail(); draw(); },
+      ready: () => loadedDetail.current,
+    };
+    return () => { delete w.__runitGlobe; };
+  }, [draw, loadDetail]);
+
   // pointer: drag to rotate, pinch to zoom, click pins
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const dragged = useRef(false);

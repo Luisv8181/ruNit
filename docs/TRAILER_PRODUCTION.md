@@ -41,3 +41,30 @@ The directive preferred Remotion. This build uses an equivalent programmatic app
 ## Upgrading the trailer
 - Replace the illustrated play (24–34 s) with real footage shot at a NEPA court (signed releases), color-graded warm. Keep the holographic play-path overlay — it matches the in-app archetype colors.
 - Add a voice-over pass (English + Spanish).
+
+---
+
+# ruNit Direct (second trailer)
+
+A 98-second, 16:9 feature tour in the format of a Nintendo Direct (host narration, orange segment title cards, a "one more thing" reveal) with Apple-style framing (calm product shots, lots of space, one idea on screen at a time). Output: `trailer/direct/out/ruNit-Direct-16x9.mp4`.
+
+## Segments
+Open (ball bounces into the logo) → Intro → Find a run → Call your own → Play. Then prove it. → Know your game → Own the court → Stamp your passport → One more thing (the basketball globe flies into Hazleton) → End card.
+
+## Pipeline
+```bash
+npm run build && npm start
+node trailer/direct/capture-direct.mjs http://localhost:3000        # app screens + 250 globe frames
+PIPER=/path/to/piper MODEL=/path/to/en-us-libritts-high.onnx \
+  python3 trailer/direct/narration.py                               # voice lines + timeline.json
+python3 trailer/direct/mix.py                                       # music bed, cues, ducked narration
+node trailer/direct/render-direct.mjs                               # frames + encode (loudness -16 LUFS)
+node trailer/direct/render-direct.mjs stills                        # optional preview stills
+```
+Piper (offline TTS) and the voice come from github.com/rhasspy/piper releases (`piper_linux_x86_64.tar.gz`, `voice-en-us-libritts-high.tar.gz`). Speaker 12 was chosen by measuring clarity across 22 candidate voices.
+
+## Rights
+- Narration: Piper TTS, LibriTTS-trained voice (dataset CC BY 4.0) — credited on the end card.
+- Music and sound design: synthesized in `mix.py`, no samples.
+- Imagery: real screens from the prototype; all people, courts and games are made up (stated on the end card).
+- Globe land shapes: Natural Earth via `world-atlas` (public domain). No OpenStreetMap data appears in the trailer.
