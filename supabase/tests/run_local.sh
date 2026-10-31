@@ -14,4 +14,6 @@ pre = "create schema auth; create table auth.users (id uuid primary key);\ncreat
 open(sys.argv[1] + "/m.sql", "w").write(pre + s)
 PY
 psql -h $D -p 5544 -U postgres -v ON_ERROR_STOP=1 -q -f $D/m.sql
+psql -h $D -p 5544 -U postgres -v ON_ERROR_STOP=1 -q -f supabase/migrations/0002_court_records.sql
 psql -h $D -p 5544 -U postgres -q -f supabase/tests/rls_smoke.sql
+psql -h $D -p 5544 -U postgres -q -f supabase/tests/records_smoke.sql

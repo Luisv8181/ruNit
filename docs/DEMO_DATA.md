@@ -16,3 +16,6 @@ Your 3v3 at **Northside Commons** tips in minutes (`/runs/r-northside-now`, code
 
 ## Dates
 Seeded relative to the moment the demo first loads, so runs are always “today/tomorrow”. Reset the demo to re-seed.
+
+## Court ledger
+`courtGames` (seeded in `src/lib/records.ts`) holds ~120 made-up past games across the 9 courts so every court has a record book. Each court has regulars who play best there, so record holders differ by court. Roughly 72% of games are opponent-confirmed; the rest are shown as excluded. You start with confirmed wins at Northside Commons and Elm Yard, and losses at Hilltop and Riverside.

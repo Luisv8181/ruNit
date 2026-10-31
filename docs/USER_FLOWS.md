@@ -27,3 +27,6 @@ Filter type / city / window / 18+ → detail sheet (organizer verification banne
 
 ## 7. Court data stewardship
 Court detail → Submit correction (≥ 8 chars) → pending. Add a court → name, type, hoops, landmark → pending, shown under “Your submissions”.
+
+## 8. Court records and passport
+Courts → pick a court → *Court records* (holder, leaderboard, records, how many games were excluded). Each court in the list shows its current record holder. My Game → *Court passport* → stamps by area → badges with progress. Finishing a confirmed game updates the court's records and your passport immediately.

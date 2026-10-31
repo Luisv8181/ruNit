@@ -44,3 +44,12 @@ INTENTION → ACTION → EVIDENCE → REFLECTION → GROWTH
 - No direct messaging; the UI says so. Inviting a player to a run is the only contact path.
 - Report (reasons) and Block are available on every player profile. Blocked players disappear from discovery and suggestions.
 - Exact user location is never collected; the demo uses a fixed approximate area. The schema stores only a coarse region.
+
+## Court records, court passport, badges (added)
+The competitive layer that gives every park a history.
+
+- **Court records** on every court: most wins (ties shown), longest win streak, most points in a game, biggest one-on-one win, most games played, and a wins leaderboard with your own position and how many wins you need to take the record outright.
+- **Court passport** (`/my-game/passport`): a stamp for every court where you've won a confirmed game, grouped by area, with first-win date and win count. Courts you've played without winning show as played.
+- **Badges**: First stamp, Road win, Three-court run, Home court (10 wins at one court), King of the court, Every court in town, Every court in the state.
+- **The rule that makes it trustworthy:** only opponent-confirmed games count. Self-reported and teammate-confirmed games stay in your game log but never move a record, stamp, or badge. Each court shows how many games were excluded.
+- **Scale:** courts carry state and county so the same quests work for any state; "every court in the state" counts only courts players have verified, so unconfirmed imports can't make a quest impossible.

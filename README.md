@@ -36,6 +36,8 @@ Requires Node 20+ (tested on Node 22). TypeScript is pinned to 5.x (Next 15 does
 | 12 | Join a squad | `/community` → Squads |
 | 13 | Explore local rankings | `/community` → Rankings |
 | 14 | Find an opportunity | `/opportunities` |
+| 15 | Check court records | `/courts` → any court → Court records |
+| 16 | Open your court passport | `/my-game/passport` |
 
 The fastest path through the signature Game Loop: Home → the dark **“You're up”** card → Scan QR → Simulate arrivals → Tip off → Game over → 21–18 → enter your stats → *Ask Big Bell to recheck* → *Request confirmations* → *Save to My Game* → reflect.
 
@@ -63,7 +65,8 @@ Rendered files: `trailer/out/ruNit-demo-trailer-16x9.mp4` and `trailer/out/ruNit
 | Check-in by code, teams balanced by MMR, final score rules | Teammate over-reporting by 2 pts so the mismatch check has something to catch | Photo/video upload, video-supported stats |
 | Stat entry, mismatch detection, confirm/dispute, verification ladder | Organizer receiving your interest | Messaging, push notifications, organizer verification workflow |
 | Reflection → explainable Player DNA change → insights | | LLM-based insight provider (interface exists; rules engine ships) |
-| Character creator, share card, squads, rankings, challenges, report/block | | Payments, tournaments brackets, seasons |
+| Character creator, share card, squads, rankings, challenges, report/block | |
+| Court records, court passport stamps and badges (confirmed games only) | Past games at each court (made-up ledger) | Payments, tournaments brackets, seasons |
 | Court submissions & corrections (pending state) | | Moderation tools, youth safeguarding (adults-only at launch) |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for what to build next.

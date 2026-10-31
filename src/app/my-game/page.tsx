@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { ARCH, archetypeName, earnedArchetypes } from "@/lib/archetypes";
 import { ruleBasedProvider } from "@/lib/insights";
+import { badges as badgesFor, passport } from "@/lib/records";
 import { dateShort, heightLabel } from "@/lib/util";
 import { PlayerFigure } from "@/components/PlayerFigure";
 import { CourtArt, DNABars, Empty, StatBadge } from "@/components/ui";
@@ -23,6 +24,8 @@ export default function MyGame() {
   const arch = earnedArchetypes(me.dna);
   const name = archetypeName(me.dna, me.position);
 
+  const stamps = useMemo(() => passport(state.meId, state.courts, state.courtGames), [state]);
+  const badgeList = useMemo(() => badgesFor(state.meId, state.courts, state.courtGames), [state]);
   const achievements = [
     { t: "Shows up", d: `${me.trust.attendance}% attendance`, on: me.trust.attendance >= 90 },
     { t: "On the record", d: "First opponent-confirmed line", on: games.some((g) => g.verification === "opponent") },
@@ -159,17 +162,17 @@ export default function MyGame() {
             {state.dnaLog[0] && <p className="mt-4 border-t border-paper-line pt-3 text-xs text-ink-2"><b>Last change:</b> {state.dnaLog[0].reasons.join(", ")}</p>}
             <p className="mt-3 text-[11px] text-ink-3">How you play. Separate from MMR (how you compete) and Trust (how you show up).</p>
           </section>
-          <section>
-            <div className="eyebrow mb-3">Achievements</div>
-            <ul className="grid grid-cols-2 gap-2">
-              {achievements.map((a) => (
-                <li key={a.t} className={`rounded-2xl border p-3 ${a.on ? "border-sun bg-sun-soft/60" : "border-dashed border-ink/20 opacity-70"}`}>
-                  <I.Trophy className={a.on ? "text-[#8a6413]" : "text-ink-3"} />
-                  <div className="mt-2 text-sm font-bold">{a.t}</div>
-                  <div className="text-xs text-ink-2">{a.on ? a.d : a.progress ?? a.d}</div>
-                </li>
-              ))}
+          <section className="border-t-2 border-ink pt-4">
+            <h2 className="display text-[1.8rem]">Court passport</h2>
+            <div className="mt-2 flex items-baseline gap-3">
+              <span className="num text-[52px] leading-none">{stamps.filter((x) => x.status === "won").length}<span className="text-ink-3">/{state.courts.length}</span></span>
+              <span className="text-[15px] text-ink-2">courts won</span>
+            </div>
+            <ul className="mt-3 space-y-1.5 text-[15px]">
+              {badgeList.filter((b) => b.earned).map((b) => <li key={b.id} className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-ball" />{b.name}</li>)}
+              {badgeList.filter((b) => !b.earned && b.progress).slice(0, 2).map((b) => <li key={b.id} className="flex items-center gap-2 text-ink-2"><span className="h-2.5 w-2.5 rounded-full border-2 border-ink/25" />{b.name}, {b.progress![0]} of {b.progress![1]}</li>)}
             </ul>
+            <Link href="/my-game/passport" className="btn-line mt-4">Open passport</Link>
           </section>
           <section>
             <div className="eyebrow mb-3">Media</div>

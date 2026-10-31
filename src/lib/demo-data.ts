@@ -1,6 +1,7 @@
 // DEMONSTRATION DATA — every person, court, squad, game and opportunity below is fictional.
 // Coordinates are approximate placements around Hazleton and Scranton, PA for the demo map only.
 
+import { myCourtGames, seedCourtGames } from "./records";
 import type {
   ActivityItem, Challenge, CharacterConfig, Court, GameRecord, Opportunity,
   Player, Reflection, Run, Squad,
@@ -132,3 +133,6 @@ export const activity: ActivityItem[] = [
   { id: "a4", at: h(-20), text: "Yari's Player DNA shifted toward Floor General", kind: "achievement" },
   { id: "a5", at: h(-26), text: "New listing: Hazleton Summer 3v3 Classic", kind: "opportunity" },
 ];
+
+// Every confirmed and unconfirmed game played at each court — the source for court records and passports.
+export const courtGames = [...seedCourtGames(courts, players, ME), ...myCourtGames(ME, (n) => daysAgo(n))];

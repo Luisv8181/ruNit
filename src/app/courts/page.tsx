@@ -7,6 +7,8 @@ import { useStore } from "@/lib/store";
 import { CourtMap, type Region } from "@/components/CourtMap";
 import { CourtBadge, courtVerificationTip, DemoTag } from "@/components/ui";
 import { I } from "@/components/icons";
+import { CourtRecords } from "@/components/CourtRecords";
+import { kingsByCourt } from "@/lib/records";
 import { distLabel, when } from "@/lib/util";
 import type { Court } from "@/lib/types";
 
@@ -40,6 +42,8 @@ function Courts() {
     return m;
   }, [state.runs]);
 
+  const kings = useMemo(() => kingsByCourt(state.courts, state.courtGames), [state.courts, state.courtGames]);
+  const nick = (id?: string) => (id === state.meId ? "you" : state.players.find((p) => p.id === id)?.nickname);
   const inRegion = (c: Court) => (region === "Hazleton" ? ["Hazleton", "West Hazleton"] : ["Scranton", "Dunmore"]).includes(c.city);
   const visible = state.courts.filter(inRegion).filter((c) =>
     filters.every((f) =>
@@ -73,8 +77,8 @@ function Courts() {
         {filters.length > 0 && <button className="chip !border-transparent !bg-transparent underline" onClick={() => setFilters([])}>Clear</button>}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
-        <div className="relative overflow-hidden rounded-[22px] border border-paper-line bg-[#FBF3E6] lg:h-[620px]">
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="relative overflow-hidden rounded-[22px] border border-paper-line bg-[#FBF3E6] lg:sticky lg:top-24 lg:h-[620px]">
           <div className="aspect-[1000/640] lg:aspect-auto lg:h-full">
             <CourtMap courts={visible} region={region} selected={selected} activeCounts={activeCounts} onSelect={onSelect} />
           </div>
@@ -85,7 +89,7 @@ function Courts() {
           </div>
         </div>
 
-        <div className="lg:h-[620px] lg:overflow-auto">
+        <div className="min-w-0">
           {sel ? <CourtDetail court={sel} onClose={() => setSelected(undefined)} /> : (
             <div>
               <div className="eyebrow mb-2">{visible.length} courts in {region}</div>
@@ -97,7 +101,7 @@ function Courts() {
                       <span className={`h-3 w-3 shrink-0 rounded-full ${c.indoor ? "bg-sky" : "bg-ball"}`} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{c.name}</span>
-                        <span className="block text-xs text-ink-3">{c.neighborhood}, {distLabel(c)}, {c.hoops} hoops</span>
+                        <span className="block text-sm text-ink-2">{distLabel(c)}{kings[c.id] ? `. Most wins: ${nick(kings[c.id]!.id)}, ${kings[c.id]!.value}` : ". No confirmed games yet"}</span>
                       </span>
                       {(activeCounts[c.id] ?? 0) > 0 ? <span className="num rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-paper">{activeCounts[c.id]} runs</span> : <CourtBadge v={c.verification} />}
                     </button>
@@ -169,7 +173,9 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
           <span className="num text-xs text-ink-2">{r.participants.length}/{r.capacity}</span><I.Chevron width={16} height={16} className="text-ink-3" />
         </Link></li>))}</ul> : <p className="mt-2 text-sm text-ink-3">Nothing scheduled. Quiet court — good time to call a run.</p>}
 
-      <div className="mt-6 rounded-xl border border-paper-line bg-white/60 p-4">
+      <CourtRecords courtId={c.id} />
+
+      <div className="mt-8 border-t-2 border-ink pt-4">
         <div className="eyebrow mb-2">Something wrong here?</div>
         {sent ? (
           <p className="text-sm text-emerald">Thanks — your correction is pending. It updates the listing after two other players confirm it.</p>

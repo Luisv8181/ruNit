@@ -7,18 +7,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import * as seed from "./demo-data";
 import { nudgeDNA } from "./archetypes";
+import type { CourtGame } from "./records";
 import type {
   ActivityItem, CharacterConfig, Court, CourtSubmission, GameFormat, GameRecord, Notice,
   Player, Reflection, Run, StatLine, StatSubmission, Verification,
 } from "./types";
 
 export interface State {
-  version: 3;
+  version: 4;
   meId: string;
   courts: Court[];
   players: Player[];
   runs: Run[];
   history: GameRecord[];
+  courtGames: CourtGame[];
   reflections: Reflection[];
   squads: typeof seed.squads;
   challenges: typeof seed.challenges;
@@ -34,12 +36,13 @@ export interface State {
 
 function fresh(): State {
   return {
-    version: 3,
+    version: 4,
     meId: seed.ME,
     courts: seed.courts,
     players: seed.players,
     runs: seed.runs,
     history: seed.history,
+    courtGames: seed.courtGames,
     reflections: seed.reflections,
     squads: seed.squads,
     challenges: seed.challenges,
@@ -193,6 +196,17 @@ function reducer(s: State, a: Action): State {
         ...s,
         runs: s.runs.map((r) => (r.id === run.id ? { ...r, status: "reviewed" } : r)),
         history: [rec, ...s.history.filter((h) => h.runId !== run.id)],
+        courtGames: [
+          ...s.courtGames.filter((g) => g.id !== run.id),
+          {
+            id: run.id, courtId: run.courtId, date: rec.date, format: run.format, mode: run.mode,
+            winners: run.score.a > run.score.b ? run.teams.a : run.teams.b,
+            losers: run.score.a > run.score.b ? run.teams.b : run.teams.a,
+            score: [Math.max(run.score.a, run.score.b), Math.min(run.score.a, run.score.b)],
+            topScorer: [...run.submissions].sort((x, y) => y.line.pts - x.line.pts).map((x) => ({ id: x.playerId, pts: x.line.pts }))[0] ?? { id: s.meId, pts: mine.line.pts },
+            verification: rec.verification,
+          },
+        ],
         players: s.players.map((p) =>
           p.id === s.meId
             ? { ...p, mmr: p.mmr + (delta ?? 0), trust: { ...p.trust, confirmedGames: p.trust.confirmedGames + (rec.verification === "self" ? 0 : 1), attendance: Math.min(100, p.trust.attendance + 1) } }
@@ -247,7 +261,7 @@ function reducer(s: State, a: Action): State {
   }
 }
 
-const KEY = "runit-demo-v3";
+const KEY = "runit-demo-v4";
 
 interface Ctx {
   state: State;
@@ -271,7 +285,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as State;
-        if (parsed.version === 3) dispatch({ type: "hydrate", state: parsed });
+        if (parsed.version === 4) dispatch({ type: "hydrate", state: parsed });
       }
     } catch {
       /* storage unavailable — stay on in-memory seed */

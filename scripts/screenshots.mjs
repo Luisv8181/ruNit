@@ -56,6 +56,8 @@ async function run(name, viewport, scale = 1) {
   await page.getByRole("button", { name: "Save reflection" }).click(); await page.waitForTimeout(600); await shot("13-reflect-done");
 
   await go("/my-game"); await shot("14-my-game");
+  await go("/my-game/passport"); await shot("22-passport");
+  await go("/courts?c=c-northside"); await shot("23-court-records");
   await go("/my-game/customize"); await shot("15-customize");
   await page.getByRole("tab", { name: "Skill FX" }).click(); await shot("16-skill-fx");
   await go("/community"); await shot("17-community");

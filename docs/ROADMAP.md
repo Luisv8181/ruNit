@@ -9,6 +9,9 @@
 6. **Push notifications** (reflection prompt, run filling up, check-in reminder).
 
 ## Then
+- **Recorded play (opt-in).** Record a game on your phone; clips attach to the game and can move a stat line to *video-supported*.
+- **Machine-learning analysis of your own footage**, added later and opt-in per game: shot charts, make/miss detection, and movement patterns that feed Player DNA as evidence, with confidence shown. Requirements before shipping: consent from everyone visible in a clip, processing that blurs or excludes non-consenting players, footage deleted on request, and models evaluated for accuracy across skin tones, lighting and outdoor courts.
+- Court records history: seasons, all-time vs this year, and record-broken notifications.
 - Organizer verification workflow + organizer dashboard (events, registrations, consent-respecting player cards).
 - Media: photos/clips per game, credited court photography, “video-supported” stat verification.
 - Tournament brackets seeded by opt-in MMR; seasons and divisions.

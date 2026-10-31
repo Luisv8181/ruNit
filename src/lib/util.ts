@@ -21,12 +21,12 @@ export function when(iso: string) {
   const diff = (d.getTime() - Date.now()) / 60000;
   const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   if (diff > -90 && diff < 0) return `Started ${time}`;
-  if (diff >= 0 && diff < 60) return `In ${Math.max(1, Math.round(diff))} min · ${time}`;
+  if (diff >= 0 && diff < 60) return `In ${Math.max(1, Math.round(diff))} min, ${time}`;
   const today = new Date();
   const tmr = new Date(); tmr.setDate(today.getDate() + 1);
-  if (d.toDateString() === today.toDateString()) return `Today · ${time}`;
-  if (d.toDateString() === tmr.toDateString()) return `Tomorrow · ${time}`;
-  return `${d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })} · ${time}`;
+  if (d.toDateString() === today.toDateString()) return `Today, ${time}`;
+  if (d.toDateString() === tmr.toDateString()) return `Tomorrow, ${time}`;
+  return `${d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}, ${time}`;
 }
 
 export function dateShort(iso: string) {

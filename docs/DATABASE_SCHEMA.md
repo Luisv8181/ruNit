@@ -25,3 +25,12 @@ File: `supabase/migrations/0001_init.sql` (PostgreSQL 15/16 + PostGIS on Supabas
 
 ## Location privacy
 No user coordinates are stored. `courts_near()` rounds the caller's point to two decimals (~1 km) and caps the radius at 50 km.
+
+## Migration 0002 — court records
+`supabase/migrations/0002_court_records.sql`
+- `courts.state_code`, `courts.county` for state/county quests.
+- `game_results.winning_team_id`, `opponent_confirmed`, `confirmed_at`. Clients can't set confirmation (update policy denies); a server function sets it once a player on each team confirms.
+- Materialized views `court_player_totals` (games, wins, first win per player per court) and `court_best_games`, refreshed by `refresh_court_records()`.
+- Views `court_leaders` (ties share a place), `passport_stamps`, `state_progress`.
+- `badges` catalog and `player_badges` (public read, service-role write).
+Tested with `bash supabase/tests/run_local.sh`: a confirmed win counts and stamps a court; an unconfirmed win doesn't.
