@@ -2,7 +2,7 @@
 // Usage: node trailer/broadcast/render.mjs            full film
 //        node trailer/broadcast/render.mjs stills     a contact set of stills for review
 import { chromium } from "playwright";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -17,7 +17,9 @@ const S = Object.fromEntries(TL.scenes.map((s) => [s.id, s]));
 const exe = ["/usr/bin/google-chrome", "/usr/bin/chromium"].find((p) => fs.existsSync(p));
 const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox", "--allow-file-access-from-files"] });
 const dir = path.join(here, stills ? "stills" : "frames");
-fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
+// RANGE=a-b re-renders only those frame numbers into the existing frames folder
+const RANGE = process.env.RANGE?.split("-").map(Number);
+if (!RANGE) { fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true }); }
 
 const times = stills
   ? [1.0, 2.0, 3.2, 4.1, S.title.start + 0.7, S.title.start + 3, S.find.start + 0.25, S.find.start + 3, S.next.start + 3, S.score.start + 1.5, S.score.start + 4.4,
@@ -31,7 +33,7 @@ async function worker(w) {
   await page.addInitScript(([tl, meta, gf]) => { window.TL = tl; window.META = meta; window.GLOBE_FRAMES = gf; }, [TL, META, GLOBE_FRAMES]);
   await page.goto(`file://${here}/film.html`);
   await page.evaluate(() => window.ready);
-  for (let i = w; i < times.length; i += WORKERS) {
+  for (let i = w + (RANGE ? RANGE[0] : 0); i < (RANGE ? Math.min(RANGE[1], times.length) : times.length); i += WORKERS) {
     await page.evaluate((t) => window.render(t), times[i]);
     const name = stills ? `still-${String(i).padStart(2, "0")}-${times[i].toFixed(2)}.jpg` : `${String(i).padStart(5, "0")}.jpg`;
     await page.screenshot({ path: path.join(dir, name), type: "jpeg", quality: 94 });
@@ -46,8 +48,11 @@ console.log(`frames done in ${((Date.now() - t0) / 1000).toFixed(0)}s`);
 if (!stills) {
   const out = path.join(here, "out", "ruNit-Broadcast-16x9.mp4");
   fs.mkdirSync(path.dirname(out), { recursive: true });
+  const probe = spawnSync("ffmpeg", ["-hide_banner", "-i", path.join(here, "out", "mix.wav"), "-af", "loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json", "-f", "null", "-"]).stderr.toString();
+  const m = JSON.parse(probe.slice(probe.lastIndexOf("{")));
+  const ln = `loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
   execFileSync("ffmpeg", ["-y", "-hide_banner", "-loglevel", "error", "-framerate", String(FPS), "-i", path.join(dir, "%05d.jpg"),
-    "-i", path.join(here, "out", "mix.wav"), "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-pix_fmt", "yuv420p", "-r", String(FPS),
-    "-movflags", "+faststart", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-shortest", out], { stdio: "inherit" });
+    "-i", path.join(here, "out", "mix.wav"), "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-tune", "film", "-pix_fmt", "yuv420p", "-r", String(FPS),
+    "-movflags", "+faststart", "-af", ln, "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-shortest", out], { stdio: "inherit" });
   console.log("wrote", out);
 }

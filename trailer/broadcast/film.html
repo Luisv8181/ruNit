@@ -186,7 +186,7 @@ scene("bump", S.bump.start, S.bump.end, (root, D) => {
   const H1 = words(root, "Game over?", "h1"); css(H1.box, { left: 0, right: 0, top: "90px", textAlign: "center", fontSize: "120px" });
   const H2 = words(root, "Bring your phones together.", "h2"); css(H2.box, { left: 0, right: 0, top: "215px", textAlign: "center" });
   const ring = el("div", "abs", root); css(ring, { left: "960px", top: "560px", width: "10px", height: "10px", borderRadius: "50%", border: "10px solid #3DD39B", boxSizing: "border-box" });
-  const ok = el("div", "abs", root); css(ok, { left: 0, right: 0, top: "380px", textAlign: "center" });
+  const ok = el("div", "abs", root); css(ok, { left: 0, right: 0, top: "380px", textAlign: "center", zIndex: 5 });
   ok.innerHTML = `<div class="h1" style="font-size:230px;color:#3DD39B;text-shadow:0 0 60px rgba(61,211,155,.5)">Confirmed.</div><div class="h2" style="margin-top:18px;color:#EDEBE4">Both lines. Opponent-confirmed.</div>`;
   const c = CONTACT - S.bump.start;
   return (lt) => {
@@ -196,8 +196,8 @@ scene("bump", S.bump.start, S.bump.end, (root, D) => {
     const sep = oc(lin(lt, c + 0.15, c + 1.2));
     const gap = 520 - meet * 300 + sep * 520;
     const zoom = 1 - sep * 0.15;
-    pose(P1, { x: 960 - gap, y: 600 + (1 - appear) * 500, ry: 28 - meet * 18 + sep * 10, rz: -6 + meet * 6, s: 0.86 * zoom, o: 1 - lin(lt, c + 0.5, c + 1.4) * 0.7 });
-    pose(P2, { x: 960 + gap, y: 600 + (1 - appear) * 500, ry: -28 + meet * 18 - sep * 10, rz: 6 - meet * 6, s: 0.86 * zoom, o: 1 - lin(lt, c + 0.5, c + 1.4) * 0.7 });
+    pose(P1, { x: 960 - gap, y: 600 + (1 - appear) * 500, ry: 28 - meet * 18 + sep * 10, rz: -6 + meet * 6, s: 0.86 * zoom, o: 1 - lin(lt, c + 0.05, c + 0.45) * 0.85 });
+    pose(P2, { x: 960 + gap, y: 600 + (1 - appear) * 500, ry: -28 + meet * 18 - sep * 10, rz: 6 - meet * 6, s: 0.86 * zoom, o: 1 - lin(lt, c + 0.05, c + 0.45) * 0.85 });
     reveal(H1, lt, 0.1, 0.06, 0.55, c - 0.4); reveal(H2, lt, 0.35, 0.04, 0.55, c - 0.4);
     const rr = oe(after) * 1500;
     css(ring, { width: rr + "px", height: rr + "px", marginLeft: -rr / 2 + "px", marginTop: -rr / 2 + "px", opacity: lt > c ? 1 - after : 0, borderWidth: 14 * (1 - after) + 2 + "px" });
