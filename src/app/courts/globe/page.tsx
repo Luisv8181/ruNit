@@ -54,7 +54,7 @@ export default function GlobePage() {
   const inBounds = (lat: number, lng: number) => !view || (lat >= view.s && lat <= view.n && (view.w <= view.e ? lng >= view.w && lng <= view.e : lng >= view.w || lng <= view.e));
   const osmVisible = osm.filter((c) => inBounds(c.lat, c.lng));
   const ruNitVisible = state.courts.filter((c) => inBounds(c.lat, c.lng));
-  const activeRuns = state.runs.filter((r) => !["final", "reviewed"].includes(r.status));
+  const activeRuns = state.runs.filter((r) => !["final", "reviewed"].includes(r.status) && (r.visibility === "public" || r.participants.includes(state.meId)));
   const localActiveRuns = activeRuns.filter((r) => ruNitVisible.some((c) => c.id === r.courtId));
   const sel = state.courts.find((c) => c.id === selected);
   const selOsm = osm.find((o) => o.id === selected);
@@ -80,7 +80,13 @@ export default function GlobePage() {
             ))}
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2" aria-label="Court network in current view">\n            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{ruNitVisible.length}</div><div className="text-xs text-ink-2">ruNit courts</div></div>\n            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{osmVisible.length}</div><div className="text-xs text-ink-2">OSM courts loaded</div></div>\n            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{localActiveRuns.length}</div><div className="text-xs text-ink-2">Active runs</div></div>\n          </div>\n          {localActiveRuns.length > 0 && <div className="mt-3 rounded-xl border border-paper-line p-3"><div className="eyebrow mb-2">Runs happening in ruNit courts here</div><ul className="space-y-2">{localActiveRuns.slice(0, 3).map((r) => <li key={r.id}><Link href={`/runs/${r.id}`} className="flex items-center justify-between gap-3 text-sm hover:underline"><span className="min-w-0 truncate font-semibold">{r.title}</span><span className="shrink-0 text-xs text-ink-2">{r.participants.length}/{r.capacity} players</span></Link></li>)}</ul></div>}\n          <p className="mt-3 min-h-[1.5rem] text-[15px]" role="status" aria-live="polite">
+          <div className="mt-5 grid grid-cols-3 gap-2" aria-label="Court network in current view">
+            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{ruNitVisible.length}</div><div className="text-xs text-ink-2">ruNit courts</div></div>
+            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{osmVisible.length}</div><div className="text-xs text-ink-2">OSM courts loaded</div></div>
+            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{localActiveRuns.length}</div><div className="text-xs text-ink-2">Active runs</div></div>
+          </div>
+          {localActiveRuns.length > 0 && <div className="mt-3 rounded-xl border border-paper-line p-3"><div className="eyebrow mb-2">Runs happening in ruNit courts here</div><ul className="space-y-2">{localActiveRuns.slice(0, 3).map((r) => <li key={r.id}><Link href={`/runs/${r.id}`} className="flex items-center justify-between gap-3 text-sm hover:underline"><span className="min-w-0 truncate font-semibold">{r.title}</span><span className="shrink-0 text-xs text-ink-2">{r.participants.length}/{r.capacity} players</span></Link></li>)}</ul></div>}
+          <p className="mt-3 min-h-[1.5rem] text-[15px]" role="status" aria-live="polite">
             {status.kind === "far" && (snapshot ? <>Global density layer: {snapshot.points.length.toLocaleString()} mapped court locations in {snapshot.region}. Snapshot updated {new Date(snapshot.fetchedAt).toLocaleDateString()}. Zoom in to load court details.</> : <>Global density snapshot is not installed. Live OpenStreetMap courts load as you zoom into a city; a regional or global snapshot can be generated with the court import script.</>)}
             {status.kind === "loading" && <>Loading courts from OpenStreetMap…</>}
             {status.kind === "ok" && <><b>{status.n}</b> OpenStreetMap {status.n === 1 ? "court" : "courts"} in view.</>}
@@ -152,7 +158,15 @@ export default function GlobePage() {
             </section>
           )}
 
-          <section className="mt-8 border-t-2 border-ink pt-4">\n            <h2 className="display text-[1.8rem]">The network, at this zoom</h2>\n            <p className="mt-2 text-sm text-ink-2">Counts reflect the visible map bounds. OpenStreetMap locations are mapped courts, not ruNit-verified venues. ruNit courts, runs, and records are community features; demo content is labeled in the app.</p>\n            <div className="mt-4 flex flex-wrap gap-2">\n              <Link href="/courts" className="btn-line">Open local court map</Link>\n              <Link href="/community" className="btn-line">Find players & squads</Link>\n            </div>\n          </section>\n          <p className="mt-6 text-xs text-ink-3">Dark pins are ruNit demo courts. Light pins are OpenStreetMap courts loaded for the current area. Coverage depends on what contributors have mapped and should not be treated as a complete inventory.</p>
+          <section className="mt-8 border-t-2 border-ink pt-4">
+            <h2 className="display text-[1.8rem]">The network, at this zoom</h2>
+            <p className="mt-2 text-sm text-ink-2">Counts reflect the visible map bounds. OpenStreetMap locations are mapped courts, not ruNit-verified venues. ruNit courts, runs, and records are community features; demo content is labeled in the app.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/courts" className="btn-line">Open local court map</Link>
+              <Link href="/community" className="btn-line">Find players & squads</Link>
+            </div>
+          </section>
+          <p className="mt-6 text-xs text-ink-3">Dark pins are ruNit demo courts. Light pins are OpenStreetMap courts loaded for the current area. Coverage depends on what contributors have mapped and should not be treated as a complete inventory.</p>
         </div>
       </div>
     </div>
