@@ -215,6 +215,7 @@ export interface CourtSubmission {
   courtId?: string;
   name?: string;
   city?: string;
+  address?: string;
   details: string;
   at: string;
   status: "pending_review";
