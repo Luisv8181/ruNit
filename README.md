@@ -83,6 +83,8 @@ python3 trailer/broadcast/mix.py          # score, sound design, narration mix
 node trailer/broadcast/render.mjs         # frames + H.264/AAC, loudness -14 LUFS
 ```
 
+**Story trailer** (`trailer/vertical/`, 50 s, 1080x1920 at 60 fps, for Reels and TikTok): one player's night, from "You've got next" through calling a run, QR check-in, scoring and confirming, the reflection question, Player DNA, customization, the half-court record book and opportunities. 110 BPM original score, burned-in captions for sound-off viewing. Same steps as above with `trailer/vertical/capture.mjs`, `plan.py`, `mix.py` and `render.mjs` (it reuses the broadcast captures, so run `trailer/broadcast/capture.mjs` first).
+
 ## Status at a glance
 
 | Works now (demo mode) | Simulated in the demo | Needs credentials / not built |

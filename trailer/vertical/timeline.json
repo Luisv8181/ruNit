@@ -1,0 +1,230 @@
+{
+ "bpm": 110,
+ "beat": 0.5454545454545454,
+ "bar": 2.1818181818181817,
+ "duration": 50.4,
+ "scenes": [
+  {
+   "id": "hook",
+   "start": 0.0,
+   "bars": 2,
+   "end": 4.364
+  },
+  {
+   "id": "call",
+   "start": 4.364,
+   "bars": 2,
+   "end": 8.727
+  },
+  {
+   "id": "checkin",
+   "start": 8.727,
+   "bars": 2,
+   "end": 13.091
+  },
+  {
+   "id": "play",
+   "start": 13.091,
+   "bars": 3,
+   "end": 19.636
+  },
+  {
+   "id": "reflect",
+   "start": 19.636,
+   "bars": 2,
+   "end": 24.0
+  },
+  {
+   "id": "dna",
+   "start": 24.0,
+   "bars": 2,
+   "end": 28.364
+  },
+  {
+   "id": "custom",
+   "start": 28.364,
+   "bars": 2,
+   "end": 32.727
+  },
+  {
+   "id": "king",
+   "start": 32.727,
+   "bars": 2,
+   "end": 37.091
+  },
+  {
+   "id": "doors",
+   "start": 37.091,
+   "bars": 2,
+   "end": 41.455
+  },
+  {
+   "id": "end",
+   "start": 41.455,
+   "bars": 3,
+   "end": 48.0
+  }
+ ],
+ "lines": [
+  {
+   "id": "hook",
+   "scene": "hook",
+   "start": 1.091,
+   "dur": 1.209,
+   "captions": [
+    {
+     "t0": 1.091,
+     "t1": 2.3,
+     "text": "You've got next."
+    }
+   ]
+  },
+  {
+   "id": "call",
+   "scene": "call",
+   "start": 4.636,
+   "dur": 3.497,
+   "captions": [
+    {
+     "t0": 4.636,
+     "t1": 5.438,
+     "text": "Call a run."
+    },
+    {
+     "t0": 5.438,
+     "t1": 8.134,
+     "text": "Pick the court, the time, the format."
+    }
+   ]
+  },
+  {
+   "id": "checkin",
+   "scene": "checkin",
+   "start": 9.0,
+   "dur": 2.882,
+   "captions": [
+    {
+     "t0": 9.0,
+     "t1": 10.407,
+     "text": "Scan in at the court."
+    },
+    {
+     "t0": 10.407,
+     "t1": 11.882,
+     "text": "Teams pick themselves."
+    }
+   ]
+  },
+  {
+   "id": "play",
+   "scene": "play",
+   "start": 13.364,
+   "dur": 2.789,
+   "captions": [
+    {
+     "t0": 13.364,
+     "t1": 14.251,
+     "text": "Tap the score."
+    },
+    {
+     "t0": 14.251,
+     "t1": 16.153,
+     "text": "Then tap phones to confirm it."
+    }
+   ]
+  },
+  {
+   "id": "reflect",
+   "scene": "reflect",
+   "start": 19.909,
+   "dur": 2.65,
+   "captions": [
+    {
+     "t0": 19.909,
+     "t1": 21.045,
+     "text": "Then one question."
+    },
+    {
+     "t0": 21.045,
+     "t1": 22.559,
+     "text": "How did you score today?"
+    }
+   ]
+  },
+  {
+   "id": "dna",
+   "scene": "dna",
+   "start": 24.273,
+   "dur": 2.393,
+   "captions": [
+    {
+     "t0": 24.273,
+     "t1": 26.666,
+     "text": "Every answer builds your Player DNA."
+    }
+   ]
+  },
+  {
+   "id": "custom",
+   "scene": "custom",
+   "start": 28.636,
+   "dur": 2.452,
+   "captions": [
+    {
+     "t0": 28.636,
+     "t1": 29.863,
+     "text": "Build your player."
+    },
+    {
+     "t0": 29.863,
+     "t1": 31.089,
+     "text": "Unlock your style."
+    }
+   ]
+  },
+  {
+   "id": "king",
+   "scene": "king",
+   "start": 33.0,
+   "dur": 2.114,
+   "captions": [
+    {
+     "t0": 33.0,
+     "t1": 35.114,
+     "text": "Win enough, and the court is yours."
+    }
+   ]
+  },
+  {
+   "id": "doors",
+   "scene": "doors",
+   "start": 37.364,
+   "dur": 1.627,
+   "captions": [
+    {
+     "t0": 37.364,
+     "t1": 38.99,
+     "text": "And the run opens doors."
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "scene": "end",
+   "start": 42.0,
+   "dur": 3.126,
+   "captions": [
+    {
+     "t0": 42.0,
+     "t1": 42.426,
+     "text": "ruNit."
+    },
+    {
+     "t0": 42.426,
+     "t1": 45.126,
+     "text": "Coming first to Hazleton and Scranton."
+    }
+   ]
+  }
+ ]
+}
