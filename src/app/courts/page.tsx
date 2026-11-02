@@ -149,6 +149,14 @@ function CourtDetail({ court: c, onClose }: { court: Court; onClose: () => void 
         <p className="mt-2 text-xs text-ink-2">{courtVerificationTip(c.verification)}</p>
       </div>
 
+      <div className="mt-4 rounded-xl border border-paper-line bg-surface/60 p-3">
+        <div className="eyebrow mb-1">Court location</div>
+        <p className="text-sm font-semibold">{c.address || "Street address not listed"}</p>
+        <p className="mt-1 text-xs text-ink-2">{c.address ? `${c.neighborhood}, ${c.city}` : `${c.neighborhood}, ${c.city} · approximate map pin`}</p>
+        <a className="mt-3 inline-flex text-sm font-semibold text-ball-ink underline" href={`https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`} target="_blank" rel="noreferrer">Get directions</a>
+        <span className="ml-3 text-xs text-ink-3">{c.lat.toFixed(5)}, {c.lng.toFixed(5)}</span>
+      </div>
+
       <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-paper-line bg-paper-line text-sm">
         {[
           ["Type", c.indoor ? "Indoor" : "Outdoor"],
