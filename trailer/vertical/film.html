@@ -213,7 +213,7 @@ window.render = async (t) => {
   if (t >= CONTACT && t < CONTACT + 0.3) fl = Math.max(fl, (1 - (t - CONTACT) / 0.3) * 0.6);
   if (t >= S.end.start && t < S.end.start + 0.35) fl = Math.max(fl, (1 - (t - S.end.start) / 0.35) * 0.7);
   css(flash, { opacity: fl });
-  const c = t < S.end.start ? CAPS.find((x) => t >= x.t0 && t < x.t1 + 0.12) : null;
+  const c = t >= S.call.start && t < S.end.start ? CAPS.find((x) => t >= x.t0 && t < x.t1 + 0.12) : null;
   cap.innerHTML = c ? `<span>${c.text}</span>` : "";
   css(demo, { opacity: t > S.call.start && t < S.end.start ? 1 : 0 });
   seed = Math.floor(t * 60) * 7919 + 13;
