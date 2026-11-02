@@ -6,7 +6,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const exe = [process.env.CHROME, "/usr/bin/google-chrome", "/usr/bin/chromium", "C:/Program Files/Google/Chrome/Application/chrome.exe", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"].filter(Boolean).find((p) => fs.existsSync(p));
 const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox"] });
 const errors = [];
-for (const theme of ["lights", "paint", "card"]) {
+for (const theme of ["sun", "lights", "paint", "card"]) {
   for (const kind of ["phone", "desk"]) {
     const ctx = await browser.newContext(kind === "phone" ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, reducedMotion: "reduce" } : { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
     await ctx.addInitScript((t) => { try { localStorage.setItem("runit-theme", t); } catch {} }, theme);

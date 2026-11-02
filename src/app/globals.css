@@ -3,13 +3,39 @@
 @tailwind utilities;
 
 /* ============================================================
-   Three looks. Colors are "r g b" triplets so Tailwind can add alpha.
-   lights: a night run under the park lamps (default)
+   Four looks. Colors are "r g b" triplets so Tailwind can add alpha.
+   sun:    solar-punk daylight, warm white and ball orange (default; see docs/DESIGN_SYSTEM.md)
+   lights: a night run under the park lamps
    paint:  daytime blacktop, court paint and stencil numbers
    card:   collectible trading card, foil only where it's verified
    ============================================================ */
 
-:root, [data-theme="lights"] {
+:root, [data-theme="sun"] {
+  --c-paper: 255 249 240;    --c-paper-warm: 250 240 226; --c-paper-line: 230 219 203; --c-surface: 255 255 255;
+  --c-ink: 32 43 48;         --c-ink-2: 78 90 96;         --c-ink-3: 98 109 114;
+  --c-ball: 244 123 53;      --c-ball-deep: 222 104 36;   --c-ball-soft: 252 227 210; --c-ball-ink: 184 78 18;  --c-on-ball: 32 43 48;
+  --c-sun: 244 198 94;       --c-sun-soft: 251 235 196;   --c-sun-deep: 128 90 12;
+  --c-emerald: 26 132 96;    --c-emerald-soft: 212 238 227; --c-on-emerald: 255 255 255;
+  --c-sky: 86 184 232;       --c-sky-soft: 220 240 250;   --c-sky-deep: 22 104 148;
+  --c-violet: 120 88 214;    --c-violet-soft: 233 226 250;
+  --c-warn: 186 64 22;       --c-on-warn: 255 255 255;
+  --c-night: 32 43 48;       --c-chalk: 255 249 240;
+  --night-ink-2: 78 90 96;   --night-ink-3: 98 109 114;
+
+  --font-display: "Archivo Variable"; --display-weight: 850; --display-stretch: 70%; --display-style: normal; --display-track: -0.012em;
+  --font-sans: "Archivo Variable";    --sans-stretch: 100%;
+  --font-num: "Archivo Variable";     --num-weight: 700; --num-stretch: 78%; --num-style: normal;
+  --font-score: "Doto Variable";      --score-weight: 900; --score-style: normal; --score-track: 0.02em;
+  --btn-radius: 14px;
+
+  --court-out-floor: #2F7A5E; --court-out-apron: #276650; --court-in-floor: #D9A86C; --court-in-apron: #C4935A;
+  --court-key: #F47B35; --court-line-out: #FFF9F0; --court-line-in: rgba(32,43,48,.6); --court-rim: #202B30;
+  --court-tag: rgba(32,43,48,.86); --court-tag-text: #FFF9F0; --court-me: #F4C65E; --court-me-text: #202B30;
+  --map-bg: #F4EDE2; --map-park: #D5EADB; --map-water: #D2E9F5; --map-street: #E6DCCD; --map-road: #EDCBA6; --map-label: #202B30; --map-halo: #F4EDE2; --map-pin-off: #FFFFFF;
+  color-scheme: light;
+}
+
+[data-theme="lights"] {
   --c-paper: 20 24 29;       --c-paper-warm: 27 32 39;   --c-paper-line: 44 52 61;  --c-surface: 27 32 39;
   --c-ink: 237 235 228;      --c-ink-2: 169 179 188;     --c-ink-3: 134 146 158;
   --c-ball: 255 178 56;      --c-ball-deep: 232 154 30;  --c-ball-soft: 58 44 18;   --c-ball-ink: 255 178 56;  --c-on-ball: 20 24 29;
@@ -107,8 +133,12 @@ body {
   background: rgb(var(--c-paper));
   min-height: 100vh;
 }
+/* Sun: late-afternoon light falling across the top of every page. */
+[data-theme="sun"] body, :root:not([data-theme]) body {
+  background: radial-gradient(1100px 560px at 85% -12%, rgb(244 198 94 / .28), transparent 64%) no-repeat, radial-gradient(700px 420px at -5% 0%, rgb(86 184 232 / .10), transparent 60%) no-repeat, rgb(var(--c-paper));
+}
 /* Lights: one warm pool of lamp light at the top of every page. */
-[data-theme="lights"] body, :root:not([data-theme]) body {
+[data-theme="lights"] body {
   background: radial-gradient(900px 520px at 88% -8%, rgb(255 178 56 / .11), transparent 62%) no-repeat, rgb(var(--c-paper));
 }
 
@@ -134,7 +164,7 @@ body {
 }
 
 /* ---------- Lights: lamp glow on scoreboard figures ---------- */
-[data-theme="lights"] .glow, :root:not([data-theme]) .glow { text-shadow: 0 0 22px rgb(var(--c-ball) / .55); }
+[data-theme="lights"] .glow { text-shadow: 0 0 22px rgb(var(--c-ball) / .55); }
 [data-theme="lights"] .board { background: radial-gradient(120% 80% at 50% -10%, rgb(255 178 56 / .16), transparent 60%), rgb(var(--c-night)); }
 [data-theme="lights"] .board-side { border: 1px solid rgb(255 255 255 / .08); }
 [data-theme="lights"] .board-side .score { color: rgb(var(--c-chalk)); }
@@ -148,6 +178,14 @@ body {
 .tip-time { color: rgb(var(--c-ink)); }
 [data-theme="lights"] .tip-time { color: rgb(var(--c-ball)); }
 [data-theme="paint"] .court-frame svg { filter: drop-shadow(6px 6px 0 rgb(var(--c-night))); }
+
+/* ---------- Sun: scoreboards stay dark like a real one, lit gold by the sun ---------- */
+[data-theme="sun"] .board, :root:not([data-theme]) .board { background: radial-gradient(120% 80% at 50% -10%, rgb(244 198 94 / .22), transparent 60%), rgb(var(--c-night)); }
+[data-theme="sun"] .board-side .score { color: rgb(var(--c-chalk)); }
+[data-theme="sun"] .board-side.is-leading .score { color: rgb(244 198 94); }
+[data-theme="sun"] .run-time, [data-theme="sun"] .tip-time { color: rgb(var(--c-ball-ink)); }
+[data-theme="sun"] .run-time { font-size: 23px; letter-spacing: 0; }
+[data-theme="sun"] .run-row { grid-template-columns: 92px 1fr auto; }
 
 /* ---------- Paint: hard sticker shadows, painted scoreboard bands ---------- */
 [data-theme="paint"] .btn-ball, [data-theme="paint"] .btn-ink, [data-theme="paint"] .sticker { box-shadow: 4px 4px 0 rgb(var(--c-night)); }
