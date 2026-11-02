@@ -126,14 +126,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative z-[1] min-h-screen">
       <div className="scope-night flex items-center justify-center gap-3 bg-ink px-4 py-1.5 text-center text-[13px] text-paper/85">
-        <span>Demo build. Every player, court, game and listing here is made up.</span>
-        <button className="underline decoration-paper/30 underline-offset-2 hover:text-paper" onClick={() => { if (confirm("Reset the demo to its starting state?")) dispatch({ type: "reset" }); }}>Reset demo</button>
+        <span><span className="sm:hidden">Demo build. Everything here is made up.</span><span className="hidden sm:inline">Demo build. Every player, court, game and listing here is made up.</span></span>
+        <button className="shrink-0 whitespace-nowrap underline decoration-paper/30 underline-offset-2 hover:text-paper" onClick={() => { if (confirm("Reset the demo to its starting state?")) dispatch({ type: "reset" }); }}>Reset demo</button>
       </div>
 
       {!immersive && (
         <header className="sticky top-0 z-40 bg-paper">
-          <div className="mx-auto flex h-[68px] max-w-6xl items-center gap-8 px-4 sm:px-6">
-            <Link href="/" className="shrink-0"><Logo /></Link>
+          <div className="mx-auto flex h-[68px] max-w-6xl items-center gap-3 px-4 md:gap-8 sm:px-6">
+            <Link href="/" className="shrink-0"><Logo size={30} /></Link>
             <nav className="hidden h-full flex-1 items-stretch gap-6 md:flex" aria-label="Primary">
               {NAV.map((n) => (
                 <Link key={n.href} href={n.href} aria-current={active(path, n.href) ? "page" : undefined} className={`flex items-center border-b-4 pt-1 text-[15px] font-bold transition-colors ${active(path, n.href) ? "border-ball text-ink" : "border-transparent text-ink-2 hover:text-ink"}`}>
@@ -141,10 +141,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
             </nav>
-            <div className="ml-auto flex items-center gap-2 md:ml-0">
+            <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
               <LookPicker />
               <SoundToggle />
               <Notices />
+              <Link href="/create" className="btn-ball !min-h-0 !px-3 !py-2 text-sm md:hidden" aria-label="Call a run"><I.Plus width={16} height={16} />Run</Link>
               <Link href="/create" className="btn-ball hidden md:inline-flex">Call a run</Link>
             </div>
           </div>
@@ -155,16 +156,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       {!immersive && (
         <>
-          {!path.startsWith("/create") && !path.startsWith("/runs/") && !path.startsWith("/my-game/customize") && (
-            <Link href="/create" aria-label="Call a run" className="btn-ball fixed bottom-[84px] right-4 z-40 h-14 w-14 !p-0 shadow-[0_6px_0_rgb(var(--c-night))] md:hidden"><I.Plus width={24} height={24} /></Link>
-          )}
           <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-40 border-t border-paper-line bg-paper pb-[env(safe-area-inset-bottom)] md:hidden">
             <ul className="grid grid-cols-5">
               {NAV.map((n) => {
                 const on = active(path, n.href);
                 return (
                   <li key={n.href}>
-                    <Link href={n.href} aria-current={on ? "page" : undefined} className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-bold ${on ? "text-ink" : "text-ink-3"}`}>
+                    <Link href={n.href} aria-current={on ? "page" : undefined} className={`flex flex-col items-center gap-1 whitespace-nowrap py-2.5 text-[10.5px] font-bold ${on ? "text-ink" : "text-ink-3"}`}>
                       <n.icon width={22} height={22} className={on ? "text-ball-ink" : ""} />
                       {n.label}
                     </Link>
