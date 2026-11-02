@@ -43,10 +43,17 @@ export function parseOverpass(json: { elements?: OverpassElement[] }): OsmCourt[
     if (lat === undefined || lng === undefined) continue;
     const t = e.tags ?? {};
     if (!/(^|;)\s*basketball\s*(;|$)/.test(t.sport ?? "")) continue;
+    const streetAddress = [t["addr:housenumber"], t["addr:street"]].filter(Boolean).join(" ");
+    const address = t["addr:full"] || [
+      streetAddress || t["addr:place"],
+      t["addr:city"],
+      t["addr:state"],
+      t["addr:postcode"],
+    ].filter(Boolean).join(", ") || undefined;
     out.push({
       id: `osm-${e.type}-${e.id}`, osmType: e.type, osmId: e.id, lat, lng,
       name: t.name,
-      address: t["addr:full"] || [t["addr:housenumber"], t["addr:street"]].filter(Boolean).join(" ") || undefined,
+      address,
       hoops: t.hoops, surface: t.surface,
       lit: t.lit === "yes" ? true : t.lit === "no" ? false : undefined,
       access: t.access,
