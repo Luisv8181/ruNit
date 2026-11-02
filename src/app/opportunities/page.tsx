@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/store";
 import type { Opportunity, OpportunityType } from "@/lib/types";
-import { CourtArt, Empty } from "@/components/ui";
+import { Empty } from "@/components/ui";
 import { I } from "@/components/icons";
 
 const TYPES: OpportunityType[] = ["Tournament", "Camp", "Showcase", "Coaching", "Refereeing", "Training", "Employment", "Sponsorship", "Community"];
@@ -36,50 +36,51 @@ function Opps() {
 
   return (
     <div>
-      <section className="mb-8">
-        <CourtArt className="absolute -right-20 -top-16 h-[440px] rotate-[-6deg]" stroke="#fff" opacity={0.14} />
-        <div className="relative max-w-xl">
-                    <h1 className="display text-[3.2rem] sm:text-[4.6rem]">Open the next door</h1>
-          <p className="mt-3 text-lg text-ink-2">Tournaments, coaching, reffing, jobs and programs near you. Every listing shows who posted it and whether they&apos;re verified. RUN IT never promises recruitment or scholarships, and ratings never decide who gets picked.</p>
-        </div>
+      <section className="mb-6 max-w-2xl">
+        <p className="eyebrow mb-2">Beyond the pickup game</p>
+        <h1 className="display text-[3.2rem] sm:text-[4.4rem]">Open the next door</h1>
+        <p className="mt-3 text-base text-ink-2 sm:text-lg">Tournaments, training, coaching, work, and community events near you.</p>
       </section>
 
-      <div className="mb-6 space-y-3">
-        <div className="flex flex-wrap gap-2">
-          <button className={`chip ${type === "All" ? "chip-on" : ""}`} onClick={() => setType("All")}>All types</button>
-          {usedTypes.map((t) => <button key={t} className={`chip ${type === t ? "chip-on" : ""}`} onClick={() => setType(t)}>{t}</button>)}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {(["All", "Hazleton", "Scranton"] as const).map((c) => <button key={c} className={`chip ${city === c ? "chip-on" : ""}`} onClick={() => setCity(c)}>{c === "All" ? "Anywhere in NEPA" : c}</button>)}
-          <span className="mx-1 h-5 w-px bg-ink/10" />
-          {([14, 30, 90] as const).map((d) => <button key={d} className={`chip ${window === d ? "chip-on" : ""}`} onClick={() => setWindow(d)}>Next {d} days</button>)}
-          <button className={`chip ${adultsOnly ? "chip-on" : ""}`} onClick={() => setAdultsOnly((x) => !x)}>18+ only</button>
-        </div>
+      <div className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-paper-line bg-surface/60 p-4">
+        <label className="min-w-[180px] flex-1 text-xs font-bold text-ink-2">Type
+          <select className="field mt-1 text-sm" value={type} onChange={(e) => setType(e.target.value as OpportunityType | "All")}>
+            <option value="All">All opportunities</option>
+            {usedTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+        <label className="min-w-[180px] flex-1 text-xs font-bold text-ink-2">Area
+          <select className="field mt-1 text-sm" value={city} onChange={(e) => setCity(e.target.value as "All" | "Hazleton" | "Scranton")}>
+            <option value="All">Anywhere in NEPA</option><option value="Hazleton">Hazleton</option><option value="Scranton">Scranton</option>
+          </select>
+        </label>
+        <label className="min-w-[180px] flex-1 text-xs font-bold text-ink-2">When
+          <select className="field mt-1 text-sm" value={window} onChange={(e) => setWindow(Number(e.target.value) as 14 | 30 | 90)}>
+            <option value={14}>Next 14 days</option><option value={30}>Next 30 days</option><option value={90}>Next 90 days</option>
+          </select>
+        </label>
+        <label className="flex min-h-[46px] items-center gap-2 text-sm font-semibold text-ink"><input type="checkbox" className="h-4 w-4 accent-ball" checked={adultsOnly} onChange={(e) => setAdultsOnly(e.target.checked)} />18+ only</label>
       </div>
+      <details className="mb-6 text-xs text-ink-3"><summary className="cursor-pointer font-semibold underline underline-offset-4">How listings are checked</summary><p className="mt-2 max-w-2xl">Every listing shows who posted it and whether they&apos;re verified. RUN IT never promises recruitment or scholarships, and ratings never decide who gets picked.</p></details>
 
       {list.length === 0 ? <Empty title="Nothing in that window" body="Widen the date range or clear a filter." /> : (
-        <ul className="divide-y divide-paper-line overflow-hidden rounded-[22px] border border-paper-line bg-surface/60">
+        <ul className="grid gap-3 md:grid-cols-2">
           {list.map((o) => {
             const d = new Date(o.date);
             const interested = !!state.interests[o.id];
             return (
               <li key={o.id}>
-                <button className="grid w-full grid-cols-[64px_1fr] items-center gap-4 px-4 py-4 text-left hover:bg-surface sm:grid-cols-[72px_1fr_auto] sm:px-6" onClick={() => setOpen(o.id)}>
-                  <div className="text-center">
-                    <div className="eyebrow ">{d.toLocaleDateString([], { month: "short" })}</div>
-                    <div className="display text-[2.4rem] leading-none">{d.getDate()}</div>
+                <button className="flex h-full w-full flex-col rounded-[22px] border border-l-4 border-paper-line bg-surface/70 p-5 text-left transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink" style={{ borderLeftColor: TYPE_COLOR[o.type] }} onClick={() => setOpen(o.id)}>
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-ink-2">
+                    <span className="rounded-full bg-ink/5 px-2.5 py-1 text-ink">{o.type}</span>
+                    <span>{d.toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                    {o.organizerVerified ? <span className="inline-flex items-center gap-1 text-emerald"><I.Shield width={13} height={13} />Verified organizer</span> : <span className="text-warn">Unverified organizer</span>}
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded px-1.5 py-px text-[10px] font-bold text-white" style={{ background: TYPE_COLOR[o.type] }}>{o.type}</span>
-                      {o.organizerVerified ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald"><I.Shield width={13} height={13} />Verified organizer</span> : <span className="text-[11px] font-semibold text-warn">Unverified organizer</span>}
-                    </div>
-                    <div className="mt-1 truncate text-[17px] font-bold">{o.title}</div>
-                    <div className="truncate text-sm text-ink-2">{o.org}, {o.city}, {o.eligibility}</div>
-                  </div>
-                  <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
-                    <span className="text-sm font-semibold">{o.cost}</span>
-                    {interested ? <span className="flex items-center gap-1 text-xs font-bold text-emerald"><I.Check width={14} height={14} />Interested</span> : <span className="text-xs font-semibold text-ball-ink">Details</span>}
+                  <h2 className="mt-4 text-xl font-bold leading-tight">{o.title}</h2>
+                  <p className="mt-2 text-sm text-ink-2">{o.org} · {o.city} · {o.eligibility}</p>
+                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink/10 pt-4 text-sm">
+                    <span className="font-semibold">{o.cost}</span>
+                    {interested ? <span className="flex items-center gap-1 font-bold text-emerald"><I.Check width={14} height={14} />Interested</span> : <span className="font-bold text-ball-ink">View details →</span>}
                   </div>
                 </button>
               </li>

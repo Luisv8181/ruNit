@@ -9,8 +9,7 @@ import { CourtBadge, courtVerificationTip, DemoTag } from "@/components/ui";
 import { I } from "@/components/icons";
 import { CourtRecords } from "@/components/CourtRecords";
 import { GotNext } from "@/components/GotNext";
-import { kingsByCourt } from "@/lib/records";
-import { distLabel, when } from "@/lib/util";
+import { DEMO_HOME, distLabel, miles, when } from "@/lib/util";
 import type { Court } from "@/lib/types";
 
 type Filter = "indoor" | "outdoor" | "lights" | "active" | "accessible" | "verified";
@@ -37,20 +36,19 @@ function Courts() {
   const [filters, setFilters] = useState<Filter[]>([]);
   const [adding, setAdding] = useState(false);
 
+  const activeRuns = useMemo(() => state.runs.filter((r) => !["final", "reviewed"].includes(r.status) && (r.visibility === "public" || r.participants.includes(state.meId))), [state.runs, state.meId]);
   const activeCounts = useMemo(() => {
     const m: Record<string, number> = {};
-    state.runs.filter((r) => !["final", "reviewed"].includes(r.status)).forEach((r) => (m[r.courtId] = (m[r.courtId] ?? 0) + 1));
+    activeRuns.forEach((r) => (m[r.courtId] = (m[r.courtId] ?? 0) + 1));
     return m;
-  }, [state.runs]);
+  }, [activeRuns]);
 
-  const kings = useMemo(() => kingsByCourt(state.courts, state.courtGames), [state.courts, state.courtGames]);
-  const nick = (id?: string) => (id === state.meId ? "you" : state.players.find((p) => p.id === id)?.nickname);
   const inRegion = (c: Court) => (region === "Hazleton" ? ["Hazleton", "West Hazleton"] : ["Scranton", "Dunmore"]).includes(c.city);
   const visible = state.courts.filter(inRegion).filter((c) =>
     filters.every((f) =>
       f === "indoor" ? c.indoor : f === "outdoor" ? !c.indoor : f === "lights" ? c.lights : f === "active" ? (activeCounts[c.id] ?? 0) > 0 : f === "accessible" ? c.accessible : ["community_verified", "officially_verified"].includes(c.verification)
     )
-  );
+  ).sort((a, b) => (activeCounts[b.id] ?? 0) - (activeCounts[a.id] ?? 0) || miles(DEMO_HOME, a) - miles(DEMO_HOME, b));
   const sel = state.courts.find((c) => c.id === selected);
   const toggle = (f: Filter) => setFilters((x) => (x.includes(f) ? x.filter((y) => y !== f) : [...x.filter((y) => !(f === "indoor" && y === "outdoor") && !(f === "outdoor" && y === "indoor")), f]));
   const onSelect = useCallback((id: string) => setSelected(id), []);
@@ -59,7 +57,9 @@ function Courts() {
     <div>
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
+          <p className="eyebrow mb-2">Find a game near you</p>
           <h1 className="display text-[3rem] sm:text-[4rem]">Find your court</h1>
+          <p className="mt-2 text-sm text-ink-2">See where people are running, then pick your spot.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex rounded-full border border-ink/15 bg-surface/60 p-1" role="tablist">
@@ -67,20 +67,25 @@ function Courts() {
               <button key={r} role="tab" aria-selected={region === r} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${region === r ? "bg-ink text-paper" : "text-ink-2"}`} onClick={() => { setRegion(r); setSelected(undefined); }}>{r}</button>
             ))}
           </div>
-          <Link href="/courts/globe" className="btn-line">Globe</Link>
-          <button className="btn-line whitespace-nowrap" onClick={() => setAdding(true)}><I.Plus width={16} height={16} /> Add a court</button>
+          <Link href="/courts/globe" className="btn-ghost">Explore the globe</Link>
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {FILTERS.map((f) => (
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-paper-line bg-surface/60 p-3">
+        {FILTERS.slice(0, 4).map((f) => (
           <button key={f.k} className={`chip ${filters.includes(f.k) ? "chip-on" : ""}`} aria-pressed={filters.includes(f.k)} onClick={() => toggle(f.k)}>{f.label}</button>
         ))}
+        <details className="group relative">
+          <summary className="chip cursor-pointer list-none marker:hidden">More filters{filters.some((f) => f === "accessible" || f === "verified") ? " · On" : ""}</summary>
+          <div className="absolute right-0 top-10 z-20 flex min-w-[180px] flex-col gap-2 rounded-xl border border-paper-line bg-paper p-3 shadow-lg">
+            {FILTERS.slice(4).map((f) => <button key={f.k} className={`chip justify-center ${filters.includes(f.k) ? "chip-on" : ""}`} aria-pressed={filters.includes(f.k)} onClick={() => toggle(f.k)}>{f.label}</button>)}
+          </div>
+        </details>
         {filters.length > 0 && <button className="chip !border-transparent !bg-transparent underline" onClick={() => setFilters([])}>Clear</button>}
       </div>
 
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_400px]">
-        <div className="relative overflow-hidden rounded-[22px] border border-paper-line bg-[var(--map-bg)] lg:sticky lg:top-24 lg:h-[620px]">
+        <div className="relative order-2 overflow-hidden rounded-[22px] border border-paper-line bg-[var(--map-bg)] lg:sticky lg:top-24 lg:order-1 lg:h-[620px]">
           <div className="aspect-[1000/640] lg:aspect-auto lg:h-full">
             <CourtMap courts={visible} region={region} selected={selected} activeCounts={activeCounts} onSelect={onSelect} />
           </div>
@@ -91,21 +96,24 @@ function Courts() {
           </div>
         </div>
 
-        <div className="min-w-0">
+        <div className="order-1 min-w-0 lg:order-2">
           {sel ? <CourtDetail court={sel} onClose={() => setSelected(undefined)} /> : (
             <div>
-              <div className="eyebrow mb-2">{visible.length} courts in {region}</div>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="eyebrow">{visible.length} courts in {region}</div>
+                <button className="text-sm font-bold text-ink underline decoration-2 underline-offset-4" onClick={() => setAdding(true)}>+ Add a court</button>
+              </div>
               {visible.length === 0 && <p className="rounded-xl border border-dashed border-ink/20 p-6 text-sm text-ink-2">No courts match those filters. Clear one, or add a court we&apos;re missing.</p>}
               <ul className="space-y-1">
                 {visible.map((c) => (
                   <li key={c.id}>
-                    <button onClick={() => setSelected(c.id)} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-surface/70">
-                      <span className={`h-3 w-3 shrink-0 rounded-full ${c.indoor ? "bg-sky" : "bg-ball"}`} />
+                    <button onClick={() => setSelected(c.id)} className="flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left hover:border-paper-line hover:bg-surface/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">
+                      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${c.indoor ? "bg-sky-soft text-sky-deep" : "bg-ball/15 text-ball-ink"}`}><I.Pin width={20} height={20} /></span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{c.name}</span>
-                        <span className="block text-sm text-ink-2">{distLabel(c)}{kings[c.id] ? `. Most wins: ${nick(kings[c.id]!.id)}, ${kings[c.id]!.value}` : ". No confirmed games yet"}</span>
+                        <span className="block text-sm text-ink-2">{distLabel(c)} · {c.indoor ? "Indoor" : "Outdoor"}{c.lights ? " · Lights" : ""}</span>
                       </span>
-                      {(activeCounts[c.id] ?? 0) > 0 ? <span className="num rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-paper">{activeCounts[c.id]} {activeCounts[c.id] === 1 ? "run" : "runs"}</span> : <CourtBadge v={c.verification} />}
+                      {(activeCounts[c.id] ?? 0) > 0 ? <span className="shrink-0 text-right"><span className="block text-sm font-bold text-ball-ink">{activeCounts[c.id]} {activeCounts[c.id] === 1 ? "run" : "runs"}</span><span className="block text-xs text-ink-2">{(() => { const spots = activeRuns.filter((r) => r.courtId === c.id).reduce((n, r) => n + Math.max(0, r.capacity - r.participants.length), 0); return `${spots} open ${spots === 1 ? "spot" : "spots"}`; })()}</span></span> : <span className="shrink-0 text-xs text-ink-3">No runs yet</span>}
                     </button>
                   </li>
                 ))}
@@ -118,7 +126,7 @@ function Courts() {
                   ))}
                 </div>
               )}
-              <p className="mt-6 text-xs leading-relaxed text-ink-3">RUN IT does not know every court. Locations start as imported open map data and become verified only when players who play there confirm them.</p>
+              <details className="mt-6 text-xs leading-relaxed text-ink-3"><summary className="cursor-pointer font-semibold underline underline-offset-4">How court verification works</summary><p className="mt-2">RUN IT does not know every court. Locations start as imported open map data and become verified only when players who play there confirm them.</p></details>
             </div>
           )}
         </div>

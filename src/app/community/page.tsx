@@ -18,8 +18,10 @@ export default function Community() {
   const [tab, setTab] = useState<Tab>("Friends");
   return (
     <div>
+      <p className="eyebrow mb-2">The people behind the game</p>
       <h1 className="display text-[3rem] sm:text-[4rem]">Your people</h1>
-      <div className="sticky top-16 z-30 -mx-4 mt-5 bg-paper/90 px-4 py-2 backdrop-blur sm:mx-0 sm:px-0">
+      <p className="mt-3 max-w-2xl text-base text-ink-2">Keep up with the players, squads, and rivalries that bring you back to the court.</p>
+      <div className="sticky top-16 z-30 -mx-4 mt-6 border-b border-paper-line bg-paper/95 px-4 py-2 backdrop-blur sm:mx-0 sm:px-0">
         <div className="flex gap-1 overflow-x-auto" role="tablist">
           {TABS.map((t) => <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold ${tab === t ? "bg-ink text-paper" : "text-ink-2 hover:bg-ink/5"}`}>{t}</button>)}
         </div>

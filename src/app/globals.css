@@ -222,9 +222,12 @@ body {
 @keyframes drift { to { stroke-dashoffset: -120 } }
 @keyframes rise { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
 @keyframes bounce { from { transform: translateY(-14px) } to { transform: translateY(0) } }
-@keyframes spot { from { transform: scale(.4); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@keyframes spot { from { opacity: 0 } to { opacity: 1 } }
 
 svg [role="button"]:focus { outline: none; }
 svg [role="button"]:focus-visible .focus-ring { stroke: rgb(var(--c-ink)); stroke-width: 3; }
 ::selection { background: rgb(var(--c-ball) / .3); }
 [data-theme="card"] .run-time { font-size: 26px; }
+@media (max-width: 639px) {
+  .run-time { font-family: var(--font-num), system-ui, sans-serif; font-size: 1.4rem !important; font-weight: 800; letter-spacing: 0; }
+}

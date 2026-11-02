@@ -54,6 +54,7 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
 
   const FW: Record<string, string> = { "1v1": "One on one", "2v2": "Twos", "3v3": "Threes", "5v5": "Fives" };
   const courtSide = step !== 3;
+  const stage = run.status === "reviewed" ? "Game saved" : run.status === "final" ? "Final · Review stats" : run.status === "live" ? "Live now" : run.checkedIn.length > 0 ? "Check-in open" : "Run forming";
   return (
     <div>
       <BackLink href="/" label="Home" />
@@ -63,16 +64,19 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
         </div>
       )}
 
-      <header>
-        <p className="text-[15px] font-semibold text-ink-2">{when(run.startsAt)}{run.recurring ? `, repeats ${run.recurring.toLowerCase()}` : ""}</p>
-        <h1 className="display mt-1 text-[clamp(2.8rem,7vw,5rem)]">{run.title}</h1>
-        <p className="mt-2 max-w-2xl text-lg text-ink-2">
-          {FW[run.format]} to {run.target} at <Link href={`/courts?c=${c.id}`} className="font-semibold text-ink underline decoration-2 underline-offset-4">{c.name}</Link>.
-          {" "}{run.mode === "ranked" ? "Ranked, so it counts toward MMR." : "Casual."} {run.visibility === "private" ? "Invite only." : ""} Hosted by {isHost ? "you" : host.nickname}.
+      <header className="overflow-hidden rounded-[26px] border border-paper-line bg-surface/70 p-5 sm:p-7">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-ball px-3 py-1 text-xs font-bold text-on-ball">{stage}</span>
+          <span className="text-sm font-semibold text-ink-2">{when(run.startsAt)}{run.recurring ? ` · repeats ${run.recurring.toLowerCase()}` : ""}</span>
+        </div>
+        <h1 className="display mt-4 text-[clamp(2.8rem,6vw,4.4rem)]">{run.title}</h1>
+        <p className="mt-3 max-w-3xl text-base text-ink-2 sm:text-lg">
+          <Link href={`/courts?c=${c.id}`} className="font-bold text-ink underline decoration-2 underline-offset-4">{c.name}</Link>
+          {" "}· {FW[run.format]} to {run.target} · {run.mode === "ranked" ? "Ranked" : "Casual"} · {run.visibility === "private" ? "Invite only" : "Public"} · Hosted by {isHost ? "you" : host.nickname}
         </p>
-        {run.requirement && <p className="mt-4 max-w-2xl border-l-4 border-ball pl-4 text-[15px]">{run.requirement}</p>}
+        {run.requirement && <p className="mt-3 max-w-2xl border-l-4 border-ball pl-3 text-sm text-ink-2">House rules: {run.requirement}</p>}
 
-        <ol className="mt-8 flex gap-x-5 gap-y-2 overflow-x-auto pb-1 text-[15px]" aria-label="Game progress">
+        <ol className="mt-6 flex gap-x-5 gap-y-2 overflow-x-auto border-t border-ink/10 pt-4 text-sm" aria-label="Game progress">
           {STEPS.map((s, i) => (
             <li key={s} aria-current={i === step ? "step" : undefined} className={`flex shrink-0 items-center gap-1.5 border-b-4 pb-1.5 ${i === step ? "border-ball font-bold text-ink" : i < step ? "border-transparent text-ink-2" : "border-transparent text-ink-3"}`}>
               {i < step ? <I.Check width={15} height={15} className="text-emerald" /> : <span className="num text-base">{i + 1}</span>}
@@ -82,17 +86,8 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
         </ol>
       </header>
 
-      <div className={`mt-8 grid items-start gap-10 ${courtSide ? "lg:grid-cols-[minmax(0,460px)_1fr]" : ""}`}>
-        {courtSide && (
-          <div className="lg:sticky lg:top-24">
-            <CourtRun run={run} onJoin={step === 0 ? () => dispatch({ type: "join", runId: run.id }) : undefined} />
-            <p className="mt-3 text-sm text-ink-2">
-              {run.participants.length} of {run.capacity} spots taken{run.checkedIn.length && run.status !== "reviewed" && run.status !== "final" ? `, ${run.checkedIn.length} at the court` : ""}.
-              {run.teams && step >= 2 ? " Light side is Shirts, the guarding side is Skins." : ""}
-            </p>
-          </div>
-        )}
-        <div className="min-w-0 space-y-8">
+      <div className={`mt-7 grid items-start gap-8 ${courtSide ? "lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]" : ""}`}>
+        <div className="min-w-0 space-y-7">
           {step === 0 && <JoinPanel run={run} />}
           {(step === 1 || step === 2) && <CheckInPanel run={run} isHost={isHost} />}
           {step === 2 && <TeamsPanel run={run} isHost={isHost} />}
@@ -105,6 +100,15 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
             <button className="btn-ghost px-0 text-warn" onClick={() => dispatch({ type: "leave", runId: run.id })}>Can&apos;t make it? Leave the run</button>
           )}
         </div>
+        {courtSide && (
+          <div className="hidden lg:sticky lg:top-24 lg:block">
+            <CourtRun run={run} onJoin={step === 0 ? () => dispatch({ type: "join", runId: run.id }) : undefined} />
+            <p className="mt-3 text-sm text-ink-2">
+              {run.participants.length} of {run.capacity} spots taken{run.checkedIn.length && run.status !== "reviewed" && run.status !== "final" ? `, ${run.checkedIn.length} at the court` : ""}.
+              {run.teams && step >= 2 ? " Light side is Shirts, the guarding side is Skins." : ""}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -155,9 +159,9 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
   return (
     <div className="panel grid gap-6 pt-5 sm:grid-cols-[1fr_auto]">
       <div>
-        <div className="eyebrow mb-1">At the court?</div>
-        <div className="display text-[2rem]">Check in</div>
-        <p className="mt-1 text-sm text-ink-2">Scan the host&apos;s code or type it. Checking in is how RUN IT knows who actually showed up — it&apos;s the backbone of Trust.</p>
+        <div className="eyebrow mb-1">You&apos;re on the roster</div>
+        <div className="display text-[2rem]">Check in at the court</div>
+        <p className="mt-2 max-w-md text-sm text-ink-2">Scan the host&apos;s code or type it to mark yourself here.</p>
         <form className="mt-4 flex gap-2" onSubmit={(e) => {
           e.preventDefault();
           if (code.trim().toUpperCase() !== run.code) return setErr("That code doesn't match this run. Ask the host to show theirs.");

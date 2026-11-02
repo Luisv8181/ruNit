@@ -8,9 +8,7 @@ import { RunRow, timeParts } from "@/components/RunRow";
 import { Avatar } from "@/components/PlayerFigure";
 import { CourtRun } from "@/components/CourtRun";
 import { Empty } from "@/components/ui";
-import { PlayerCard } from "@/components/PlayerCard";
 import { SpotPips } from "@/components/RunRow";
-import { useTheme } from "@/lib/theme";
 
 function startsIn(iso: string) {
   const m = Math.round((new Date(iso).getTime() - Date.now()) / 60000);
@@ -23,7 +21,6 @@ function startsIn(iso: string) {
 
 export default function Home() {
   const { state, court, dispatch } = useStore();
-  const { theme } = useTheme();
   const mine = state.runs
     .filter((r) => r.participants.includes(state.meId) && r.status !== "reviewed")
     .sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt));
@@ -36,55 +33,64 @@ export default function Home() {
   const free = state.players.filter((p) => p.availableNow && p.id !== state.meId && !state.blocked.includes(p.id));
   const courtsNear = [...state.courts].sort((a, b) => miles(DEMO_HOME, a) - miles(DEMO_HOME, b)).slice(0, 4);
   const featuredOpp = state.opportunities.find((o) => o.type === "Tournament");
-  const isMine = featured && featured.participants.includes(state.meId);
+  const isMine = featured?.participants.includes(state.meId) ?? false;
   const here = featured ? featured.checkedIn.length : 0;
+  const hasStarted = featured ? new Date(featured.startsAt).getTime() <= Date.now() : false;
+  const runStatus = featured?.status === "final" ? "Final score posted"
+    : featured?.status === "live" ? "Live now"
+    : featured?.status === "checkin" || hasStarted ? "Check-in open"
+    : featured && featured.participants.length >= featured.capacity ? "Run is full" : "Coming up";
+  const actionLabel = featured?.status === "final" ? "Finish your game"
+    : featured?.status === "live" ? "Open scoreboard"
+    : featured?.checkedIn.includes(state.meId) ? "Open the run"
+    : "Check in";
 
   return (
     <div>
-      {theme === "card" && <div className="mb-8"><PlayerCard /></div>}
-      <h1 className="display text-[clamp(3.2rem,9vw,6.5rem)]">Who&apos;s got next?</h1>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow mb-2">Your court starts here</p>
+          <h1 className="display text-[clamp(3rem,7vw,5rem)]">Who&apos;s got next?</h1>
+        </div>
+        <Link href="/courts" className="text-sm font-bold text-ink underline decoration-2 underline-offset-4">Explore courts</Link>
+      </div>
 
       {featured && fc && (
-        <section className="mt-6 grid items-start gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,520px)_1fr]" aria-labelledby="next-run">
-          <div className="court-frame">
-            {isMine ? (
-              <Link href={`/runs/${featured.id}`} aria-label={`Open ${featured.title}`} className="block rounded-[22px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink/30">
-                <CourtRun run={featured} />
-              </Link>
-            ) : (
-              <CourtRun run={featured} onJoin={() => dispatch({ type: "join", runId: featured.id })} />
-            )}
-          </div>
-          <div className="lg:pt-2">
-            <p className="text-[15px] font-semibold text-ink-2">{isMine ? "Your next run" : "Closest open run"}</p>
-            {(() => { const tp = timeParts(featured.startsAt); return (
-              <div className="tip-time mt-2 flex items-end gap-2" aria-label={`Tips off ${tp.day.toLowerCase()} at ${tp.t} ${tp.ap}`}>
-                <span className="score glow text-[clamp(5.2rem,13vw,8.5rem)]">{tp.t}</span>
-                <span className="score pb-2 text-[clamp(1.6rem,4vw,2.4rem)]">{tp.ap.toUpperCase()}</span>
-              </div>
-            ); })()}
-            <h2 id="next-run" className="display mt-3 text-[clamp(2.2rem,4.6vw,3.2rem)]">{featured.title}</h2>
-            <p className="mt-3 max-w-md text-lg text-ink-2">
-              {fc.name}, {startsIn(featured.startsAt)}. {featured.format === "1v1" ? "One on one" : `${featured.format.slice(0, 1)} on ${featured.format.slice(0, 1)}`}, first to {featured.target}{featured.mode === "ranked" ? ", ranked" : ""}.
+        <section className="grid items-center gap-6 overflow-hidden rounded-[28px] border border-paper-line bg-surface/70 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_minmax(260px,370px)] lg:gap-10" aria-labelledby="next-run">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-ball px-3 py-1 text-xs font-bold text-on-ball">{runStatus}</span>
+              <span className="text-sm font-semibold text-ink-2">{isMine ? "Your run" : "Open run near you"}</span>
+            </div>
+            <h2 id="next-run" className="display mt-5 text-[clamp(2.4rem,5vw,4rem)]">{featured.title}</h2>
+            <p className="mt-3 text-base text-ink-2 sm:text-lg">
+              <span className="font-bold text-ink">{fc.name}</span> · {distLabel(fc)} · {featured.format} to {featured.target} · {featured.mode}
             </p>
-            <dl className="mt-6 flex gap-10">
-              <div><dt className="text-sm text-ink-2">Spots taken</dt><dd className="mt-2 flex items-center gap-3"><span className="[&>span>span]:h-3.5 [&>span>span]:w-3.5 [&>span]:gap-1.5"><SpotPips run={featured} /></span><span className="num text-[28px] leading-none">{featured.participants.length}<span className="text-ink-3">/{featured.capacity}</span></span></dd></div>
-              {isMine && <div><dt className="text-sm text-ink-2">At the court</dt><dd className="num text-[44px] leading-none">{here}</dd></div>}
+            <p className="mt-2 text-sm text-ink-2">{startsIn(featured.startsAt)}{featured.visibility === "private" ? " · Invite only" : ""}</p>
+            <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-4 border-t border-ink/10 pt-5">
+              <div><dt className="text-xs font-semibold text-ink-2">Tip-off</dt><dd className="num mt-1 text-2xl font-bold">{(() => { const t = timeParts(featured.startsAt); return `${t.t} ${t.ap.toUpperCase()}`; })()}</dd></div>
+              <div><dt className="text-xs font-semibold text-ink-2">Spots</dt><dd className="mt-1 flex items-center gap-2"><span className="[&>span>span]:h-2.5 [&>span>span]:w-2.5"><SpotPips run={featured} /></span><span className="num text-xl font-bold">{featured.participants.length}/{featured.capacity}</span></dd></div>
+              {isMine && <div><dt className="text-xs font-semibold text-ink-2">Checked in</dt><dd className="num mt-1 text-2xl font-bold">{here}</dd></div>}
             </dl>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               {isMine ? (
-                <Link href={`/runs/${featured.id}`} className="btn-ball px-7 py-3 text-base">{featured.checkedIn.includes(state.meId) ? "Open the run" : "Check in"}</Link>
+                <Link href={`/runs/${featured.id}`} className="btn-ball px-7 py-3 text-base">{actionLabel}</Link>
+              ) : featured.participants.length >= featured.capacity ? (
+                <Link href={`/runs/${featured.id}`} className="btn-ball px-7 py-3 text-base">View run</Link>
               ) : (
                 <button className="btn-ball px-7 py-3 text-base" onClick={() => dispatch({ type: "join", runId: featured.id })}>Take a spot</button>
               )}
-              <Link href="/create" className="btn-line px-6 py-3 text-base">Call your own run</Link>
+              <Link href="/create" className="btn-line px-6 py-3 text-base">Call a run</Link>
             </div>
-            {featured.requirement && <p className="mt-6 max-w-md text-[15px] text-ink-2">House rules from the host: {featured.requirement}</p>}
+            {featured.requirement && <p className="mt-4 text-sm text-ink-2">House rules: {featured.requirement}</p>}
+          </div>
+          <div className="court-frame hidden md:block" aria-hidden="true">
+            <CourtRun run={featured} labels={false} />
           </div>
         </section>
       )}
 
-      <div className="mt-16 grid gap-x-14 gap-y-12 lg:grid-cols-[1fr_320px]">
+      <div className="mt-10 grid gap-x-14 gap-y-12 lg:grid-cols-[1fr_320px]">
         <section aria-labelledby="open-runs">
           <div className="flex items-baseline justify-between">
             <h2 id="open-runs" className="display text-[2.4rem]">Open runs near you</h2>

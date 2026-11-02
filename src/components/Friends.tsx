@@ -62,28 +62,23 @@ export function Friends() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-[15px] text-ink-2">Your record against and with the people you play with. Confirmed games only.</p>
+        <div><h2 className="display text-[2rem]">Your circle</h2><p className="mt-1 text-sm text-ink-2">{rows.length} {rows.length === 1 ? "friend" : "friends"} · Records from confirmed games</p></div>
         <button className="btn-ball" onClick={() => { setAdding(true); setMsg(null); }}>Add a friend</button>
       </div>
 
       {rows.length === 0 ? <div className="mt-4"><Empty title="No friends yet" body="Add the people you run with to see your head-to-head records." /></div> : (
-        <ul className="mt-4">
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map(({ p, h }) => {
             const played = h.vsW + h.vsL;
             return (
-              <li key={p.id} className="grid grid-cols-[44px_1fr_auto] items-center gap-3 border-t border-ink/10 py-3">
-                <Avatar config={p.character} size={44} />
-                <div className="min-w-0">
-                  <div className="font-bold">{p.nickname}</div>
-                  <div className="truncate text-sm text-ink-2">{archetypeName(p.dna, p.position)}{h.withW + h.withL ? `. Together: ${h.withW}–${h.withL}` : ""}</div>
+              <li key={p.id} className="flex min-h-[160px] flex-col rounded-[22px] border border-paper-line bg-surface/70 p-5 sm:min-h-[210px]">
+                <div className="flex items-center gap-3">
+                  <Avatar config={p.character} size={52} />
+                  <div className="min-w-0"><div className="text-lg font-bold">{p.nickname}</div><div className="truncate text-sm text-ink-2">{archetypeName(p.dna, p.position)}</div></div>
                 </div>
-                <div className="text-right">
-                  {played ? (
-                    <>
-                      <div className="score text-[38px]"><span className={h.vsW >= h.vsL ? "text-emerald" : ""}>{h.vsW}</span><span className="text-ink-3">–</span><span className={h.vsL > h.vsW ? "text-warn" : ""}>{h.vsL}</span></div>
-                      <div className="text-xs text-ink-2">vs {p.nickname}</div>
-                    </>
-                  ) : <span className="text-sm text-ink-2">No games against yet</span>}
+                <div className="mt-auto grid grid-cols-2 gap-3 border-t border-ink/10 pt-4">
+                  <div><div className="text-xs font-semibold text-ink-2">Head to head</div><div className="num mt-1 text-2xl font-bold">{played ? `${h.vsW}–${h.vsL}` : "—"}</div></div>
+                  <div><div className="text-xs font-semibold text-ink-2">On the same side</div><div className="num mt-1 text-2xl font-bold">{h.withW + h.withL ? `${h.withW}–${h.withL}` : "—"}</div></div>
                 </div>
               </li>
             );

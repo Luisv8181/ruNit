@@ -9,7 +9,7 @@ import { geoCircle, geoDistance, geoOrthographic, geoPath, type GeoPermissibleOb
 import { feature, mesh } from "topojson-client";
 import type { Topology } from "topojson-specification";
 import land110 from "world-atlas/land-110m.json";
-import type { OsmCourt } from "@/lib/osm";
+import { snapshotCourtId, type CourtDensity, type OsmCourt, type SnapshotPoint } from "@/lib/osm";
 
 export interface GlobePin {
   id: string;
@@ -30,7 +30,8 @@ export interface GlobeView { lng: number; lat: number; zoom: number; s: number; 
 interface Props {
   pins: GlobePin[];
   osm?: OsmCourt[];
-  density?: [number, number][];
+  density?: CourtDensity;
+  snapshot?: SnapshotPoint[];
   selected?: string;
   onSelect: (id: string) => void;
   onViewSettled?: (v: GlobeView) => void;
@@ -105,10 +106,10 @@ const SEAMS: GeoPermissibleObjects[] = [
   geoCircle().center([-90, 0]).radius(58)(),
 ];
 
-export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pins, osm = [], density, selected, onSelect, onViewSettled }, ref) {
+export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pins, osm = [], density, snapshot, selected, onSelect, onViewSettled }, ref) {
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const view = useRef({ lng: 60, lat: -18, zoom: 1 }); // start over the Atlantic-ish, tilted
+  const view = useRef({ lng: -40, lat: 20, zoom: 1 });
   const size = useRef({ w: 600, h: 600, dpr: 1 });
   const anim = useRef<number | null>(null);
   const idle = useRef(true);
@@ -166,6 +167,73 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
       return [{ cluster: false as const, ...pin, x: xy[0], y: xy[1], ll }];
     });
   }, [pins, projection]);
+
+  const visibleDensity = useCallback(() => {
+    if (!density || view.current.zoom >= OSM_MIN_ZOOM) return [];
+    const z = view.current.zoom;
+    const source = z < 7 ? density.coarse : z < 80 ? density.medium : density.fine;
+    const { lng, lat } = view.current;
+    const p = projection();
+    const halfLat = Math.min(90, 110 / z);
+    const halfLng = Math.min(180, halfLat / Math.max(0.15, Math.cos(lat / DEG)));
+    const center: [number, number] = [lng, lat];
+    const { w, h } = size.current;
+    const spacing = z < 7 ? 56 : 40;
+    let low = 0, high = source.length;
+    while (low < high) {
+      const mid = (low + high) >>> 1;
+      if (source[mid][0] < lat - halfLat) low = mid + 1;
+      else high = mid;
+    }
+    const bins = new Map<string, { lat: number; lng: number; count: number; weight: number; x: number; y: number }>();
+    for (let i = low; i < source.length && source[i][0] <= lat + halfLat; i++) {
+      const [la, lo, count] = source[i];
+      if (Math.abs(((lo - lng + 540) % 360) - 180) > halfLng) continue;
+      if (geoDistance([lo, la], center) > Math.PI / 2 - 0.02) continue;
+      const xy = p([lo, la]);
+      if (!xy) continue;
+      const [x, y] = xy;
+      if (x < -20 || x > w + 20 || y < -20 || y > h + 20) continue;
+      const key = `${Math.floor(x / spacing)},${Math.floor(y / spacing)}`;
+      const bin = bins.get(key);
+      if (bin) {
+        const total = bin.count + count;
+        bin.x = (bin.x * bin.count + x * count) / total;
+        bin.y = (bin.y * bin.count + y * count) / total;
+        bin.count = total;
+        if (count > bin.weight) { bin.lat = la; bin.lng = lo; bin.weight = count; }
+      } else bins.set(key, { lat: la, lng: lo, count, weight: count, x, y });
+    }
+    return [...bins.values()].map((bin) => ({ ...bin, r: Math.max(1.6, Math.min(5, 1.2 + Math.log10(bin.count + 1) * 1.1)) }));
+  }, [density, projection]);
+
+  const visibleSnapshot = useCallback(() => {
+    if (!snapshot || view.current.zoom < OSM_MIN_ZOOM) return [];
+    const { lng, lat, zoom } = view.current;
+    const halfLat = Math.min(2, 110 / zoom);
+    const halfLng = Math.min(180, halfLat / Math.max(0.15, Math.cos(lat / DEG)));
+    const { w, h } = size.current;
+    const p = projection();
+    const liveIds = new Set(osm.map((court) => court.id));
+    let low = 0, high = snapshot.length;
+    while (low < high) {
+      const mid = (low + high) >>> 1;
+      if (snapshot[mid][0] < lat - halfLat) low = mid + 1;
+      else high = mid;
+    }
+    const visible: { id: string; lat: number; lng: number; x: number; y: number }[] = [];
+    for (let i = low; i < snapshot.length && snapshot[i][0] <= lat + halfLat; i++) {
+      const point = snapshot[i];
+      const [la, lo] = point;
+      if (Math.abs(((lo - lng + 540) % 360) - 180) > halfLng) continue;
+      const id = snapshotCourtId(point);
+      if (liveIds.has(id)) continue;
+      const xy = p([lo, la]);
+      if (!xy || xy[0] < -20 || xy[0] > w + 20 || xy[1] < -20 || xy[1] > h + 20) continue;
+      visible.push({ id, lat: la, lng: lo, x: xy[0], y: xy[1] });
+    }
+    return visible;
+  }, [snapshot, osm, projection]);
 
   const draw = useCallback(() => {
     const c = canvas.current;
@@ -251,18 +319,25 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
     hi.addColorStop(0, "rgba(255,255,255,.28)"); hi.addColorStop(1, "rgba(255,255,255,0)");
     ctx.beginPath(); path({ type: "Sphere" }); ctx.fillStyle = hi; ctx.fill();
 
-    // all mapped courts (snapshot density layer), visible from orbit
+    // Court counts combine nearby mapped pitches at each scale. Tap one to fly closer.
     if (density && z < OSM_MIN_ZOOM) {
-      ctx.fillStyle = "rgba(255,249,240,.85)";
-      const cl = view.current.lat / DEG, cg = view.current.lng / DEG;
-      const cx3 = Math.cos(cl) * Math.cos(cg), cy3 = Math.cos(cl) * Math.sin(cg), cz3 = Math.sin(cl);
-      const sz = z < 3 ? 1.4 : 2;
-      for (const [la, lo] of density) {
-        const a = la / DEG, b = lo / DEG;
-        if (Math.cos(a) * Math.cos(b) * cx3 + Math.cos(a) * Math.sin(b) * cy3 + Math.sin(a) * cz3 < 0.02) continue;
-        const xy = p([lo, la])!;
-        ctx.fillRect(xy[0] - sz / 2, xy[1] - sz / 2, sz, sz);
+      // Soft chalk marks, not buttons: busier places read a little brighter and larger.
+      for (const m of visibleDensity()) {
+        const a = Math.min(0.85, 0.28 + Math.log10(m.count + 1) * 0.16);
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,249,240,${a.toFixed(2)})`; ctx.fill();
       }
+    }
+
+    // Snapshot locations remain visible when live court details cannot load.
+    if (z >= OSM_MIN_ZOOM) {
+      visibleSnapshot().forEach((m) => {
+        const on = m.id === selected;
+        const r = on ? 8 : z > 1500 ? 4.5 : 3.5;
+        ctx.beginPath(); ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = "#FFF9F0"; ctx.fill();
+        ctx.lineWidth = on ? 3 : 1.5; ctx.strokeStyle = on ? "#202B30" : "rgba(32,43,48,.7)"; ctx.stroke();
+      });
     }
 
     // live OpenStreetMap courts in view
@@ -287,6 +362,7 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
 
     // pins
     visiblePins().forEach((m) => {
+      if (density && z < OSM_MIN_ZOOM) return;
       if (m.cluster) {
         const r = 13 + Math.min(10, m.n * 1.4);
         ctx.beginPath(); ctx.arc(m.x, m.y, r + 5, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,249,240,.35)"; ctx.fill();
@@ -314,7 +390,7 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
         ctx.fillStyle = "#FFF9F0"; ctx.fillText(m.name, m.x, m.y + r + 19);
       }
     });
-  }, [dots, projection, selected, visiblePins, osm, density]);
+  }, [dots, projection, selected, visiblePins, visibleDensity, visibleSnapshot, osm, density]);
 
   // sizing
   useEffect(() => {
@@ -418,13 +494,21 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
   const pinch = useRef<{ d: number; z: number } | null>(null);
 
   const hit = (x: number, y: number) => {
-    let best: { id: string; d: number; cluster: boolean; ll: [number, number] } | null = null;
-    visiblePins().forEach((m) => {
+    let best: { id: string; d: number; cluster: boolean; ll: [number, number]; count?: number } | null = null;
+    visibleDensity().forEach((m) => {
+      const d = Math.hypot(m.x - x, m.y - y);
+      if (d < m.r + 8 && (!best || d < best.d)) best = { id: `density-${m.lat}-${m.lng}`, d, cluster: true, ll: [m.lng, m.lat], count: m.count };
+    });
+    if (!density || view.current.zoom >= OSM_MIN_ZOOM) visiblePins().forEach((m) => {
       const d = Math.hypot(m.x - x, m.y - y);
       const r = m.cluster ? 26 : 18;
       if (d < r && (!best || d < best.d)) best = { id: m.id, d, cluster: m.cluster, ll: m.ll };
     });
     if (view.current.zoom >= OSM_MIN_ZOOM) {
+      visibleSnapshot().forEach((m) => {
+        const d = Math.hypot(m.x - x, m.y - y);
+        if (d < 11 && (!best || d < best.d - 4)) best = { id: m.id, d, cluster: false, ll: [m.lng, m.lat] };
+      });
       const p = projection();
       const center: [number, number] = [view.current.lng, view.current.lat];
       osm.forEach((o) => {
@@ -435,7 +519,7 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
         if (d < 12 && (!best || d < best.d - 4)) best = { id: o.id, d, cluster: false, ll };
       });
     }
-    return best as { id: string; d: number; cluster: boolean; ll: [number, number] } | null;
+    return best as { id: string; d: number; cluster: boolean; ll: [number, number]; count?: number } | null;
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -475,7 +559,8 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
     if (!dragged.current) {
       const rect = canvas.current!.getBoundingClientRect();
       const h = hit(e.clientX - rect.left, e.clientY - rect.top);
-      if (h?.cluster) flyTo(h.ll[0], h.ll[1], 1700);
+      if (h?.count) flyTo(h.ll[0], h.ll[1], Math.min(600, Math.max(12, view.current.zoom * 8)));
+      else if (h?.cluster) flyTo(h.ll[0], h.ll[1], 1700);
       else if (h) onSelect(h.id);
     }
   };
@@ -501,7 +586,9 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
     return () => c.removeEventListener("wheel", stop);
   }, []);
 
-  const hovered = hover ? pins.find((p) => p.id === hover.id) ?? (() => { const o = osm.find((x) => x.id === hover.id); return o ? { name: o.name ?? "Basketball court (OpenStreetMap)" } : undefined; })() : undefined;
+  const hovered = hover ? (hover.id.startsWith("density-")
+    ? (() => { const m = visibleDensity().find((x) => `density-${x.lat}-${x.lng}` === hover.id); return m ? { name: `${m.count.toLocaleString()} mapped ${m.count === 1 ? "court" : "courts"} · click to explore` } : undefined; })()
+    : pins.find((p) => p.id === hover.id) ?? (() => { const o = osm.find((x) => x.id === hover.id); return o ? { name: o.name ?? "Basketball court (OpenStreetMap)" } : visibleSnapshot().some((x) => x.id === hover.id) ? { name: "Mapped basketball court · click for source" } : undefined; })()) : undefined;
 
   return (
     <div ref={wrap} className="relative h-full w-full select-none">

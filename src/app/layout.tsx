@@ -23,11 +23,21 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#FFF9F0", width: "device-width", initialScale: 1 };
 
+const DEV_SW_RESET = `
+if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+  Promise.all([
+    navigator.serviceWorker.getRegistrations().then((registrations) => Promise.all(registrations.filter((registration) => registration.scope === location.origin + '/').map((registration) => registration.unregister()))),
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('runit-')).map((key) => caches.delete(key))))
+  ]).then(() => location.reload());
+}
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        {process.env.NODE_ENV === "development" && <script dangerouslySetInnerHTML={{ __html: DEV_SW_RESET }} />}
       </head>
       <body>
         <ThemeProvider>

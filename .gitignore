@@ -20,3 +20,6 @@ trailer/broadcast/stills
 
 # copied from node_modules by scripts/copy-maplibre-worker.mjs
 /public/maplibre-gl-worker.mjs
+
+# full court snapshot source; the app serves the split copy in public/data/courts
+/data/
