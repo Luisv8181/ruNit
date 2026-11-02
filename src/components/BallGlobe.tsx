@@ -39,6 +39,8 @@ interface Props {
 export const OSM_MIN_ZOOM = 300;
 
 const MIN_Z = 1, MAX_Z = 8000;
+// Streets fade into the leather between these zooms.
+const STREETS_FROM = 250, STREETS_FULL = 700;
 const DEG = 180 / Math.PI;
 
 // Pebble texture: a fixed Fibonacci lattice of points on the sphere.
@@ -53,6 +55,46 @@ function pebbles(n: number) {
   }
   return pts;
 }
+
+// Street tiles pressed into the leather. Each OSM pixel is tone-mapped by brightness against the
+// map's land colour: brighter (roads) turns to chalk, darker (buildings, water, rail, labels) presses into brown.
+const tileCache = new Map<string, HTMLCanvasElement | "loading" | "failed">();
+function tintedTile(z: number, x: number, y: number, onReady: () => void) {
+  const key = `${z}/${x}/${y}`;
+  const hit = tileCache.get(key);
+  if (hit) return typeof hit === "string" ? null : hit;
+  tileCache.set(key, "loading");
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 256;
+    const t = c.getContext("2d")!;
+    t.drawImage(img, 0, 0);
+    const px = t.getImageData(0, 0, 256, 256);
+    const d = px.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const L = (0.3 * d[i] + 0.59 * d[i + 1] + 0.11 * d[i + 2]) / 255;
+      let r = 244, g = 128, b = 58;
+      if (L > 0.955) {
+        const k = Math.min(1, (L - 0.955) / 0.04) * 0.85;
+        r += (255 - r) * k; g += (226 - g) * k; b += (196 - b) * k;
+      } else {
+        const k = Math.min(0.8, Math.max(0, (0.94 - L) * 2.4));
+        r += (92 - r) * k; g += (36 - g) * k; b += (10 - b) * k;
+      }
+      d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+    }
+    t.putImageData(px, 0, 0);
+    tileCache.set(key, c);
+    onReady();
+  };
+  img.onerror = () => tileCache.set(key, "failed");
+  img.src = `https://tile.openstreetmap.org/${key}.png`;
+  return null;
+}
+const tileLat = (y: number, z: number) => Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / 2 ** z))) * DEG;
+const latTile = (lat: number, z: number) => ((1 - Math.log(Math.tan(lat / DEG) + 1 / Math.cos(lat / DEG)) / Math.PI) / 2) * 2 ** z;
 
 // Basketball seams as geography: the equator, the 0°/180° meridian, and two curved seams.
 const SEAMS: GeoPermissibleObjects[] = [
@@ -154,6 +196,29 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
     ctx.beginPath(); path(land.current as GeoPermissibleObjects);
     ctx.fillStyle = "rgba(120,45,10,.30)"; ctx.fill();
     ctx.strokeStyle = "rgba(90,30,5,.35)"; ctx.lineWidth = 1; ctx.stroke();
+
+    // streets, once a city fills the view
+    if (z >= STREETS_FROM) {
+      const a = Math.min(1, (z - STREETS_FROM) / (STREETS_FULL - STREETS_FROM));
+      const tz = Math.max(3, Math.min(19, Math.round(Math.log2((R * dpr * Math.cos(view.current.lat / DEG) * 2 * Math.PI) / 256))));
+      const corners = [[0, 0], [w, 0], [0, h], [w, h]].map((xy) => p.invert!(xy as [number, number])).filter(Boolean) as [number, number][];
+      if (corners.length === 4) {
+        const n = 2 ** tz;
+        const lngs = corners.map((c) => c[0]), lats = corners.map((c) => c[1]);
+        const x0 = Math.floor(((Math.min(...lngs) + 180) / 360) * n), x1 = Math.floor(((Math.max(...lngs) + 180) / 360) * n);
+        const y0 = Math.floor(latTile(Math.max(...lats), tz)), y1 = Math.floor(latTile(Math.min(...lats), tz));
+        if ((x1 - x0 + 1) * (y1 - y0 + 1) <= 120) {
+          ctx.save(); ctx.globalAlpha = a; ctx.imageSmoothingQuality = "high";
+          for (let tx = x0; tx <= x1; tx++) for (let ty = y0; ty <= y1; ty++) {
+            const img = tintedTile(tz, ((tx % n) + n) % n, ty, draw);
+            if (!img) continue;
+            const nw = p([(tx / n) * 360 - 180, tileLat(ty, tz)])!, se = p([((tx + 1) / n) * 360 - 180, tileLat(ty + 1, tz)])!;
+            ctx.drawImage(img, nw[0] - 0.5, nw[1] - 0.5, se[0] - nw[0] + 1, se[1] - nw[1] + 1);
+          }
+          ctx.restore();
+        }
+      }
+    }
 
     // pebbles (thin out as we zoom, so close-ups stay calm)
     if (z < 40) {
@@ -459,7 +524,7 @@ export const BallGlobe = forwardRef<GlobeHandle, Props>(function BallGlobe({ pin
           {hovered.name}
         </div>
       )}
-      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="absolute bottom-3 left-4 rounded-full bg-paper/90 px-2.5 py-1 text-[12px] text-ink-2 hover:text-ink">Court data © OpenStreetMap contributors</a>
+      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="absolute bottom-3 left-4 rounded-full bg-paper/90 px-2.5 py-1 text-[12px] text-ink-2 hover:text-ink">Map and court data © OpenStreetMap contributors</a>
       <div className="absolute bottom-4 right-4 flex flex-col overflow-hidden rounded-xl border-2 border-ink bg-paper">
         <button aria-label="Zoom in" className="grid h-10 w-10 place-items-center text-xl font-bold hover:bg-ink hover:text-paper" onClick={() => { idle.current = false; setZoom(view.current.zoom * 1.8); }}>+</button>
         <button aria-label="Zoom out" className="grid h-10 w-10 place-items-center border-t-2 border-ink text-xl font-bold hover:bg-ink hover:text-paper" onClick={() => setZoom(view.current.zoom / 1.8)}>−</button>
