@@ -9,6 +9,7 @@ export interface OsmCourt {
   lat: number;
   lng: number;
   name?: string;
+  address?: string;
   hoops?: string;
   surface?: string;
   lit?: boolean;
@@ -44,7 +45,9 @@ export function parseOverpass(json: { elements?: OverpassElement[] }): OsmCourt[
     if (!/(^|;)\s*basketball\s*(;|$)/.test(t.sport ?? "")) continue;
     out.push({
       id: `osm-${e.type}-${e.id}`, osmType: e.type, osmId: e.id, lat, lng,
-      name: t.name, hoops: t.hoops, surface: t.surface,
+      name: t.name,
+      address: t["addr:full"] || [t["addr:housenumber"], t["addr:street"]].filter(Boolean).join(" ") || undefined,
+      hoops: t.hoops, surface: t.surface,
       lit: t.lit === "yes" ? true : t.lit === "no" ? false : undefined,
       access: t.access,
       indoor: t.indoor === "yes" || t.leisure === "sports_hall" || t.leisure === "sports_centre" || t.building !== undefined || t.covered === "yes",
