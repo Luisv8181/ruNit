@@ -210,14 +210,16 @@ function AddCourt({ onClose, region }: { onClose: () => void; region: Region }) 
   const [name, setName] = useState("");
   const [indoor, setIndoor] = useState(false);
   const [hoops, setHoops] = useState(2);
+  const [address, setAddress] = useState("");
   const [details, setDetails] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 3) return setErr("Give the court a name people would recognize.");
-    if (details.trim().length < 10) return setErr("Add a cross street or landmark so others can find it.");
-    dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: name.trim(), city: region, details: `${indoor ? "Indoor" : "Outdoor"}, ${hoops} hoops. ${details.trim()}`, at: new Date().toISOString(), status: "pending_review" } });
+    if (address.trim().length < 5) return setErr("Add a street address or clear cross streets so players can find it.");
+    if (details.trim().length < 10) return setErr("Add a landmark or directions to help players find the entrance.");
+    dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: name.trim(), address: address.trim(), city: region, details: `${indoor ? "Indoor" : "Outdoor"}, ${hoops} hoops. ${details.trim()}`, at: new Date().toISOString(), status: "pending_review" } });
     setDone(true);
   };
   return (
@@ -232,14 +234,15 @@ function AddCourt({ onClose, region }: { onClose: () => void; region: Region }) 
         ) : (
           <form onSubmit={submit} className="mt-4 space-y-4">
             <div><label className="label" htmlFor="cn">Court name</label><input id="cn" className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Church St playground" /></div>
+            <div><label className="label" htmlFor="court-address">Street address or cross streets</label><input id="court-address" className="field" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. 100 Main St, or Main St & 2nd Ave" /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><span className="label">Type</span>
                 <div className="flex gap-2">{[false, true].map((v) => <button type="button" key={String(v)} className={`chip flex-1 justify-center py-2 ${indoor === v ? "chip-on" : ""}`} onClick={() => setIndoor(v)}>{v ? "Indoor" : "Outdoor"}</button>)}</div>
               </div>
               <div><label className="label" htmlFor="hp">Hoops</label><input id="hp" type="number" min={1} max={12} className="field" value={hoops} onChange={(e) => setHoops(Math.max(1, Math.min(12, +e.target.value || 1)))} /></div>
             </div>
-            <div><label className="label" htmlFor="cd">Where is it?</label><textarea id="cd" className="field min-h-[80px]" value={details} onChange={(e) => setDetails(e.target.value)} placeholder="Cross streets, landmark, how to get in" /></div>
-            <p className="text-xs text-ink-3">In the live app you&apos;d drop a pin. Exact home addresses are never requested.</p>
+            <div><label className="label" htmlFor="cd">Where is it?</label><textarea id="cd" className="field min-h-[80px]" value={details} onChange={(e) => setDetails(e.target.value)} placeholder="Nearby landmark, entrance instructions, parking, or other directions" /></div>
+            <p className="text-xs text-ink-3">In the live app you&apos;d drop a pin. Only submit a public court location. Never submit a private home address.</p>
             {err && <p className="text-sm font-semibold text-warn" role="alert">{err}</p>}
             <div className="flex gap-2"><button type="button" className="btn-line flex-1" onClick={onClose}>Cancel</button><button className="btn-ball flex-1">Submit court</button></div>
           </form>
