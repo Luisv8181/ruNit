@@ -96,6 +96,13 @@ export default function GlobePage() {
               <p className="mt-3 text-[15px]">
                 {selOsm.indoor ? "Indoor" : "Outdoor"}{selOsm.surface ? `, ${selOsm.surface.replace(/_/g, " ")}` : ""}{selOsm.hoops ? `, ${selOsm.hoops} ${selOsm.hoops === "1" ? "hoop" : "hoops"}` : ""}{selOsm.lit === true ? ", lights" : selOsm.lit === false ? ", no lights" : ""}{selOsm.access && selOsm.access !== "yes" ? `, access: ${selOsm.access}` : ""}.
               </p>
+              <div className="mt-4 rounded-xl border border-paper-line bg-surface/60 p-3">
+                <div className="eyebrow mb-1">Court location</div>
+                <p className="text-sm font-semibold">{selOsm.address || "Street address not listed"}</p>
+                <p className="mt-1 text-xs text-ink-2">{selOsm.address ? "Address supplied by OpenStreetMap" : "Approximate map pin from OpenStreetMap"}</p>
+                <a className="mt-3 inline-flex text-sm font-semibold underline" href={`https://www.google.com/maps/dir/?api=1&destination=${selOsm.lat},${selOsm.lng}`} target="_blank" rel="noreferrer">Get directions</a>
+                <span className="ml-3 text-xs text-ink-3">{selOsm.lat.toFixed(5)}, {selOsm.lng.toFixed(5)}</span>
+              </div>
               <p className="mt-2 text-sm text-ink-2">Not on ruNit yet, so there are no runs or records here.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {added.includes(selOsm.id) ? (
@@ -111,6 +118,14 @@ export default function GlobePage() {
               <p className="text-[15px] text-ink-2">{sel.neighborhood}, {sel.city}</p>
               <h2 className="display text-[2.4rem]">{sel.name}</h2>
               <div className="mt-2"><CourtBadge v={sel.verification} /></div>
+              <div className="mt-4 rounded-xl border border-paper-line bg-surface/60 p-3">
+                <div className="eyebrow mb-1">Court location</div>
+                <p className="text-sm font-semibold">{sel.address || "Street address not listed"}</p>
+                <p className="mt-1 text-xs text-ink-2">{sel.address ? `${sel.neighborhood}, ${sel.city}` : `${sel.neighborhood}, ${sel.city} · approximate map pin`}</p>
+                <a className="mt-3 inline-flex text-sm font-semibold underline" href={`https://www.google.com/maps/dir/?api=1&destination=${sel.lat},${sel.lng}`} target="_blank" rel="noreferrer">Get directions</a>
+                <span className="ml-3 text-xs text-ink-3">{sel.lat.toFixed(5)}, {sel.lng.toFixed(5)}</span>
+              </div>
+
               <p className="mt-3 text-[15px]">{sel.indoor ? "Indoor" : "Outdoor"}, {sel.surface.toLowerCase()}, {sel.hoops} {sel.hoops === 1 ? "hoop" : "hoops"}{sel.lights ? ", lights" : ""}.</p>
               {king && rec.mostWins ? (
                 <div className="mt-4 flex items-center gap-3">
