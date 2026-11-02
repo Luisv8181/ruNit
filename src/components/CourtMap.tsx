@@ -4,7 +4,7 @@
 //  - DemoMap: offline, stylized SVG (no tiles, no keys). Streets are decorative, not real.
 //  - LiveMap: MapLibre GL with a configurable style URL (NEXT_PUBLIC_MAP_STYLE_URL).
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Court } from "@/lib/types";
 import { MAP_STYLE_URL } from "@/lib/backend";
@@ -24,8 +24,27 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
+// Keyless street tiles straight from OpenStreetMap, for the optional "Streets" view.
+const OSM_STYLE = {
+  version: 8 as const,
+  sources: { osm: { type: "raster" as const, tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 19, attribution: "© OpenStreetMap contributors" } },
+  layers: [{ id: "osm", type: "raster" as const, source: "osm" }],
+};
+
 export function CourtMap(props: Props) {
-  return MAP_STYLE_URL ? <LiveMap {...props} /> : <DemoMap {...props} />;
+  const [streets, setStreets] = useState(false);
+  const live = !!MAP_STYLE_URL || streets;
+  return (
+    <div className="relative h-full w-full">
+      {live ? <LiveMap {...props} /> : <DemoMap {...props} />}
+      {!MAP_STYLE_URL && (
+        <div className="absolute bottom-3 left-3 z-10 flex rounded-full sm:bottom-auto sm:left-auto sm:right-3 sm:top-3 bg-paper/90 p-1 text-[13px] font-bold shadow" role="group" aria-label="Map style">
+          <button aria-pressed={!streets} onClick={() => setStreets(false)} className={`rounded-full px-3 py-1 ${!streets ? "bg-ball text-on-ball" : "text-ink-2"}`}>Demo</button>
+          <button aria-pressed={streets} onClick={() => setStreets(true)} className={`rounded-full px-3 py-1 ${streets ? "bg-ball text-on-ball" : "text-ink-2"}`}>Streets</button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function DemoMap({ courts, region, selected, activeCounts, onSelect }: Props) {
@@ -105,35 +124,63 @@ function DemoMap({ courts, region, selected, activeCounts, onSelect }: Props) {
   );
 }
 
-function LiveMap({ courts, region, onSelect, activeCounts }: Props) {
+function LiveMap({ courts, region, selected, onSelect, activeCounts }: Props) {
   const el = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<unknown>(null);
+  const mapRef = useRef<import("maplibre-gl").Map | null>(null);
+  const markers = useRef<import("maplibre-gl").Marker[]>([]);
+  const pick = useRef(onSelect);
+  pick.current = onSelect;
+  const [ready, setReady] = useState(false);
+
+  // One map per region; pins are redrawn separately so selecting a court never reloads tiles.
   useEffect(() => {
     let cancelled = false;
+    let map: import("maplibre-gl").Map | null = null;
     (async () => {
       const maplibre = await import("maplibre-gl");
       if (cancelled || !el.current) return;
+      maplibre.setWorkerUrl("/maplibre-gl-worker.mjs");
       const b = REGIONS[region];
-      const map = new maplibre.Map({
-        container: el.current,
-        style: MAP_STYLE_URL,
-        bounds: [[b.lng[0], b.lat[0]], [b.lng[1], b.lat[1]]],
-      });
+      map = new maplibre.Map({ container: el.current, style: MAP_STYLE_URL || OSM_STYLE, bounds: [[b.lng[0], b.lat[0]], [b.lng[1], b.lat[1]]], fitBoundsOptions: { padding: 40 }, attributionControl: { compact: true } });
       mapRef.current = map;
-      courts.forEach((c) => {
+      setReady(true);
+    })();
+    return () => { cancelled = true; setReady(false); markers.current = []; map?.remove(); mapRef.current = null; };
+  }, [region]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+    let cancelled = false;
+    (async () => {
+      const maplibre = await import("maplibre-gl");
+      if (cancelled) return;
+      markers.current.forEach((m) => m.remove());
+      markers.current = courts.map((c) => {
+        const on = selected === c.id;
+        const n = activeCounts[c.id] ?? 0;
+        const verified = c.verification === "community_verified" || c.verification === "officially_verified";
         const node = document.createElement("button");
-        node.className = "grid h-8 w-8 place-items-center rounded-full border-2 border-white text-[11px] font-bold text-white shadow";
-        node.style.background = c.indoor ? "#56B8E8" : "#F47B35";
-        node.textContent = activeCounts[c.id] ? String(activeCounts[c.id]) : "";
-        node.setAttribute("aria-label", c.name);
-        node.onclick = () => onSelect(c.id);
-        new maplibre.Marker({ element: node }).setLngLat([c.lng, c.lat]).addTo(map);
+        node.className = "grid place-items-center rounded-full border-[3px] border-white text-[12px] font-extrabold text-white shadow-lg";
+        node.style.cssText = `width:${on ? 44 : 34}px;height:${on ? 44 : 34}px;background:${c.indoor ? "#3A9BD0" : "#F47B35"};outline:${on ? "3px solid #14181D" : "none"};${verified ? "" : "border-style:dashed;opacity:.9"}`;
+        node.textContent = n ? String(n) : "";
+        node.setAttribute("aria-label", `${c.name}${n ? `, ${n} active runs` : ""}`);
+        node.onclick = () => pick.current(c.id);
+        const label = document.createElement("span");
+        label.textContent = c.name;
+        label.style.cssText = "position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;white-space:nowrap;font:700 12px sans-serif;color:#14181D;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none";
+        node.style.position = "relative";
+        node.appendChild(label);
+        return new maplibre.Marker({ element: node }).setLngLat([c.lng, c.lat]).addTo(map);
       });
     })();
-    return () => {
-      cancelled = true;
-      (mapRef.current as { remove?: () => void } | null)?.remove?.();
-    };
-  }, [courts, region, onSelect, activeCounts]);
+    return () => { cancelled = true; };
+  }, [ready, courts, selected, activeCounts]);
+
+  useEffect(() => {
+    const c = courts.find((x) => x.id === selected);
+    if (ready && c) mapRef.current?.easeTo({ center: [c.lng, c.lat], duration: 500 });
+  }, [ready, selected, courts]);
+
   return <div ref={el} className="h-full w-full" />;
 }

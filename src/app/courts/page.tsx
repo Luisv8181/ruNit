@@ -105,7 +105,7 @@ function Courts() {
                         <span className="block truncate font-semibold">{c.name}</span>
                         <span className="block text-sm text-ink-2">{distLabel(c)}{kings[c.id] ? `. Most wins: ${nick(kings[c.id]!.id)}, ${kings[c.id]!.value}` : ". No confirmed games yet"}</span>
                       </span>
-                      {(activeCounts[c.id] ?? 0) > 0 ? <span className="num rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-paper">{activeCounts[c.id]} runs</span> : <CourtBadge v={c.verification} />}
+                      {(activeCounts[c.id] ?? 0) > 0 ? <span className="num rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-paper">{activeCounts[c.id]} {activeCounts[c.id] === 1 ? "run" : "runs"}</span> : <CourtBadge v={c.verification} />}
                     </button>
                   </li>
                 ))}
