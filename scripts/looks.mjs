@@ -3,7 +3,7 @@ import { chromium } from "playwright";
 import fs from "node:fs";
 const OUT = process.argv[2] ?? "looks"; const BASE = process.argv[3] ?? "http://localhost:3000";
 fs.mkdirSync(OUT, { recursive: true });
-const exe = ["/usr/bin/google-chrome", "/usr/bin/chromium"].find((p) => fs.existsSync(p));
+const exe = [process.env.CHROME, "/usr/bin/google-chrome", "/usr/bin/chromium", "C:/Program Files/Google/Chrome/Application/chrome.exe", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"].filter(Boolean).find((p) => fs.existsSync(p));
 const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox"] });
 const errors = [];
 for (const theme of ["lights", "paint", "card"]) {

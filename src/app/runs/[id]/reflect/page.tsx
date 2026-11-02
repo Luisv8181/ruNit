@@ -9,6 +9,8 @@ import { ruleBasedProvider } from "@/lib/insights";
 import { DNABars } from "@/components/ui";
 import { I } from "@/components/icons";
 
+// Dark text on light archetype colours (orange, gold, sky), white on the rest.
+const inkOn = (hex: string) => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255 > 0.55 ? "#202B30" : "#fff"; };
 const TAGS: ScoringTag[] = ["Drives", "Finishing through contact", "Post moves", "Mid-range", "Three-pointers", "Fast breaks", "Free throws", "Cuts", "Putbacks"];
 
 const PROMPTS: { k: "strongest" | "difficult" | "learned" | "improve"; q: string; quick: string[] }[] = [
@@ -57,7 +59,7 @@ export default function Reflect({ params }: { params: Promise<{ id: string }> })
               const on = tags.includes(t);
               const col = ARCH[TAG_TO_ARCH[t]].color;
               return (
-                <button key={t} aria-pressed={on} onClick={() => toggle(t)} className="rounded-full border-2 px-4 py-2.5 text-[15px] font-semibold transition" style={on ? { background: col, borderColor: col, color: "#fff" } : { borderColor: "rgba(32,43,48,.12)", background: "rgba(255,255,255,.6)" }}>
+                <button key={t} aria-pressed={on} onClick={() => toggle(t)} className={`rounded-full border-2 px-4 py-2.5 text-[15px] font-semibold transition ${on ? "" : "border-ink/15 bg-transparent text-ink hover:border-ink/40"}`} style={on ? { background: col, borderColor: col, color: inkOn(col) } : undefined}>
                   {t}
                 </button>
               );

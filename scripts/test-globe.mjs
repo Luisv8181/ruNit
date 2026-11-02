@@ -5,7 +5,7 @@ import fs from "node:fs";
 const BASE = process.argv[2] ?? "http://localhost:3000", OUT = process.argv[3] ?? "screens-globe";
 fs.mkdirSync(OUT, { recursive: true });
 const fixture = fs.readFileSync(new URL("./fixtures/overpass-sample.json", import.meta.url), "utf8");
-const exe = ["/usr/bin/google-chrome", "/usr/bin/chromium"].find((p) => fs.existsSync(p));
+const exe = [process.env.CHROME, "/usr/bin/google-chrome", "/usr/bin/chromium", "C:/Program Files/Google/Chrome/Application/chrome.exe", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"].filter(Boolean).find((p) => fs.existsSync(p));
 const b = await chromium.launch({ executablePath: exe, args: ["--no-sandbox"] });
 const errors = [];
 const run = async (mode) => {
