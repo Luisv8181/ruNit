@@ -108,7 +108,7 @@ export default function GlobePage() {
                 {added.includes(selOsm.id) ? (
                   <span className="btn bg-emerald-soft text-emerald">Submitted for review</span>
                 ) : (
-                  <button className="btn-ball" onClick={() => { dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: selOsm.name ?? "Basketball court", city: "", details: `From OpenStreetMap ${selOsm.osmType}/${selOsm.osmId} at ${selOsm.lat.toFixed(5)}, ${selOsm.lng.toFixed(5)}`, at: new Date().toISOString(), status: "pending_review" } }); setAdded((a) => [...a, selOsm.id]); }}>Add to ruNit</button>
+                  <button className="btn-ball" onClick={() => { dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: selOsm.name ?? "Basketball court", address: selOsm.address, city: "", details: `From OpenStreetMap ${selOsm.osmType}/${selOsm.osmId} at ${selOsm.lat.toFixed(5)}, ${selOsm.lng.toFixed(5)}`, at: new Date().toISOString(), status: "pending_review" } }); setAdded((a) => [...a, selOsm.id]); }}>Add to ruNit</button>
                 )}
                 <a href={osmUrl(selOsm)} target="_blank" rel="noreferrer" className="btn-line">View on OpenStreetMap</a>
               </div>
