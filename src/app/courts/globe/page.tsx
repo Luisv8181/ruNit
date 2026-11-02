@@ -55,7 +55,6 @@ export default function GlobePage() {
   const osmVisible = osm.filter((c) => inBounds(c.lat, c.lng));
   const ruNitVisible = state.courts.filter((c) => inBounds(c.lat, c.lng));
   const activeRuns = state.runs.filter((r) => !["final", "reviewed"].includes(r.status));
-  const activeCourtIds = new Set(activeRuns.map((r) => r.courtId));
   const localActiveRuns = activeRuns.filter((r) => ruNitVisible.some((c) => c.id === r.courtId));
   const sel = state.courts.find((c) => c.id === selected);
   const selOsm = osm.find((o) => o.id === selected);
