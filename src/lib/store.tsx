@@ -388,7 +388,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
   if (!hydratedRef.current) {
     return (
-      <div className="grid min-h-[60vh] place-items-center" aria-busy="true" aria-label="Loading ruNit">
+      <div className="grid min-h-[60vh] place-items-center" aria-busy="true" aria-label="Loading RUN IT">
         <svg viewBox="0 0 40 40" width="44" height="44" className="bounce-ball"><circle cx="20" cy="20" r="18" fill="#F47B35" /><path d="M2 20h36M20 2v36M8 8c5 5 5 19 0 24M32 8c-5 5-5 19 0 24" stroke="#202B30" strokeWidth="1.5" fill="none" opacity=".6" /></svg>
       </div>
     );

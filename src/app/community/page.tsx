@@ -138,7 +138,7 @@ function PlayerSheet({ p, onClose }: { p: Player; onClose: () => void }) {
               <div className="eyebrow">Report {p.nickname}</div>
               <div className="flex flex-wrap gap-2">{["No-show pattern", "Unsportsmanlike", "Harassment", "Fake stats", "Other"].map((r) => <button type="button" key={r} className={`chip ${reason === r ? "chip-on" : ""}`} onClick={() => setReason(r)}>{r}</button>)}</div>
               <div className="flex gap-2"><button type="button" className="btn-line flex-1" onClick={() => setReporting(false)}>Cancel</button><button className="btn-ink flex-1" disabled={!reason}>Send report</button></div>
-              <p className="text-[11px] text-ink-3">Reports go to ruNit moderators, not to the player.</p>
+              <p className="text-[11px] text-ink-3">Reports go to RUN IT moderators, not to the player.</p>
             </form>
           ) : (
             <div className="flex gap-2 border-t border-paper-line pt-4">

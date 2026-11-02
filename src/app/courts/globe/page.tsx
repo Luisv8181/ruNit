@@ -90,12 +90,12 @@ export default function GlobePage() {
               <p className="mt-3 text-[15px]">
                 {selOsm.indoor ? "Indoor" : "Outdoor"}{selOsm.surface ? `, ${selOsm.surface.replace(/_/g, " ")}` : ""}{selOsm.hoops ? `, ${selOsm.hoops} ${selOsm.hoops === "1" ? "hoop" : "hoops"}` : ""}{selOsm.lit === true ? ", lights" : selOsm.lit === false ? ", no lights" : ""}{selOsm.access && selOsm.access !== "yes" ? `, access: ${selOsm.access}` : ""}.
               </p>
-              <p className="mt-2 text-sm text-ink-2">Not on ruNit yet, so there are no runs or records here.</p>
+              <p className="mt-2 text-sm text-ink-2">Not on RUN IT yet, so there are no runs or records here.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {added.includes(selOsm.id) ? (
                   <span className="btn bg-emerald-soft text-emerald">Submitted for review</span>
                 ) : (
-                  <button className="btn-ball" onClick={() => { dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: selOsm.name ?? "Basketball court", city: "", details: `From OpenStreetMap ${selOsm.osmType}/${selOsm.osmId} at ${selOsm.lat.toFixed(5)}, ${selOsm.lng.toFixed(5)}`, at: new Date().toISOString(), status: "pending_review" } }); setAdded((a) => [...a, selOsm.id]); }}>Add to ruNit</button>
+                  <button className="btn-ball" onClick={() => { dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: selOsm.name ?? "Basketball court", city: "", details: `From OpenStreetMap ${selOsm.osmType}/${selOsm.osmId} at ${selOsm.lat.toFixed(5)}, ${selOsm.lng.toFixed(5)}`, at: new Date().toISOString(), status: "pending_review" } }); setAdded((a) => [...a, selOsm.id]); }}>Add to RUN IT</button>
                 )}
                 <a href={osmUrl(selOsm)} target="_blank" rel="noreferrer" className="btn-line">View on OpenStreetMap</a>
               </div>
@@ -131,7 +131,7 @@ export default function GlobePage() {
             </section>
           )}
 
-          <p className="mt-10 text-sm text-ink-2">Dark pins are ruNit&apos;s made-up demo courts, with runs and records. Light pins are real courts from OpenStreetMap, loaded live for the area you&apos;re looking at. Anyone can add a missing court there, and ruNit players confirm them one court at a time.</p>
+          <p className="mt-10 text-sm text-ink-2">Dark pins are RUN IT&apos;s made-up demo courts, with runs and records. Light pins are real courts from OpenStreetMap, loaded live for the area you&apos;re looking at. Anyone can add a missing court there, and RUN IT players confirm them one court at a time.</p>
         </div>
       </div>
     </div>

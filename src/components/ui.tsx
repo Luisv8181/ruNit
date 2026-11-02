@@ -3,17 +3,30 @@ import type { CourtVerification, PlayerDNA, Verification } from "@/lib/types";
 import { ARCH, ARCH_ORDER } from "@/lib/archetypes";
 import { I } from "./icons";
 
-export function Logo({ size = 26, light = false }: { size?: number; light?: boolean }) {
+export function Logo({ size = 36, light = false }: { size?: number; light?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-2" aria-label="ruNit">
-      <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-        <circle cx="16" cy="16" r="15" style={{ fill: "rgb(var(--c-ball))" }} />
-        <path d="M10 23V9l12 14V9" style={{ stroke: "rgb(var(--c-on-ball))" }} strokeWidth="3" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-      </svg>
-      <span className={`display text-[1.75em] leading-none ${light ? "text-paper" : "text-ink"}`}>
-        ruNit
+    <span className="inline-flex items-center gap-2" aria-label="RUN IT">
+      <NetMark size={size} />
+      <span className={`display text-[1.75em] leading-none tracking-wide ${light ? "text-paper" : "text-ink"}`}>
+        RUN IT
       </span>
     </span>
+  );
+}
+
+// A hoop whose net is a network: every knot is a player, the lit one is you.
+export const NET_EDGES = "M5 10.2L7.9 17M10.5 11.7L7.9 17M10.5 11.7L13.2 17M16 12L13.2 17M16 12L18.8 17M21.5 11.7L18.8 17M21.5 11.7L24.1 17M27 10.2L24.1 17M7.9 17L10.8 22M13.2 17L10.8 22M13.2 17L16 22M18.8 17L16 22M18.8 17L21.2 22M24.1 17L21.2 22M10.8 22L13.4 26.5M16 22L13.4 26.5M16 22L18.6 26.5M21.2 22L18.6 26.5M13.4 26.5L16 30M18.6 26.5L16 30";
+export const NET_NODES: [number, number][] = [[5, 10.2], [10.5, 11.7], [16, 12], [21.5, 11.7], [27, 10.2], [7.9, 17], [13.2, 17], [18.8, 17], [24.1, 17], [10.8, 22], [21.2, 22], [13.4, 26.5], [18.6, 26.5], [16, 30]];
+
+export function NetMark({ size = 26 }: { size?: number }) {
+  const ball = "rgb(var(--c-ball))";
+  return (
+    <svg width={size * 1.15} height={size} viewBox="0 4 32 28" aria-hidden>
+      <ellipse cx="16" cy="9" rx="12" ry="3" fill="none" stroke={ball} strokeWidth="2" />
+      <path d={NET_EDGES} stroke={ball} strokeWidth=".9" strokeLinecap="round" fill="none" opacity=".85" />
+      {NET_NODES.map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.25" fill={ball} />)}
+      <circle cx="16" cy="22" r="2.4" stroke={ball} strokeWidth="1.2" style={{ fill: "rgb(var(--c-ink))" }} />
+    </svg>
   );
 }
 

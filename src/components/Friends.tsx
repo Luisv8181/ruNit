@@ -53,9 +53,9 @@ export function Friends() {
   };
   const invite = async () => {
     const link = friendLink(state.meId, origin);
-    const text = `Run it with me on ruNit. My friend code is ${myCode}. ${link}`;
+    const text = `Run it with me on RUN IT. My friend code is ${myCode}. ${link}`;
     const nav = navigator as Navigator;
-    if (nav.share) { try { await nav.share({ title: "ruNit", text }); setMsg("Invite sent."); } catch { /* cancelled */ } }
+    if (nav.share) { try { await nav.share({ title: "RUN IT", text }); setMsg("Invite sent."); } catch { /* cancelled */ } }
     else { try { await navigator.clipboard.writeText(text); setMsg("Invite copied. Paste it in a text."); } catch { setMsg(text); } }
   };
 
@@ -116,7 +116,7 @@ export function Friends() {
             </div>
             {invited.length > 0 && <p className="mt-2 text-sm text-ink-2">Invited {invited.join(", ")}. They show up here once they join and accept.</p>}
             {msg && <p className="mt-3 text-[15px] font-semibold" role="status">{msg}</p>}
-            <p className="mt-4 text-xs text-ink-2">ruNit never uploads your contact list. You choose who gets an invite. Demo codes to try: {["p-tasha", "p-chris", "p-andre"].map((id) => `${player(id)?.nickname} ${friendCode(id)}`).join(", ")}.</p>
+            <p className="mt-4 text-xs text-ink-2">RUN IT never uploads your contact list. You choose who gets an invite. Demo codes to try: {["p-tasha", "p-chris", "p-andre"].map((id) => `${player(id)?.nickname} ${friendCode(id)}`).join(", ")}.</p>
             <button className="btn-ghost mt-3 px-0" onClick={() => setAdding(false)}>Done</button>
           </div>
         </div>

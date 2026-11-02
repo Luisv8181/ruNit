@@ -157,7 +157,7 @@ function CheckInPanel({ run, isHost }: { run: Run; isHost: boolean }) {
       <div>
         <div className="eyebrow mb-1">At the court?</div>
         <div className="display text-[2rem]">Check in</div>
-        <p className="mt-1 text-sm text-ink-2">Scan the host&apos;s code or type it. Checking in is how ruNit knows who actually showed up — it&apos;s the backbone of Trust.</p>
+        <p className="mt-1 text-sm text-ink-2">Scan the host&apos;s code or type it. Checking in is how RUN IT knows who actually showed up — it&apos;s the backbone of Trust.</p>
         <form className="mt-4 flex gap-2" onSubmit={(e) => {
           e.preventDefault();
           if (code.trim().toUpperCase() !== run.code) return setErr("That code doesn't match this run. Ask the host to show theirs.");
@@ -358,7 +358,7 @@ function ReviewPanel({ run }: { run: Run }) {
                   <button className="btn-line py-2" onClick={() => dispatch({ type: "submitStats", runId: run.id, mine: { ...mine.line, pts: Math.max(0, mine.line.pts - (x.reported - x.final)) }, others: run.submissions.filter((s) => s.playerId !== state.meId) })}>Lower my points by {x.reported - x.final}</button>
                 </div>
               )}
-              <p className="mt-2 text-[11px] text-ink-3">ruNit flags mismatches; it never decides who&apos;s right. Players in the game resolve it.</p>
+              <p className="mt-2 text-[11px] text-ink-3">RUN IT flags mismatches; it never decides who&apos;s right. Players in the game resolve it.</p>
             </div>
           </div>
         </div>

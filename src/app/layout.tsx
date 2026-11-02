@@ -14,10 +14,10 @@ import { Shell } from "@/components/Shell";
 import { Pwa } from "@/components/Pwa";
 
 export const metadata: Metadata = {
-  title: "ruNit — Who's got next?",
+  title: "RUN IT — Who's got next?",
   description: "Find a court. Call your run. Know your game. A basketball network starting in Hazleton & Scranton.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "ruNit", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "RUN IT", statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };
 

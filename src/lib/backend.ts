@@ -1,4 +1,4 @@
-// Backend mode detection. ruNit never pretends a backend call succeeded.
+// Backend mode detection. RUN IT never pretends a backend call succeeded.
 // With no Supabase credentials the app runs in DEMO MODE: all data is local and fictional.
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";

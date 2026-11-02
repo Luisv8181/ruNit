@@ -118,7 +118,7 @@ function Courts() {
                   ))}
                 </div>
               )}
-              <p className="mt-6 text-xs leading-relaxed text-ink-3">ruNit does not know every court. Locations start as imported open map data and become verified only when players who play there confirm them.</p>
+              <p className="mt-6 text-xs leading-relaxed text-ink-3">RUN IT does not know every court. Locations start as imported open map data and become verified only when players who play there confirm them.</p>
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useStore, verificationOf } from "@/lib/store";
 import type { Run } from "@/lib/types";
 import { TANK } from "./PlayerFigure";
+import { NET_EDGES, NET_NODES } from "./ui";
 
 const VLABEL = { self: "Self-reported", participant: "Teammate-confirmed", opponent: "Opponent-confirmed", video: "Video-supported" } as const;
 
@@ -37,10 +38,15 @@ export function GameCard({ run }: { run: Run }) {
       x.beginPath(); x.arc(540, 1540, 120, 0, Math.PI * 2); x.stroke();
       x.beginPath(); x.moveTo(140, 1180); x.lineTo(140, 1430); x.arc(540, 1430, 400, Math.PI, 0, true); x.lineTo(940, 1180); x.stroke();
       // logo
-      x.fillStyle = "#F47B35"; x.beginPath(); x.arc(130, 140, 44, 0, Math.PI * 2); x.fill();
-      x.strokeStyle = "#FFF9F0"; x.lineWidth = 9; x.lineJoin = "round"; x.lineCap = "round";
-      x.beginPath(); x.moveTo(112, 162); x.lineTo(112, 118); x.lineTo(148, 162); x.lineTo(148, 118); x.stroke();
-      x.fillStyle = "#FFF9F0"; x.font = "800 72px 'Big Shoulders Display Variable'"; x.textBaseline = "middle"; x.fillText("ruNit", 196, 142);
+      const nx = (px: number) => 70 + px * 4.4, ny = (py: number) => 14 + (py - 4) * 4.4;
+      x.strokeStyle = "#F47B35"; x.fillStyle = "#F47B35"; x.lineCap = "round";
+      x.lineWidth = 9; x.beginPath(); x.ellipse(nx(16), ny(9), 12 * 4.4, 3 * 4.4, 0, 0, Math.PI * 2); x.stroke();
+      x.lineWidth = 4; x.globalAlpha = 0.85;
+      for (const seg of NET_EDGES.slice(1).split("M")) { const [a, b] = seg.split("L").map((q) => q.split(" ").map(Number)); x.beginPath(); x.moveTo(nx(a[0]), ny(a[1])); x.lineTo(nx(b[0]), ny(b[1])); x.stroke(); }
+      x.globalAlpha = 1;
+      for (const [px, py] of NET_NODES) { x.beginPath(); x.arc(nx(px), ny(py), 5.5, 0, Math.PI * 2); x.fill(); }
+      x.fillStyle = "#FFF9F0"; x.lineWidth = 5; x.beginPath(); x.arc(nx(16), ny(22), 10.5, 0, Math.PI * 2); x.fill(); x.stroke();
+      x.fillStyle = "#FFF9F0"; x.font = "800 72px 'Big Shoulders Display Variable'"; x.textBaseline = "middle"; x.fillText("RUN IT", 215, 142);
       // seal
       const v = verificationOf(mine, run);
       x.font = "700 30px 'Atkinson Hyperlegible Next Variable'"; const sl = VLABEL[v]; const sw = x.measureText(sl).width + 70;
@@ -66,7 +72,7 @@ export function GameCard({ run }: { run: Run }) {
       x.fillStyle = me.character.jersey.secondary; x.font = "800 17px 'Big Shoulders Display Variable'"; x.textAlign = "center"; x.fillText(me.character.jersey.number, 20, 26);
       x.restore();
       x.textAlign = "center"; x.fillStyle = "#FFF9F0"; x.font = "800 90px 'Big Shoulders Display Variable'"; x.fillText(me.nickname, 540, 1640);
-      x.fillStyle = "rgba(255,249,240,.5)"; x.font = "600 30px 'Atkinson Hyperlegible Next Variable'"; x.fillText("Who's got next?  ruNit demo card", 540, 1820);
+      x.fillStyle = "rgba(255,249,240,.5)"; x.font = "600 30px 'Atkinson Hyperlegible Next Variable'"; x.fillText("Who's got next?  RUN IT demo card", 540, 1820);
       x.textAlign = "start";
       setUrl(cv.toDataURL("image/png"));
     });
@@ -82,7 +88,7 @@ export function GameCard({ run }: { run: Run }) {
     const file = new File([blob], `runit-${run.id}.png`, { type: "image/png" });
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
     if (nav.share && nav.canShare?.({ files: [file] })) {
-      try { await nav.share({ files: [file], title: "My ruNit game" }); setMsg("Shared."); } catch { /* user cancelled */ }
+      try { await nav.share({ files: [file], title: "My RUN IT game" }); setMsg("Shared."); } catch { /* user cancelled */ }
     } else {
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
       setMsg("Saved to your downloads.");

@@ -40,7 +40,7 @@ function Opps() {
         <CourtArt className="absolute -right-20 -top-16 h-[440px] rotate-[-6deg]" stroke="#fff" opacity={0.14} />
         <div className="relative max-w-xl">
                     <h1 className="display text-[3.2rem] sm:text-[4.6rem]">Open the next door</h1>
-          <p className="mt-3 text-lg text-ink-2">Tournaments, coaching, reffing, jobs and programs near you. Every listing shows who posted it and whether they&apos;re verified. ruNit never promises recruitment or scholarships, and ratings never decide who gets picked.</p>
+          <p className="mt-3 text-lg text-ink-2">Tournaments, coaching, reffing, jobs and programs near you. Every listing shows who posted it and whether they&apos;re verified. RUN IT never promises recruitment or scholarships, and ratings never decide who gets picked.</p>
         </div>
       </section>
 
@@ -109,7 +109,7 @@ function OppSheet({ o, onClose }: { o: Opportunity; onClose: () => void }) {
         <div className="space-y-5 p-6">
           <div className={`flex items-start gap-3 rounded-xl p-3 text-sm ${o.organizerVerified ? "bg-emerald-soft/70" : "bg-warn/15"}`}>
             <I.Shield className={o.organizerVerified ? "text-emerald" : "text-warn"} />
-            <div>{o.organizerVerified ? <><b>Verified organizer.</b> Identity and organization confirmed by ruNit staff.</> : <><b>Not verified yet.</b> Confirm details directly before paying anything.</>}</div>
+            <div>{o.organizerVerified ? <><b>Verified organizer.</b> Identity and organization confirmed by RUN IT staff.</> : <><b>Not verified yet.</b> Confirm details directly before paying anything.</>}</div>
           </div>
           <p>{o.summary}</p>
           <ul className="space-y-1.5 text-sm">{o.details.map((d) => <li key={d} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ball" />{d}</li>)}</ul>
@@ -121,7 +121,7 @@ function OppSheet({ o, onClose }: { o: Opportunity; onClose: () => void }) {
           {interest ? (
             <div className="rounded-2xl border border-emerald/30 bg-emerald-soft/50 p-4">
               <div className="flex items-center gap-2 font-bold text-emerald"><I.Check />You&apos;re on the interest list</div>
-              <p className="mt-1 text-sm text-ink-2">{interest.shareCard ? "The organizer can see your public ruNit card." : "The organizer sees only your nickname. Your card stays private."} In the live app they reply through ruNit.</p>
+              <p className="mt-1 text-sm text-ink-2">{interest.shareCard ? "The organizer can see your public RUN IT card." : "The organizer sees only your nickname. Your card stays private."} In the live app they reply through RUN IT.</p>
               <button className="btn-ghost mt-2 px-0 text-sm" onClick={() => dispatch({ type: "withdrawInterest", oppId: o.id })}>Withdraw interest</button>
             </div>
           ) : (
