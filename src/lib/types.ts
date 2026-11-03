@@ -13,6 +13,7 @@ export interface Court {
   name: string;
   city: "Hazleton" | "Scranton" | "West Hazleton" | "Dunmore";
   neighborhood: string;
+  address?: string;
   lat: number;
   lng: number;
   indoor: boolean;
@@ -214,6 +215,7 @@ export interface CourtSubmission {
   courtId?: string;
   name?: string;
   city?: string;
+  address?: string;
   details: string;
   at: string;
   status: "pending_review";

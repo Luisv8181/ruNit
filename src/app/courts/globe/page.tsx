@@ -22,6 +22,7 @@ export default function GlobePage() {
   const [status, setStatus] = useState<{ kind: "far" | "loading" | "ok" | "error" | "partial" | "wide"; n?: number }>({ kind: "far" });
   const [snapshot, setSnapshot] = useState<{ points: [number, number][]; region: string; fetchedAt: string } | null>(null);
   const [added, setAdded] = useState<string[]>([]);
+  const [view, setView] = useState<GlobeView | null>(null);
   const ctrl = useRef<AbortController | null>(null);
   const lastView = useRef<GlobeView | null>(null);
 
@@ -50,6 +51,11 @@ export default function GlobePage() {
     stamped: stamps.find((s) => s.courtId === c.id)?.status === "won",
     group: ["Hazleton", "West Hazleton"].includes(c.city) ? "Hazleton" : "Scranton",
   })), [state.courts, stamps]);
+  const inBounds = (lat: number, lng: number) => !view || (lat >= view.s && lat <= view.n && (view.w <= view.e ? lng >= view.w && lng <= view.e : lng >= view.w || lng <= view.e));
+  const osmVisible = osm.filter((c) => inBounds(c.lat, c.lng));
+  const ruNitVisible = state.courts.filter((c) => inBounds(c.lat, c.lng));
+  const activeRuns = state.runs.filter((r) => !["final", "reviewed"].includes(r.status) && (r.visibility === "public" || r.participants.includes(state.meId)));
+  const localActiveRuns = activeRuns.filter((r) => ruNitVisible.some((c) => c.id === r.courtId));
   const sel = state.courts.find((c) => c.id === selected);
   const selOsm = osm.find((o) => o.id === selected);
   const rec = sel ? courtRecords(sel.id, state.courtGames) : undefined;
@@ -60,7 +66,7 @@ export default function GlobePage() {
       <BackLink href="/courts" label="Courts" />
       <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="aspect-square w-full max-w-[760px] lg:sticky lg:top-24">
-          <BallGlobe ref={globe} pins={pins} osm={osm} density={snapshot?.points} selected={selected} onViewSettled={load}
+          <BallGlobe ref={globe} pins={pins} osm={osm} density={snapshot?.points} selected={selected} onViewSettled={(v) => { setView(v); load(v); }}
             onSelect={(id) => { setSelected(id); const c = state.courts.find((x) => x.id === id) ?? osm.find((x) => x.id === id); if (c) globe.current?.flyTo(c.lng, c.lat, 2600); }} />
         </div>
 
@@ -74,8 +80,14 @@ export default function GlobePage() {
             ))}
           </div>
 
-          <p className="mt-5 min-h-[1.5rem] text-[15px]" role="status" aria-live="polite">
-            {status.kind === "far" && (snapshot ? <>Showing {snapshot.points.length.toLocaleString()} mapped courts in {snapshot.region}. Zoom in to load court details.</> : <>Zoom in on any city to load its basketball courts from OpenStreetMap.</>)}
+          <div className="mt-5 grid grid-cols-3 gap-2" aria-label="Court network in current view">
+            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{ruNitVisible.length}</div><div className="text-xs text-ink-2">ruNit courts</div></div>
+            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{osmVisible.length}</div><div className="text-xs text-ink-2">OSM courts loaded</div></div>
+            <div className="rounded-xl border border-paper-line bg-surface/70 p-3"><div className="num text-2xl font-bold">{localActiveRuns.length}</div><div className="text-xs text-ink-2">Active runs</div></div>
+          </div>
+          {localActiveRuns.length > 0 && <div className="mt-3 rounded-xl border border-paper-line p-3"><div className="eyebrow mb-2">Runs happening in ruNit courts here</div><ul className="space-y-2">{localActiveRuns.slice(0, 3).map((r) => <li key={r.id}><Link href={`/runs/${r.id}`} className="flex items-center justify-between gap-3 text-sm hover:underline"><span className="min-w-0 truncate font-semibold">{r.title}</span><span className="shrink-0 text-xs text-ink-2">{r.participants.length}/{r.capacity} players</span></Link></li>)}</ul></div>}
+          <p className="mt-3 min-h-[1.5rem] text-[15px]" role="status" aria-live="polite">
+            {status.kind === "far" && (snapshot ? <>Global density layer: {snapshot.points.length.toLocaleString()} mapped court locations in {snapshot.region}. Snapshot updated {new Date(snapshot.fetchedAt).toLocaleDateString()}. Zoom in to load court details.</> : <>Global density snapshot is not installed. Live OpenStreetMap courts load as you zoom into a city; a regional or global snapshot can be generated with the court import script.</>)}
             {status.kind === "loading" && <>Loading courts from OpenStreetMap…</>}
             {status.kind === "ok" && <><b>{status.n}</b> OpenStreetMap {status.n === 1 ? "court" : "courts"} in view.</>}
             {status.kind === "partial" && <><b>{status.n}</b> courts loaded. Part of this area didn&apos;t load. <button className="font-semibold underline" onClick={() => lastView.current && load(lastView.current)}>Try again</button></>}
@@ -90,12 +102,19 @@ export default function GlobePage() {
               <p className="mt-3 text-[15px]">
                 {selOsm.indoor ? "Indoor" : "Outdoor"}{selOsm.surface ? `, ${selOsm.surface.replace(/_/g, " ")}` : ""}{selOsm.hoops ? `, ${selOsm.hoops} ${selOsm.hoops === "1" ? "hoop" : "hoops"}` : ""}{selOsm.lit === true ? ", lights" : selOsm.lit === false ? ", no lights" : ""}{selOsm.access && selOsm.access !== "yes" ? `, access: ${selOsm.access}` : ""}.
               </p>
+              <div className="mt-4 rounded-xl border border-paper-line bg-surface/60 p-3">
+                <div className="eyebrow mb-1">Court location</div>
+                <p className="text-sm font-semibold">{selOsm.address || "Street address not listed"}</p>
+                <p className="mt-1 text-xs text-ink-2">{selOsm.address ? "Address supplied by OpenStreetMap" : "Approximate map pin from OpenStreetMap"}</p>
+                <a className="mt-3 inline-flex text-sm font-semibold underline" href={`https://www.google.com/maps/dir/?api=1&destination=${selOsm.lat},${selOsm.lng}`} target="_blank" rel="noreferrer">Get directions</a>
+                <span className="ml-3 text-xs text-ink-3">{selOsm.lat.toFixed(5)}, {selOsm.lng.toFixed(5)}</span>
+              </div>
               <p className="mt-2 text-sm text-ink-2">Not on ruNit yet, so there are no runs or records here.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {added.includes(selOsm.id) ? (
                   <span className="btn bg-emerald-soft text-emerald">Submitted for review</span>
                 ) : (
-                  <button className="btn-ball" onClick={() => { dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: selOsm.name ?? "Basketball court", city: "", details: `From OpenStreetMap ${selOsm.osmType}/${selOsm.osmId} at ${selOsm.lat.toFixed(5)}, ${selOsm.lng.toFixed(5)}`, at: new Date().toISOString(), status: "pending_review" } }); setAdded((a) => [...a, selOsm.id]); }}>Add to ruNit</button>
+                  <button className="btn-ball" onClick={() => { dispatch({ type: "courtSubmission", sub: { id: `cs-${Date.now()}`, kind: "new_court", name: selOsm.name ?? "Basketball court", address: selOsm.address, city: "", details: `From OpenStreetMap ${selOsm.osmType}/${selOsm.osmId} at ${selOsm.lat.toFixed(5)}, ${selOsm.lng.toFixed(5)}`, at: new Date().toISOString(), status: "pending_review" } }); setAdded((a) => [...a, selOsm.id]); }}>Add to ruNit</button>
                 )}
                 <a href={osmUrl(selOsm)} target="_blank" rel="noreferrer" className="btn-line">View on OpenStreetMap</a>
               </div>
@@ -105,6 +124,14 @@ export default function GlobePage() {
               <p className="text-[15px] text-ink-2">{sel.neighborhood}, {sel.city}</p>
               <h2 className="display text-[2.4rem]">{sel.name}</h2>
               <div className="mt-2"><CourtBadge v={sel.verification} /></div>
+              <div className="mt-4 rounded-xl border border-paper-line bg-surface/60 p-3">
+                <div className="eyebrow mb-1">Court location</div>
+                <p className="text-sm font-semibold">{sel.address || "Street address not listed"}</p>
+                <p className="mt-1 text-xs text-ink-2">{sel.address ? `${sel.neighborhood}, ${sel.city}` : `${sel.neighborhood}, ${sel.city} · approximate map pin`}</p>
+                <a className="mt-3 inline-flex text-sm font-semibold underline" href={`https://www.google.com/maps/dir/?api=1&destination=${sel.lat},${sel.lng}`} target="_blank" rel="noreferrer">Get directions</a>
+                <span className="ml-3 text-xs text-ink-3">{sel.lat.toFixed(5)}, {sel.lng.toFixed(5)}</span>
+              </div>
+
               <p className="mt-3 text-[15px]">{sel.indoor ? "Indoor" : "Outdoor"}, {sel.surface.toLowerCase()}, {sel.hoops} {sel.hoops === 1 ? "hoop" : "hoops"}{sel.lights ? ", lights" : ""}.</p>
               {king && rec.mostWins ? (
                 <div className="mt-4 flex items-center gap-3">
@@ -131,7 +158,15 @@ export default function GlobePage() {
             </section>
           )}
 
-          <p className="mt-10 text-sm text-ink-2">Dark pins are ruNit&apos;s made-up demo courts, with runs and records. Light pins are real courts from OpenStreetMap, loaded live for the area you&apos;re looking at. Anyone can add a missing court there, and ruNit players confirm them one court at a time.</p>
+          <section className="mt-8 border-t-2 border-ink pt-4">
+            <h2 className="display text-[1.8rem]">The network, at this zoom</h2>
+            <p className="mt-2 text-sm text-ink-2">Counts reflect the visible map bounds. OpenStreetMap locations are mapped courts, not ruNit-verified venues. ruNit courts, runs, and records are community features; demo content is labeled in the app.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/courts" className="btn-line">Open local court map</Link>
+              <Link href="/community" className="btn-line">Find players & squads</Link>
+            </div>
+          </section>
+          <p className="mt-6 text-xs text-ink-3">Dark pins are ruNit demo courts. Light pins are OpenStreetMap courts loaded for the current area. Coverage depends on what contributors have mapped and should not be treated as a complete inventory.</p>
         </div>
       </div>
     </div>
